@@ -22,50 +22,53 @@ const GroupSection: React.FC<GroupProps> = ({ id, name, subGroups, color }) => {
     shifts: Math.floor(Math.random() * 5) + 1
   }));
   
-  // Get background color class based on group color
-  const getBackgroundColor = () => {
+  // Get group card class based on color
+  const getGroupCardClass = () => {
     switch (color) {
       case 'blue':
-        return 'bg-template-blue';
+        return 'group-card-blue';
       case 'green':
-        return 'bg-template-green';
+        return 'group-card-green';
       case 'red':
-        return 'bg-template-red';
+        return 'group-card-red';
       default:
-        return 'bg-black/40';
+        return 'glass-panel';
     }
   };
   
   return (
-    <div className={`animate-scale-in mb-6 border border-white/10 rounded-lg overflow-hidden ${getBackgroundColor()}`}>
-      <div className="p-6 flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-medium">{name}</h3>
-          <p className="text-white/60 text-sm mt-1">{subGroups} Sub-Groups</p>
+    <div className={`animate-float mb-6 rounded-lg overflow-hidden shadow-2xl ${getGroupCardClass()} hover-glow transition-all duration-500`}>
+      <div className="relative p-6 flex items-center justify-between">
+        <div className="fade-slide-up">
+          <h3 className="text-xl font-medium">{name}</h3>
+          <p className="text-white/70 text-sm mt-1">{subGroups} Sub-Groups</p>
         </div>
         
         <div className="flex items-center space-x-3">
-          <button className="p-2 rounded-lg bg-black/30 hover:bg-black/50 text-template-action transition-all duration-200">
-            <Edit size={18} />
+          <button className="p-2 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-blue-400 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <Edit size={18} className="transition-transform hover:scale-110" />
           </button>
-          <button className="p-2 rounded-lg bg-black/30 hover:bg-black/50 text-template-delete transition-all duration-200">
-            <Trash size={18} />
+          <button className="p-2 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-red-400 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <Trash size={18} className="transition-transform hover:scale-110" />
           </button>
-          <button className="p-2 rounded-lg bg-black/30 hover:bg-black/50 text-white/80 hover:text-white transition-all duration-200">
-            <Copy size={18} />
+          <button className="p-2 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-purple-400 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <Copy size={18} className="transition-transform hover:scale-110" />
           </button>
           <button 
-            className="p-2 rounded-lg bg-black/30 hover:bg-black/50 text-white/80 hover:text-white transition-all duration-200"
+            className="p-2 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
             onClick={() => setExpanded(!expanded)}
           >
-            {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {expanded ? 
+              <ChevronUp size={18} className="transition-transform duration-300" /> : 
+              <ChevronDown size={18} className="transition-transform duration-300" />
+            }
           </button>
         </div>
       </div>
       
       {expanded && (
-        <div className="px-6 pb-6 animate-fade-in bg-black/60 backdrop-blur-sm">
-          <div className="border-t border-white/10 pt-4 mb-4">
+        <div className="px-6 pb-6 animate-fade-in bg-black/40 backdrop-blur-lg">
+          <div className="border-t border-white/20 pt-4 mb-4">
             {fakeSubGroups.map(subGroup => (
               <SubGroupSection 
                 key={subGroup.id}
@@ -76,8 +79,8 @@ const GroupSection: React.FC<GroupProps> = ({ id, name, subGroups, color }) => {
             ))}
           </div>
           
-          <button className="flex items-center space-x-2 text-white/80 hover:text-white transition-all duration-200 px-4 py-2 rounded-lg bg-black/30 hover:bg-black/50">
-            <Plus size={16} />
+          <button className="flex items-center space-x-2 text-white/80 hover:text-white transition-all duration-300 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 w-full justify-center group">
+            <Plus size={16} className="group-hover:rotate-90 transition-transform duration-300" />
             <span>Add Sub-Group</span>
           </button>
         </div>

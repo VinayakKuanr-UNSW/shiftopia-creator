@@ -73,48 +73,136 @@
   }
 
   body {
-    @apply bg-black text-white antialiased;
+    @apply bg-[#080C16] text-white antialiased;
+    background-image: 
+      radial-gradient(circle at 25% 10%, rgba(41, 84, 255, 0.2) 0%, transparent 50%),
+      radial-gradient(circle at 75% 30%, rgba(235, 87, 255, 0.2) 0%, transparent 50%), 
+      linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(8, 12, 22, 0.8) 100%);
+    background-attachment: fixed;
   }
 }
 
 @layer utilities {
+  /* Glass panel styles */
   .glass-panel {
-    @apply bg-black/40 backdrop-blur-md border border-white/10 rounded-lg;
+    @apply bg-black/25 backdrop-blur-md border border-white/10 rounded-lg shadow-lg shadow-black/10;
   }
   
   .glass-panel-hover {
-    @apply transition-all duration-300 hover:bg-black/60 hover:border-white/20;
+    @apply transition-all duration-300 hover:bg-black/40 hover:border-white/20 hover:shadow-xl;
   }
-  
+
+  /* Group card styles */
   .group-card-blue {
-    @apply border-l-4 border-template-blue;
+    @apply bg-blue-500/40 backdrop-blur-md border border-blue-400/30;
   }
   
   .group-card-green {
-    @apply border-l-4 border-template-green;
+    @apply bg-green-500/40 backdrop-blur-md border border-green-400/30;
   }
   
   .group-card-red {
-    @apply border-l-4 border-template-red;
+    @apply bg-red-500/40 backdrop-blur-md border border-red-400/30;
   }
   
+  /* Gradient styles */
   .top-gradient {
-    @apply absolute top-0 left-0 right-0 h-[200px] bg-gradient-to-b from-red-500/30 via-green-500/20 to-transparent pointer-events-none;
+    @apply absolute top-0 left-0 right-0 h-[400px] bg-gradient-to-b from-purple-500/20 via-blue-500/10 to-transparent pointer-events-none;
   }
   
+  /* Input styles */
   .custom-input {
-    @apply block w-full px-4 py-3 bg-black/50 border border-white/10 rounded-lg focus:ring-2 focus:ring-white/20 focus:outline-none transition-all duration-200;
+    @apply block w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg focus:ring-2 focus:ring-purple-500/50 focus:outline-none transition-all duration-200;
   }
   
+  /* Button styles */
   .button-blue {
-    @apply px-4 py-2 bg-template-action text-white rounded-lg transition-all duration-200 hover:bg-template-action/80;
+    @apply px-4 py-2 bg-blue-500/80 text-white rounded-lg transition-all duration-200 hover:bg-blue-600/90 shadow-md shadow-blue-900/30 hover:shadow-lg hover:shadow-blue-900/40 hover:-translate-y-0.5;
   }
   
   .button-red {
-    @apply px-4 py-2 bg-template-delete text-white rounded-lg transition-all duration-200 hover:bg-template-delete/80;
+    @apply px-4 py-2 bg-red-500/80 text-white rounded-lg transition-all duration-200 hover:bg-red-600/90 shadow-md shadow-red-900/30 hover:shadow-lg hover:shadow-red-900/40 hover:-translate-y-0.5;
   }
   
   .button-outline {
-    @apply px-4 py-2 bg-transparent border border-white/20 text-white rounded-lg transition-all duration-200 hover:bg-white/5;
+    @apply px-4 py-2 bg-white/5 border border-white/20 text-white rounded-lg transition-all duration-300 hover:bg-white/10 hover:border-white/30 shadow-md shadow-black/10 hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5;
+  }
+  
+  /* Animation keyframes */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px 0 rgba(255, 255, 255, 0.1); }
+    50% { box-shadow: 0 0 15px 0 rgba(255, 255, 255, 0.3); }
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -100% 0; }
+    100% { background-position: 200% 0; }
+  }
+  
+  /* Animation classes */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite;
+  }
+  
+  /* Interaction utilities */
+  .hover-scale {
+    @apply transition-transform duration-300;
+  }
+  
+  .hover-scale:hover {
+    @apply transform scale-105;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow:hover {
+    @apply shadow-lg shadow-white/10;
+  }
+  
+  /* Button icon animations */
+  .btn-icon {
+    @apply transition-transform duration-300;
+  }
+  
+  .btn-with-icon:hover .btn-icon {
+    @apply transform translate-x-0.5;
+  }
+  
+  /* Content reveal animations */
+  .fade-slide-up {
+    @apply opacity-0 translate-y-4 transition-all duration-500;
+    animation: fadeSlideUp 0.5s forwards 0.2s;
+  }
+  
+  @keyframes fadeSlideUp {
+    to {
+      @apply opacity-100 translate-y-0;
+    }
+  }
+  
+  /* Scroll reveal animations */
+  .reveal-on-scroll {
+    @apply opacity-0 translate-y-10 transition-all duration-700;
+  }
+  
+  .revealed {
+    @apply opacity-100 translate-y-0;
   }
 }

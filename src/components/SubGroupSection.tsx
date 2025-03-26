@@ -23,36 +23,39 @@ const SubGroupSection: React.FC<SubGroupProps> = ({ id, name, shifts }) => {
   }));
   
   return (
-    <div className="ml-4 border-l border-white/10 pl-4 mb-4">
-      <div className="glass-panel mb-3">
+    <div className="ml-4 border-l border-white/20 pl-4 mb-4 hover-scale">
+      <div className="glass-panel mb-3 hover:shadow-md transition-all duration-300">
         <div className="p-4 flex items-center justify-between">
           <div>
-            <h4 className="font-medium">{name}</h4>
-            <p className="text-white/60 text-sm mt-1">{shifts} Shifts</p>
+            <h4 className="font-medium text-white">{name}</h4>
+            <p className="text-white/70 text-sm mt-1">{shifts} Shifts</p>
           </div>
           
           <div className="flex items-center space-x-2">
-            <button className="p-1.5 rounded-lg bg-black/30 hover:bg-black/50 text-template-action transition-all duration-200">
+            <button className="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-blue-400 transition-all duration-200 hover:scale-110">
               <Edit size={16} />
             </button>
-            <button className="p-1.5 rounded-lg bg-black/30 hover:bg-black/50 text-template-delete transition-all duration-200">
+            <button className="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-red-400 transition-all duration-200 hover:scale-110">
               <Trash size={16} />
             </button>
-            <button className="p-1.5 rounded-lg bg-black/30 hover:bg-black/50 text-white/80 hover:text-white transition-all duration-200">
+            <button className="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-purple-400 transition-all duration-200 hover:scale-110">
               <Copy size={16} />
             </button>
             <button 
-              className="p-1.5 rounded-lg bg-black/30 hover:bg-black/50 text-white/80 hover:text-white transition-all duration-200"
+              className="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-white transition-all duration-200 hover:scale-110"
               onClick={() => setExpanded(!expanded)}
             >
-              {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              {expanded ? 
+                <ChevronUp size={16} className="transition-transform duration-300" /> : 
+                <ChevronDown size={16} className="transition-transform duration-300" />
+              }
             </button>
           </div>
         </div>
         
         {expanded && (
           <div className="px-4 pb-4 animate-fade-in">
-            <div className="border-t border-white/10 pt-3 mb-3">
+            <div className="border-t border-white/20 pt-3 mb-3 space-y-2">
               {fakeShifts.map(shift => (
                 <ShiftItem 
                   key={shift.id}
@@ -65,8 +68,8 @@ const SubGroupSection: React.FC<SubGroupProps> = ({ id, name, shifts }) => {
               ))}
             </div>
             
-            <button className="flex items-center space-x-2 text-white/80 hover:text-white text-sm transition-all duration-200 px-3 py-1.5 rounded-lg glass-panel-hover w-full justify-center">
-              <Plus size={14} />
+            <button className="flex items-center space-x-2 text-white/80 hover:text-white text-sm transition-all duration-300 px-3 py-1.5 rounded-lg glass-panel-hover w-full justify-center group">
+              <Plus size={14} className="group-hover:rotate-90 transition-transform duration-300" />
               <span>Add Shift</span>
             </button>
           </div>
