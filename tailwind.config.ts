@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,11 +62,10 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors for our design
 				template: {
-					blue: 'rgba(60, 120, 215, 0.8)',
-					green: 'rgba(60, 180, 120, 0.8)',
-					red: 'rgba(215, 60, 60, 0.8)',
+					blue: 'rgba(20, 100, 220, 0.6)',
+					green: 'rgba(20, 180, 80, 0.6)',
+					red: 'rgba(220, 60, 60, 0.6)',
 					action: 'rgba(50, 150, 230, 0.9)',
 					delete: 'rgba(230, 70, 70, 0.9)'
 				}

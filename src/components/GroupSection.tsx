@@ -22,8 +22,22 @@ const GroupSection: React.FC<GroupProps> = ({ id, name, subGroups, color }) => {
     shifts: Math.floor(Math.random() * 5) + 1
   }));
   
+  // Get background color class based on group color
+  const getBackgroundColor = () => {
+    switch (color) {
+      case 'blue':
+        return 'bg-template-blue';
+      case 'green':
+        return 'bg-template-green';
+      case 'red':
+        return 'bg-template-red';
+      default:
+        return 'bg-black/40';
+    }
+  };
+  
   return (
-    <div className={`animate-scale-in mb-6 glass-panel group-card-${color} overflow-hidden`}>
+    <div className={`animate-scale-in mb-6 border border-white/10 rounded-lg overflow-hidden ${getBackgroundColor()}`}>
       <div className="p-6 flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium">{name}</h3>
@@ -50,7 +64,7 @@ const GroupSection: React.FC<GroupProps> = ({ id, name, subGroups, color }) => {
       </div>
       
       {expanded && (
-        <div className="px-6 pb-6 animate-fade-in">
+        <div className="px-6 pb-6 animate-fade-in bg-black/60 backdrop-blur-sm">
           <div className="border-t border-white/10 pt-4 mb-4">
             {fakeSubGroups.map(subGroup => (
               <SubGroupSection 
@@ -62,7 +76,7 @@ const GroupSection: React.FC<GroupProps> = ({ id, name, subGroups, color }) => {
             ))}
           </div>
           
-          <button className="flex items-center space-x-2 text-white/80 hover:text-white transition-all duration-200 px-4 py-2 rounded-lg glass-panel-hover">
+          <button className="flex items-center space-x-2 text-white/80 hover:text-white transition-all duration-200 px-4 py-2 rounded-lg bg-black/30 hover:bg-black/50">
             <Plus size={16} />
             <span>Add Sub-Group</span>
           </button>
