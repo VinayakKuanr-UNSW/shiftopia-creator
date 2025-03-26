@@ -6,7 +6,7 @@ import GroupSection from '../components/GroupSection';
 import { Save, FileDown, Play, Plus } from 'lucide-react';
 
 const Index: React.FC = () => {
-  // Sample groups data
+  // Sample groups data with correct color assignments
   const groups = [
     { id: 1, name: 'Convention Centre', subGroups: 3, color: 'blue' as const },
     { id: 2, name: 'Exhibition Centre', subGroups: 2, color: 'green' as const },
@@ -15,8 +15,8 @@ const Index: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black relative">
-      {/* Top gradient */}
-      <div className="top-gradient"></div>
+      {/* Improved gradient that fades into the background */}
+      <div className="absolute top-0 left-0 right-0 h-[200px] bg-gradient-to-b from-red-500/20 via-green-500/20 to-transparent pointer-events-none"></div>
       
       {/* Content */}
       <Navbar />

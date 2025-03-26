@@ -99,7 +99,7 @@
   }
   
   .top-gradient {
-    @apply absolute top-0 left-0 right-0 h-[100px] bg-gradient-to-r from-red-500/20 via-green-500/20 to-blue-500/20 pointer-events-none;
+    @apply absolute top-0 left-0 right-0 h-[200px] bg-gradient-to-b from-red-500/30 via-green-500/20 to-transparent pointer-events-none;
   }
   
   .custom-input {
