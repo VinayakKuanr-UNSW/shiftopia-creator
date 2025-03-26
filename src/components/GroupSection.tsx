@@ -26,18 +26,18 @@ const GroupSection: React.FC<GroupProps> = ({ id, name, subGroups, color }) => {
   const getBackgroundColor = () => {
     switch (color) {
       case 'blue':
-        return 'bg-template-blue/70';
+        return 'bg-template-blue';
       case 'green':
-        return 'bg-template-green/70';
+        return 'bg-template-green';
       case 'red':
-        return 'bg-template-red/70';
+        return 'bg-template-red';
       default:
         return 'bg-black/40';
     }
   };
   
   return (
-    <div className={`animate-scale-in mb-6 border border-white/20 rounded-lg overflow-hidden backdrop-blur-md ${getBackgroundColor()} shadow-lg`}>
+    <div className={`animate-scale-in mb-6 border border-white/10 rounded-lg overflow-hidden ${getBackgroundColor()}`}>
       <div className="p-6 flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium">{name}</h3>
@@ -45,17 +45,17 @@ const GroupSection: React.FC<GroupProps> = ({ id, name, subGroups, color }) => {
         </div>
         
         <div className="flex items-center space-x-3">
-          <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-template-action transition-all duration-200 backdrop-blur-md">
+          <button className="p-2 rounded-lg bg-black/30 hover:bg-black/50 text-template-action transition-all duration-200">
             <Edit size={18} />
           </button>
-          <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-template-delete transition-all duration-200 backdrop-blur-md">
+          <button className="p-2 rounded-lg bg-black/30 hover:bg-black/50 text-template-delete transition-all duration-200">
             <Trash size={18} />
           </button>
-          <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200 backdrop-blur-md">
+          <button className="p-2 rounded-lg bg-black/30 hover:bg-black/50 text-white/80 hover:text-white transition-all duration-200">
             <Copy size={18} />
           </button>
           <button 
-            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200 backdrop-blur-md"
+            className="p-2 rounded-lg bg-black/30 hover:bg-black/50 text-white/80 hover:text-white transition-all duration-200"
             onClick={() => setExpanded(!expanded)}
           >
             {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -64,7 +64,7 @@ const GroupSection: React.FC<GroupProps> = ({ id, name, subGroups, color }) => {
       </div>
       
       {expanded && (
-        <div className="px-6 pb-6 animate-fade-in bg-black/40 backdrop-blur-md">
+        <div className="px-6 pb-6 animate-fade-in bg-black/60 backdrop-blur-sm">
           <div className="border-t border-white/10 pt-4 mb-4">
             {fakeSubGroups.map(subGroup => (
               <SubGroupSection 
@@ -76,7 +76,7 @@ const GroupSection: React.FC<GroupProps> = ({ id, name, subGroups, color }) => {
             ))}
           </div>
           
-          <button className="flex items-center space-x-2 text-white/80 hover:text-white transition-all duration-200 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-sm">
+          <button className="flex items-center space-x-2 text-white/80 hover:text-white transition-all duration-200 px-4 py-2 rounded-lg bg-black/30 hover:bg-black/50">
             <Plus size={16} />
             <span>Add Sub-Group</span>
           </button>
