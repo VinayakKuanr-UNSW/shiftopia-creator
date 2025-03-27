@@ -10,6 +10,7 @@ import { EmployeeSpotlightCard } from '@/components/dashboard/EmployeeSpotlightC
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   
+  // Department-specific dashboard content
   const getDepartmentContent = () => {
     switch (user?.department) {
       case 'convention':
@@ -40,6 +41,7 @@ const DashboardPage: React.FC = () => {
               />
             </div>
             
+            {/* Weekly Stats for Convention */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-3 text-blue-300">Weekly Overview</h3>
               <WeeklyStats 
@@ -85,6 +87,7 @@ const DashboardPage: React.FC = () => {
               />
             </div>
             
+            {/* Weekly Stats for Exhibition */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-3 text-green-300">Weekly Overview</h3>
               <WeeklyStats 
@@ -130,6 +133,7 @@ const DashboardPage: React.FC = () => {
               />
             </div>
             
+            {/* Weekly Stats for Theatre */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-3 text-red-300">Weekly Overview</h3>
               <WeeklyStats 
@@ -175,6 +179,7 @@ const DashboardPage: React.FC = () => {
               />
             </div>
             
+            {/* Weekly Stats for IT */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-3 text-purple-300">Weekly Overview</h3>
               <WeeklyStats 
@@ -241,8 +246,10 @@ const DashboardPage: React.FC = () => {
             </div>
           </div>
           
+          {/* Department-specific content */}
           {getDepartmentContent()}
           
+          {/* Alerts section */}
           <div className="mt-6">
             <h2 className="text-xl font-bold mb-4">Alerts</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -294,6 +301,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </div>
           
+          {/* Employee spotlight section */}
           <div className="mt-6">
             <h2 className="text-xl font-bold mb-4">Employee Spotlight</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -323,6 +331,7 @@ const DashboardPage: React.FC = () => {
   );
 };
 
+// Dashboard Card Component
 interface DashboardCardProps {
   title: string;
   value: string;
@@ -359,6 +368,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon, color
   );
 };
 
+// Quick Access Card Component
 interface QuickAccessCardProps {
   title: string;
   description: string;
@@ -382,6 +392,7 @@ const QuickAccessCard: React.FC<QuickAccessCardProps> = ({ title, description, i
   );
 };
 
+// Staff Alert Card Component
 interface StaffingAlertCardProps {
   title: string;
   description: string;
@@ -427,6 +438,7 @@ const StaffingAlertCard: React.FC<StaffingAlertCardProps> = ({
   );
 };
 
+// Employee Spotlight Card Component
 interface EmployeeSpotlightCardProps {
   name: string;
   department: string;
