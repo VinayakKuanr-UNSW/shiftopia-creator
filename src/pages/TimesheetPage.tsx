@@ -25,8 +25,7 @@ const TimesheetPage: React.FC = () => {
           
           <div className="mt-6">
             <TimesheetTable 
-              selectedDate={selectedDate} 
-              readOnly={!hasPermission('update')}
+              selectedDate={selectedDate}
             />
           </div>
         </div>

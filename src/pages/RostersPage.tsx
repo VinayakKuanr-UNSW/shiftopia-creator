@@ -29,8 +29,7 @@ const RostersPage: React.FC = () => {
             
             <div className="mt-6">
               <RosterCalendar 
-                selectedDate={selectedDate} 
-                readOnly={!hasPermission('update')}
+                selectedDate={selectedDate}
               />
             </div>
           </div>
@@ -38,7 +37,7 @@ const RostersPage: React.FC = () => {
         
         {/* Employee sidebar */}
         {sidebarOpen && (
-          <RosterSidebar readOnly={!hasPermission('update')} />
+          <RosterSidebar />
         )}
       </div>
     </div>

@@ -1,9 +1,11 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Calendar, ClipboardList, Clock, MessageSquare, TrendingUp, AlertCircle } from 'lucide-react';
+import { Users, Calendar, ClipboardList, Clock, MessageSquare, TrendingUp, AlertCircle, BarChart } from 'lucide-react';
+import { WeeklyStats } from '@/components/dashboard/WeeklyStats';
+import { StaffingAlertCard } from '@/components/dashboard/StaffingAlertCard';
+import { EmployeeSpotlightCard } from '@/components/dashboard/EmployeeSpotlightCard';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -38,6 +40,23 @@ const DashboardPage: React.FC = () => {
                 color="blue"
               />
             </div>
+            
+            {/* Weekly Stats for Convention */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-3 text-blue-300">Weekly Overview</h3>
+              <WeeklyStats 
+                department="convention" 
+                color="blue"
+                stats={{
+                  shiftsAssigned: 48,
+                  shiftsFilled: 42,
+                  attendanceRate: 92,
+                  pendingShifts: 6,
+                  noShows: 2,
+                  utilizationRate: 87
+                }}
+              />
+            </div>
           </div>
         );
       case 'exhibition':
@@ -65,6 +84,23 @@ const DashboardPage: React.FC = () => {
                 value="3" 
                 icon={<Clock className="h-5 w-5 text-green-400" />} 
                 color="green"
+              />
+            </div>
+            
+            {/* Weekly Stats for Exhibition */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-3 text-green-300">Weekly Overview</h3>
+              <WeeklyStats 
+                department="exhibition" 
+                color="green"
+                stats={{
+                  shiftsAssigned: 36,
+                  shiftsFilled: 33,
+                  attendanceRate: 95,
+                  pendingShifts: 3,
+                  noShows: 1,
+                  utilizationRate: 91
+                }}
               />
             </div>
           </div>
@@ -96,6 +132,23 @@ const DashboardPage: React.FC = () => {
                 color="red" 
               />
             </div>
+            
+            {/* Weekly Stats for Theatre */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-3 text-red-300">Weekly Overview</h3>
+              <WeeklyStats 
+                department="theatre" 
+                color="red"
+                stats={{
+                  shiftsAssigned: 54,
+                  shiftsFilled: 48,
+                  attendanceRate: 89,
+                  pendingShifts: 6,
+                  noShows: 4,
+                  utilizationRate: 84
+                }}
+              />
+            </div>
           </div>
         );
       case 'it':
@@ -123,6 +176,23 @@ const DashboardPage: React.FC = () => {
                 value="5" 
                 icon={<AlertCircle className="h-5 w-5 text-purple-400" />}
                 color="purple"
+              />
+            </div>
+            
+            {/* Weekly Stats for IT */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-3 text-purple-300">Weekly Overview</h3>
+              <WeeklyStats 
+                department="it" 
+                color="purple"
+                stats={{
+                  shiftsAssigned: 22,
+                  shiftsFilled: 22,
+                  attendanceRate: 100,
+                  pendingShifts: 0,
+                  noShows: 0,
+                  utilizationRate: 95
+                }}
               />
             </div>
           </div>
@@ -179,6 +249,27 @@ const DashboardPage: React.FC = () => {
           {/* Department-specific content */}
           {getDepartmentContent()}
           
+          {/* Alerts section */}
+          <div className="mt-6">
+            <h2 className="text-xl font-bold mb-4">Alerts</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <StaffingAlertCard 
+                title="Low Staff Alert" 
+                description="Theatre department is understaffed for upcoming weekend shifts"
+                severity="high"
+                actionText="View Shifts"
+                actionLink="/rostering/rosters"
+              />
+              <StaffingAlertCard 
+                title="Pending Approvals" 
+                description="6 timesheets pending your approval from last week"
+                severity="medium"
+                actionText="Review Timesheets"
+                actionLink="/rostering/timesheets"
+              />
+            </div>
+          </div>
+          
           <div className="mt-6">
             <h2 className="text-xl font-bold mb-4">Quick Access</h2>
             
@@ -206,6 +297,31 @@ const DashboardPage: React.FC = () => {
                 description="Handle staff swap requests" 
                 icon={<Users className="h-6 w-6" />}
                 link="/management/swaps"
+              />
+            </div>
+          </div>
+          
+          {/* Employee spotlight section */}
+          <div className="mt-6">
+            <h2 className="text-xl font-bold mb-4">Employee Spotlight</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <EmployeeSpotlightCard 
+                name="John Smith"
+                department="convention"
+                metric="100% Attendance"
+                shifts={12}
+              />
+              <EmployeeSpotlightCard 
+                name="Sarah Johnson"
+                department="exhibition"
+                metric="16 Shifts Completed"
+                shifts={16}
+              />
+              <EmployeeSpotlightCard 
+                name="David Chen"
+                department="theatre"
+                metric="15 hrs Overtime"
+                shifts={10}
               />
             </div>
           </div>
@@ -272,6 +388,95 @@ const QuickAccessCard: React.FC<QuickAccessCardProps> = ({ title, description, i
           </div>
         </CardHeader>
       </a>
+    </Card>
+  );
+};
+
+// Staff Alert Card Component
+interface StaffingAlertCardProps {
+  title: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high';
+  actionText: string;
+  actionLink: string;
+}
+
+const StaffingAlertCard: React.FC<StaffingAlertCardProps> = ({ 
+  title, description, severity, actionText, actionLink 
+}) => {
+  const getSeverityClasses = () => {
+    switch (severity) {
+      case 'high':
+        return 'bg-red-900/30 border-red-500/30';
+      case 'medium':
+        return 'bg-amber-900/30 border-amber-500/30';
+      case 'low':
+        return 'bg-blue-900/30 border-blue-500/30';
+      default:
+        return 'bg-gray-900/30 border-gray-500/30';
+    }
+  };
+  
+  return (
+    <Card className={`${getSeverityClasses()} border`}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <AlertCircle className="h-4 w-4" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm mb-3">{description}</p>
+        <a 
+          href={actionLink} 
+          className="text-xs font-medium bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded transition-colors inline-block"
+        >
+          {actionText}
+        </a>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Employee Spotlight Card Component
+interface EmployeeSpotlightCardProps {
+  name: string;
+  department: string;
+  metric: string;
+  shifts: number;
+}
+
+const EmployeeSpotlightCard: React.FC<EmployeeSpotlightCardProps> = ({ 
+  name, department, metric, shifts 
+}) => {
+  const getDepartmentClasses = () => {
+    switch (department) {
+      case 'convention':
+        return 'bg-blue-900/30 border-blue-500/30 text-blue-300';
+      case 'exhibition':
+        return 'bg-green-900/30 border-green-500/30 text-green-300';
+      case 'theatre':
+        return 'bg-red-900/30 border-red-500/30 text-red-300';
+      case 'it':
+        return 'bg-purple-900/30 border-purple-500/30 text-purple-300';
+      default:
+        return 'bg-gray-900/30 border-gray-500/30 text-gray-300';
+    }
+  };
+  
+  return (
+    <Card className={`${getDepartmentClasses()} border`}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <Users className="h-4 w-4" />
+          {name}
+        </CardTitle>
+        <div className="text-xs opacity-70 capitalize">{department}</div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-lg font-bold mb-1">{metric}</div>
+        <div className="text-xs opacity-70">{shifts} shifts this month</div>
+      </CardContent>
     </Card>
   );
 };
