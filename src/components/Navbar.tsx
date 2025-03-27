@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ChevronRight, Home, Menu, Bell, Search, User, Calendar, Users } from 'lucide-react';
+import { ChevronRight, Home, Menu, Bell, Search, User, Calendar, Users, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   NavigationMenu,
@@ -56,10 +56,21 @@ const Navbar: React.FC = () => {
                     <li>
                       <NavigationMenuLink asChild>
                         <Link
+                          to="/rostering/timesheets"
+                          className="flex items-center p-2 hover:bg-white/5 rounded-md transition-all duration-200 hover:text-white"
+                        >
+                          <Clock className="h-4 w-4 mr-2 text-green-400" />
+                          <span>Timesheets</span>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <Link
                           to="/rostering/schedule"
                           className="flex items-center p-2 hover:bg-white/5 rounded-md transition-all duration-200 hover:text-white"
                         >
-                          <Calendar className="h-4 w-4 mr-2 text-green-400" />
+                          <Calendar className="h-4 w-4 mr-2 text-yellow-400" />
                           <span>Schedule</span>
                         </Link>
                       </NavigationMenuLink>
@@ -71,7 +82,7 @@ const Navbar: React.FC = () => {
           </NavigationMenu>
           
           <ChevronRight className="h-4 w-4 text-white/60" />
-          <span className="font-medium bg-white/5 px-3 py-1 rounded-md border border-white/10">Create Template</span>
+          <span className="font-medium bg-white/5 px-3 py-1 rounded-md border border-white/10">Timesheets</span>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -119,12 +130,22 @@ const Navbar: React.FC = () => {
               </div>
             </Link>
             <Link 
+              to="/rostering/timesheets"
+              className="block w-full p-2 hover:bg-white/5 rounded-md transition-all duration-200 hover:text-white"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <div className="flex items-center">
+                <Clock className="h-5 w-5 mr-2 text-green-400" />
+                <span>Timesheets</span>
+              </div>
+            </Link>
+            <Link 
               to="/rostering/schedule"
               className="block w-full p-2 hover:bg-white/5 rounded-md transition-all duration-200 hover:text-white"
               onClick={() => setIsMenuOpen(false)}
             >
               <div className="flex items-center">
-                <Calendar className="h-5 w-5 mr-2 text-green-400" />
+                <Calendar className="h-5 w-5 mr-2 text-yellow-400" />
                 <span>Schedule</span>
               </div>
             </Link>
