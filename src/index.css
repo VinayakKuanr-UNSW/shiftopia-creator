@@ -35,6 +35,11 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 255 47% 60%;
     
+    /* Department colors */
+    --convention-color: 210 100% 50%;
+    --exhibition-color: 142 76% 47%;
+    --theatre-color: 0 100% 50%;
+    
     --radius: 0.5rem;
   }
 }
@@ -49,21 +54,9 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   }
   
-  /* Animated float effect */
+  /* Animated float effect - removed animation to fix floating */
   .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-  
-  @keyframes float {
-    0% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-    100% {
-      transform: translateY(0px);
-    }
+    /* No animation */
   }
   
   /* Slide-in animation for right drawer */
@@ -122,6 +115,22 @@
     }
   }
   
+  /* Department color styles */
+  .convention-bg {
+    background-color: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+  
+  .exhibition-bg {
+    background-color: rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+  
+  .theatre-bg {
+    background-color: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  
   /* Common button styles */
   .button-blue {
     position: relative;
@@ -168,16 +177,37 @@
     transition: transform 0.3s ease;
   }
   
-  /* Scroll reveal animations */
-  .reveal-on-scroll {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+  /* Fade in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   
-  .reveal-on-scroll.revealed {
-    opacity: 1;
-    transform: translateY(0);
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+  
+  /* Pulse animation for notification indicators */
+  @keyframes pulse-glow {
+    0% {
+      box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(168, 85, 247, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(168, 85, 247, 0);
+    }
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s infinite;
   }
 }
 
