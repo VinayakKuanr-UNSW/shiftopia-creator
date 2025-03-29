@@ -37,7 +37,9 @@ export const BidStatusBadge: React.FC<BidStatusBadgeProps> = ({ status }) => {
       case 'pending':
         return 'Pending';
       default:
-        return status.charAt(0).toUpperCase() + status.slice(1);
+        // TypeScript should know that status can only be one of the three options,
+        // but we'll provide a fallback just in case
+        return status;
     }
   };
   

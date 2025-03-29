@@ -4,6 +4,7 @@ import { Check, Clock, Eye, MoreHorizontal, Pencil, Trash, X, AlertTriangle, Ref
 import { ShiftStatusBadge } from './ShiftStatusBadge';
 import { ShiftHistoryDrawer } from './ShiftHistoryDrawer';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 interface TimesheetEntry {
   id: number;
@@ -11,15 +12,18 @@ interface TimesheetEntry {
   employee: string;
   role: string;
   department: string;
+  subGroup: string;
   startTime: string;
   endTime: string;
   breakDuration: string;
   totalHours: string;
   status: 'Completed' | 'Cancelled' | 'Active' | 'No-Show' | 'Swapped';
   bidId?: number;
+  assignedTime?: string;
   originalEmployee?: string | null;
   replacementEmployee?: string | null;
   cancellationReason?: string | null;
+  remunerationLevel?: string;
 }
 
 interface TimesheetRowProps {
@@ -64,11 +68,30 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
     });
   };
   
+  const getRemunerationBadge = () => {
+    if (!entry.remunerationLevel) return null;
+    
+    switch(entry.remunerationLevel) {
+      case 'GOLD':
+        return <Badge className="bg-yellow-500/30 text-yellow-300 border border-yellow-500/30">GOLD</Badge>;
+      case 'SILVER':
+        return <Badge className="bg-slate-400/30 text-slate-300 border border-slate-400/30">SILVER</Badge>;
+      case 'BRONZE':
+        return <Badge className="bg-orange-600/30 text-orange-300 border border-orange-600/30">BRONZE</Badge>;
+      default:
+        return <Badge className="bg-blue-500/20 text-white/80 border border-blue-500/20">Level {entry.remunerationLevel}</Badge>;
+    }
+  };
+  
   return (
     <tr className="border-b border-white/10 hover:bg-white/5">
       <td className="p-3 text-sm">{entry.employee}</td>
       <td className="p-3 text-sm">{entry.department}</td>
-      <td className="p-3 text-sm">{entry.role}</td>
+      <td className="p-3 text-sm">{entry.subGroup}</td>
+      <td className="p-3 text-sm flex items-center gap-2">
+        {entry.role}
+        {getRemunerationBadge()}
+      </td>
       
       {isEditing ? (
         <>
@@ -204,7 +227,7 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
         data={{
           position: entry.role,
           location: entry.department,
-          subGroup: 'Main Group',
+          subGroup: entry.subGroup,
           originalEmployee: {
             name: entry.employee,
             status: entry.status

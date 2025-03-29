@@ -1,355 +1,341 @@
 
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from "@/components/ui/badge";
-import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin, DollarSign, Users, Filter, Search, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { 
+  CircleAlert, 
+  Clock, 
+  Filter, 
+  Info, 
+  Calendar,
+  CheckCircle, 
+  X, 
+  ShieldAlert, 
+  Award, 
+  User, 
+  Building,
+  ThumbsUp
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BidStatusBadge } from '@/components/bids/BidStatusBadge';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from '@/hooks/use-toast';
 
 const EmployeeBidsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isEligibleForShift, checkWorkHourCompliance } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('available');
   
-  // State for active tab
-  const [activeTab, setActiveTab] = useState<'available' | 'myBids'>('available');
-  
-  // Dummy data for available shifts
+  // Sample data for available shifts
   const availableShifts = [
     {
       id: 1,
-      role: 'Event Coordinator',
-      department: 'Convention',
-      subDepartment: 'Main Hall',
-      date: 'June 15, 2023',
-      startTime: '09:00 AM',
-      endTime: '05:00 PM',
-      location: 'Hall A',
-      payRate: '$22/hr',
-      bidDeadline: 'June 10, 2023',
-      totalBids: 5,
-      status: 'open',
-      isEligible: true
+      role: 'Team Leader',
+      department: 'Convention Centre',
+      subGroup: 'AM Base',
+      date: '2023-04-10',
+      startTime: '05:45',
+      endTime: '14:00',
+      breakDuration: '30 min',
+      remunerationLevel: 'GOLD',
+      assignedTo: null,
+      isEligible: true,
+      openForBids: true
     },
     {
       id: 2,
-      role: 'Tour Guide',
-      department: 'Exhibition',
-      subDepartment: 'East Wing',
-      date: 'June 16, 2023',
-      startTime: '10:00 AM',
-      endTime: '06:00 PM',
-      location: 'Gallery 3',
-      payRate: '$20/hr',
-      bidDeadline: 'June 11, 2023',
-      totalBids: 3,
-      status: 'open',
-      isEligible: true
+      role: 'TM3',
+      department: 'Convention Centre',
+      subGroup: 'AM Base',
+      date: '2023-04-10',
+      startTime: '06:15',
+      endTime: '14:00',
+      breakDuration: '30 min',
+      remunerationLevel: 'GOLD',
+      assignedTo: null,
+      isEligible: true,
+      openForBids: true
     },
     {
       id: 3,
-      role: 'Security Officer',
-      department: 'Convention',
-      subDepartment: 'Entrance',
-      date: 'June 17, 2023',
-      startTime: '08:00 AM',
-      endTime: '04:00 PM',
-      location: 'Main Entrance',
-      payRate: '$25/hr',
-      bidDeadline: 'June 12, 2023',
-      totalBids: 8,
-      status: 'open',
+      role: 'TM2',
+      department: 'Convention Centre',
+      subGroup: 'AM Assist',
+      date: '2023-04-10',
+      startTime: '11:30',
+      endTime: '16:30',
+      breakDuration: '30 min',
+      remunerationLevel: 'SILVER',
+      assignedTo: null,
       isEligible: false,
+      openForBids: true,
       ineligibilityReason: 'Role requirements not met'
     },
+    {
+      id: 4,
+      role: 'Team Leader',
+      department: 'Exhibition Centre',
+      subGroup: 'Bump-In',
+      date: '2023-04-11',
+      startTime: '08:00',
+      endTime: '16:00',
+      breakDuration: '45 min',
+      remunerationLevel: 'GOLD',
+      assignedTo: null,
+      isEligible: false,
+      openForBids: true,
+      ineligibilityReason: 'Department mismatch'
+    },
+    {
+      id: 5,
+      role: 'Supervisor',
+      department: 'Theatre',
+      subGroup: 'AM Floaters',
+      date: '2023-04-12',
+      startTime: '08:00',
+      endTime: '16:00',
+      breakDuration: '45 min',
+      remunerationLevel: 'GOLD',
+      assignedTo: null,
+      isEligible: true,
+      openForBids: true
+    }
   ];
   
-  // Dummy data for my bids
+  // Sample data for my bids
   const myBids = [
     {
       id: 101,
       shiftId: 5,
-      role: 'Information Desk',
-      department: 'Exhibition',
-      date: 'June 20, 2023',
-      startTime: '09:00 AM',
-      endTime: '05:00 PM',
-      location: 'Main Lobby',
-      payRate: '$21/hr',
-      bidStatus: 'pending',
-      bidDate: 'June 5, 2023',
-      notes: 'Waiting for manager approval'
+      role: 'Supervisor',
+      department: 'Theatre',
+      subGroup: 'AM Floaters',
+      date: '2023-04-12',
+      startTime: '08:00',
+      endTime: '16:00',
+      breakDuration: '45 min',
+      remunerationLevel: 'GOLD',
+      status: 'pending' as const,
+      bidTime: '2023-04-02 14:30',
+      notes: null
     },
     {
       id: 102,
-      shiftId: 8,
-      role: 'Sound Engineer',
-      department: 'Theatre',
-      date: 'June 22, 2023',
-      startTime: '02:00 PM',
-      endTime: '10:00 PM',
-      location: 'Main Stage',
-      payRate: '$28/hr',
-      bidStatus: 'approved',
-      bidDate: 'June 4, 2023',
-      notes: 'Approved by Sarah Johnson'
+      shiftId: 1,
+      role: 'Team Leader',
+      department: 'Convention Centre',
+      subGroup: 'AM Base',
+      date: '2023-04-03',
+      startTime: '05:45',
+      endTime: '14:00',
+      breakDuration: '30 min',
+      remunerationLevel: 'GOLD',
+      status: 'approved' as const,
+      bidTime: '2023-04-01 09:15',
+      notes: 'Assigned on manager approval'
     },
     {
       id: 103,
-      shiftId: 12,
-      role: 'Event Coordinator',
-      department: 'Convention',
-      date: 'June 25, 2023',
-      startTime: '08:00 AM',
-      endTime: '04:00 PM',
-      location: 'Hall B',
-      payRate: '$22/hr',
-      bidStatus: 'rejected',
-      bidDate: 'June 3, 2023',
-      notes: 'Another candidate was selected'
-    },
-  ];
-
-  // Handle bid submission
-  const handleBidSubmit = (shiftId: number) => {
-    // In a real app, this would make an API call to submit the bid
-    toast({
-      title: "Bid Submitted",
-      description: "Your bid has been submitted successfully. You can track its status in 'My Bids'.",
-    });
-    setActiveTab('myBids');
-  };
-
-  // Function to get color classes based on department
-  const getDepartmentColor = (department: string) => {
-    switch (department.toLowerCase()) {
-      case 'convention':
-        return 'bg-blue-900/20 border-blue-500/20';
-      case 'exhibition':
-        return 'bg-green-900/20 border-green-500/20';
-      case 'theatre':
-        return 'bg-red-900/20 border-red-500/20';
-      default:
-        return 'bg-gray-900/20 border-gray-500/20';
+      shiftId: 3,
+      role: 'TM2',
+      department: 'Convention Centre',
+      subGroup: 'PM Base',
+      date: '2023-04-02',
+      startTime: '14:00',
+      endTime: '21:30',
+      breakDuration: '30 min',
+      remunerationLevel: 'SILVER',
+      status: 'rejected' as const,
+      bidTime: '2023-03-29 16:45',
+      notes: 'Shift assigned to employee with higher seniority'
     }
+  ];
+  
+  const handleBidForShift = (shiftId: number) => {
+    toast({
+      title: 'Bid Submitted',
+      description: 'Your bid has been submitted successfully. You can track its status in My Bids.',
+    });
   };
-
+  
+  const handleCancelBid = (bidId: number) => {
+    toast({
+      title: 'Bid Cancelled',
+      description: 'Your bid has been cancelled.',
+    });
+  };
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-1 p-4 md:p-8">
+      <div className="flex-1 p-4 md:p-8">
         <div className="glass-panel p-6 mb-6" style={{ animation: 'none' }}>
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-1">Open Shifts</h1>
-            <p className="text-white/60">
-              View available shifts and submit bids for shifts you're interested in working.
-            </p>
-          </div>
+          <h1 className="text-2xl font-bold mb-6 flex items-center">
+            <User className="mr-2 text-purple-400" size={24} />
+            Shift Bidding
+          </h1>
           
-          {/* Tabs for switching between available shifts and my bids */}
-          <div className="flex space-x-2 mb-6">
-            <Button 
-              variant={activeTab === 'available' ? "outline" : "ghost"} 
-              size="sm" 
-              className={activeTab === 'available' ? "bg-white/5 border-white/10" : ""}
-              onClick={() => setActiveTab('available')}
-            >
-              Available Shifts
-            </Button>
-            <Button 
-              variant={activeTab === 'myBids' ? "outline" : "ghost"} 
-              size="sm"
-              className={activeTab === 'myBids' ? "bg-white/5 border-white/10" : ""}
-              onClick={() => setActiveTab('myBids')}
-            >
-              My Bids
-            </Button>
-          </div>
-          
-          {/* Filter & Search Section */}
-          <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-            <div className="flex space-x-2">
-              <Button variant="ghost" size="sm" className="bg-white/5">
-                <Filter className="mr-1 h-4 w-4" />
-                Filter
-              </Button>
-              <Button variant="ghost" size="sm" className="bg-white/5">
-                All Departments
-              </Button>
-              <Button variant="ghost" size="sm" className="bg-white/5">
-                Next 7 Days
-              </Button>
-            </div>
+          <Tabs defaultValue="available" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="bg-black/20 border border-white/10 mb-6">
+              <TabsTrigger 
+                value="available" 
+                className="data-[state=active]:bg-white/10"
+              >
+                Available Shifts
+              </TabsTrigger>
+              <TabsTrigger 
+                value="myBids" 
+                className="data-[state=active]:bg-white/10"
+              >
+                My Bids
+              </TabsTrigger>
+            </TabsList>
             
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/40" />
-              <input 
-                type="text" 
-                placeholder="Search shifts..."
-                className="bg-white/5 border border-white/10 rounded-md pl-8 pr-4 py-1 text-sm w-full"
-              />
-            </div>
-          </div>
-          
-          {/* Available Shifts Tab Content */}
-          {activeTab === 'available' && (
-            <div className="space-y-4">
-              {availableShifts.length > 0 ? (
-                availableShifts.map((shift) => (
-                  <Card 
+            <TabsContent value="available" className="space-y-6">
+              <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 flex items-start">
+                <Info className="text-blue-400 mr-3 mt-1" size={20} />
+                <div>
+                  <h3 className="text-blue-300 font-medium mb-1">Bidding Information</h3>
+                  <p className="text-white/80 text-sm">
+                    You can bid on shifts that match your role, department, and tier. 
+                    The system will check your eligibility and work hour compliance before submitting your bid.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {availableShifts.map(shift => (
+                  <div 
                     key={shift.id} 
-                    className={`${getDepartmentColor(shift.department)} border ${!shift.isEligible ? 'opacity-75' : ''}`}
+                    className={`p-4 rounded-lg border ${
+                      shift.isEligible ? 'bg-black/20 border-white/10 hover:border-white/20' : 'bg-black/10 border-white/5'
+                    } transition-all duration-300`}
                   >
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <div className="flex justify-between items-start mb-3">
                       <div>
-                        <CardTitle className="text-lg font-medium">{shift.role}</CardTitle>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-sm text-white/70">{shift.department}</span>
-                          <span className="text-xs text-white/40">•</span>
-                          <span className="text-sm text-white/70">{shift.subDepartment}</span>
+                        <h3 className="font-medium text-white">{shift.role}</h3>
+                        <div className="flex items-center mt-1">
+                          <Building size={14} className="text-white/60 mr-1" />
+                          <span className="text-sm text-white/80">{shift.department} - {shift.subGroup}</span>
                         </div>
                       </div>
-                      <Badge variant="outline" className="bg-white/10">
-                        {shift.status === 'open' ? 'Open for Bids' : shift.status}
-                      </Badge>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 mt-2">
-                        <div className="flex items-center space-x-3">
-                          <Calendar className="h-4 w-4 text-white/60" />
-                          <span className="text-sm">{shift.date}</span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <Clock className="h-4 w-4 text-white/60" />
-                          <span className="text-sm">{shift.startTime} - {shift.endTime}</span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <MapPin className="h-4 w-4 text-white/60" />
-                          <span className="text-sm">{shift.location}</span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <DollarSign className="h-4 w-4 text-white/60" />
-                          <span className="text-sm">{shift.payRate}</span>
-                        </div>
+                      <div className={`px-2 py-1 rounded text-xs font-medium ${
+                        shift.remunerationLevel === 'GOLD' ? 'bg-yellow-500/30 text-yellow-300 border border-yellow-500/30' :
+                        shift.remunerationLevel === 'SILVER' ? 'bg-slate-400/30 text-slate-300 border border-slate-400/30' :
+                        'bg-orange-600/30 text-orange-300 border border-orange-600/30'
+                      }`}>
+                        {shift.remunerationLevel}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm">
+                        <Calendar size={14} className="text-white/60 mr-2" />
+                        <span className="text-white/80">{shift.date}</span>
                       </div>
                       
-                      <div className="flex flex-col sm:flex-row justify-between items-center border-t border-white/10 mt-4 pt-4">
-                        <div className="flex items-center mb-3 sm:mb-0">
-                          <div className="bg-white/10 px-3 py-1.5 rounded-md flex items-center mr-3">
-                            <Users className="h-4 w-4 mr-2 text-white/60" />
-                            <span className="text-sm">{shift.totalBids} Bids</span>
-                          </div>
-                          <div className="text-sm text-white/60">
-                            Deadline: {shift.bidDeadline}
-                          </div>
-                        </div>
-                        
-                        {shift.isEligible ? (
-                          <Button 
-                            onClick={() => handleBidSubmit(shift.id)}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600"
-                          >
-                            Express Interest
-                          </Button>
-                        ) : (
-                          <div className="flex items-center text-yellow-500">
-                            <AlertCircle className="h-4 w-4 mr-1" />
-                            <span className="text-sm">{shift.ineligibilityReason}</span>
-                          </div>
-                        )}
+                      <div className="flex items-center text-sm">
+                        <Clock size={14} className="text-white/60 mr-2" />
+                        <span className="text-white/80">{shift.startTime} - {shift.endTime}</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
+                      
+                      <div className="flex items-center text-sm">
+                        <Award size={14} className="text-white/60 mr-2" />
+                        <span className="text-white/80">Break: {shift.breakDuration}</span>
+                      </div>
+                    </div>
+                    
+                    {shift.isEligible ? (
+                      <Button 
+                        onClick={() => handleBidForShift(shift.id)}
+                        className="w-full bg-purple-500/30 hover:bg-purple-500/40 border border-purple-500/30 hover:border-purple-500/50"
+                      >
+                        <ThumbsUp className="mr-2 h-4 w-4" />
+                        Express Interest
+                      </Button>
+                    ) : (
+                      <div className="bg-red-900/20 border border-red-500/30 rounded-md p-3 text-sm">
+                        <div className="flex items-center text-red-300 mb-1">
+                          <ShieldAlert size={14} className="mr-1" />
+                          <span className="font-medium">Not Eligible</span>
+                        </div>
+                        <p className="text-white/70">{shift.ineligibilityReason}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              {availableShifts.length === 0 && (
                 <div className="text-center py-8 text-white/60">
-                  No available shifts found. Check back later!
+                  No shifts are currently available for bidding.
                 </div>
               )}
-            </div>
-          )}
-          
-          {/* My Bids Tab Content */}
-          {activeTab === 'myBids' && (
-            <div className="space-y-4">
-              {myBids.length > 0 ? (
-                myBids.map((bid) => (
-                  <Card 
-                    key={bid.id} 
-                    className={`${getDepartmentColor(bid.department)} border`}
-                  >
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                      <div>
-                        <CardTitle className="text-lg font-medium">{bid.role}</CardTitle>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-sm text-white/70">{bid.department}</span>
-                        </div>
-                      </div>
-                      <BidStatusBadge status={bid.bidStatus} />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 mt-2">
-                        <div className="flex items-center space-x-3">
-                          <Calendar className="h-4 w-4 text-white/60" />
-                          <span className="text-sm">{bid.date}</span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <Clock className="h-4 w-4 text-white/60" />
-                          <span className="text-sm">{bid.startTime} - {bid.endTime}</span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <MapPin className="h-4 w-4 text-white/60" />
-                          <span className="text-sm">{bid.location}</span>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <DollarSign className="h-4 w-4 text-white/60" />
-                          <span className="text-sm">{bid.payRate}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 pt-4 border-t border-white/10">
-                        <div className="flex flex-col sm:flex-row justify-between mb-2">
-                          <div className="text-sm">
-                            <span className="text-white/60">Bid submitted on: </span>
-                            <span>{bid.bidDate}</span>
-                          </div>
-                          
-                          {bid.bidStatus === 'approved' && (
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="bg-white/5 border-white/10 mt-2 sm:mt-0"
-                              onClick={() => navigate('/rostering/rosters')}
-                            >
-                              View in Roster
-                            </Button>
+            </TabsContent>
+            
+            <TabsContent value="myBids" className="space-y-6">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-white/5">
+                      <th className="text-left p-3 text-sm font-medium text-white/80">Role</th>
+                      <th className="text-left p-3 text-sm font-medium text-white/80">Department</th>
+                      <th className="text-left p-3 text-sm font-medium text-white/80">Date</th>
+                      <th className="text-left p-3 text-sm font-medium text-white/80">Time</th>
+                      <th className="text-left p-3 text-sm font-medium text-white/80">Tier</th>
+                      <th className="text-left p-3 text-sm font-medium text-white/80">Status</th>
+                      <th className="text-left p-3 text-sm font-medium text-white/80">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {myBids.map(bid => (
+                      <tr key={bid.id} className="border-b border-white/10 hover:bg-white/5">
+                        <td className="p-3 text-sm">{bid.role}</td>
+                        <td className="p-3 text-sm">{bid.department} - {bid.subGroup}</td>
+                        <td className="p-3 text-sm">{bid.date}</td>
+                        <td className="p-3 text-sm">{bid.startTime} - {bid.endTime}</td>
+                        <td className="p-3 text-sm">
+                          <span className={`px-2 py-0.5 rounded text-xs ${
+                            bid.remunerationLevel === 'GOLD' ? 'bg-yellow-500/30 text-yellow-300 border border-yellow-500/30' :
+                            bid.remunerationLevel === 'SILVER' ? 'bg-slate-400/30 text-slate-300 border border-slate-400/30' :
+                            'bg-orange-600/30 text-orange-300 border border-orange-600/30'
+                          }`}>
+                            {bid.remunerationLevel}
+                          </span>
+                        </td>
+                        <td className="p-3 text-sm">
+                          <BidStatusBadge status={bid.status} />
+                          {bid.notes && (
+                            <div className="text-xs text-white/60 mt-1">{bid.notes}</div>
                           )}
-                        </div>
-                        
-                        {bid.notes && (
-                          <div className="bg-black/20 rounded-md p-3 mt-2 text-sm">
-                            <span className="text-white/80">{bid.notes}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
+                        </td>
+                        <td className="p-3 text-sm">
+                          {bid.status === 'pending' && (
+                            <button 
+                              onClick={() => handleCancelBid(bid.id)}
+                              className="p-1.5 rounded-full hover:bg-red-500/20 text-red-400"
+                              title="Cancel Bid"
+                            >
+                              <X size={16} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {myBids.length === 0 && (
                 <div className="text-center py-8 text-white/60">
-                  You haven't submitted any bids yet.
+                  You have not placed any bids yet.
                 </div>
               )}
-            </div>
-          )}
+            </TabsContent>
+          </Tabs>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
