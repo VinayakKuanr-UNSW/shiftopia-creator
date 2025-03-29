@@ -1,5 +1,5 @@
 
-import { Roster, Group } from '../models/types';
+import { Roster, Group, Role, ShiftStatus, Employee, RemunerationLevel } from '../models/types';
 import { currentWeekRosters, generatePopulatedRoster } from '../data/mockData';
 
 // Local storage for rosters - in a real app this would be a database
@@ -29,7 +29,7 @@ export const rosterService = {
   
   createRoster: async (date: string, templateId: number): Promise<Roster> => {
     // Check if roster already exists for this date
-    const existingRoster = await this.getRosterByDate(date);
+    const existingRoster = await rosterService.getRosterByDate(date);
     if (existingRoster) {
       return Promise.resolve(existingRoster);
     }
@@ -62,7 +62,7 @@ export const rosterService = {
     shiftId: string, 
     employeeId: string
   ): Promise<Roster | null> => {
-    const roster = await this.getRosterByDate(date);
+    const roster = await rosterService.getRosterByDate(date);
     if (!roster) return Promise.resolve(null);
     
     // Create a deep copy to avoid reference issues
@@ -91,9 +91,9 @@ export const rosterService = {
     groupId: number,
     subGroupId: number,
     shiftId: string,
-    updates: Partial<{ startTime: string; endTime: string; role: string; remunerationLevel: string; breakDuration: string }>
+    updates: Partial<{ startTime: string; endTime: string; role: Role; remunerationLevel: RemunerationLevel; breakDuration: string }>
   ): Promise<Roster | null> => {
-    const roster = await this.getRosterByDate(date);
+    const roster = await rosterService.getRosterByDate(date);
     if (!roster) return Promise.resolve(null);
     
     // Create a deep copy to avoid reference issues
@@ -125,7 +125,7 @@ export const rosterService = {
     subGroupId: number,
     shift: Omit<Group['subGroups'][0]['shifts'][0], 'id'>
   ): Promise<Roster | null> => {
-    const roster = await this.getRosterByDate(date);
+    const roster = await rosterService.getRosterByDate(date);
     if (!roster) return Promise.resolve(null);
     
     // Create a deep copy to avoid reference issues
@@ -157,7 +157,7 @@ export const rosterService = {
     subGroupId: number,
     shiftId: string
   ): Promise<Roster | null> => {
-    const roster = await this.getRosterByDate(date);
+    const roster = await rosterService.getRosterByDate(date);
     if (!roster) return Promise.resolve(null);
     
     // Create a deep copy to avoid reference issues

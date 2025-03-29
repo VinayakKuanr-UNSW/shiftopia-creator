@@ -1,5 +1,5 @@
 
-import { Timesheet, ShiftStatus } from '../models/types';
+import { Timesheet, ShiftStatus, Role, RemunerationLevel } from '../models/types';
 import { currentWeekTimesheets, generateTimesheet } from '../data/mockData';
 import { rosterService } from './rosterService';
 
@@ -61,7 +61,7 @@ export const timesheetService = {
     shiftId: string,
     status: ShiftStatus
   ): Promise<Timesheet | null> => {
-    const timesheet = await this.getTimesheetByDate(date);
+    const timesheet = await timesheetService.getTimesheetByDate(date);
     if (!timesheet) return Promise.resolve(null);
     
     // Create a deep copy to avoid reference issues
@@ -91,7 +91,7 @@ export const timesheetService = {
     shiftId: string,
     actualStartTime: string
   ): Promise<Timesheet | null> => {
-    const timesheet = await this.getTimesheetByDate(date);
+    const timesheet = await timesheetService.getTimesheetByDate(date);
     if (!timesheet) return Promise.resolve(null);
     
     // Create a deep copy to avoid reference issues
@@ -127,7 +127,7 @@ export const timesheetService = {
     shiftId: string,
     actualEndTime: string
   ): Promise<Timesheet | null> => {
-    const timesheet = await this.getTimesheetByDate(date);
+    const timesheet = await timesheetService.getTimesheetByDate(date);
     if (!timesheet) return Promise.resolve(null);
     
     // Create a deep copy to avoid reference issues
@@ -163,7 +163,7 @@ export const timesheetService = {
     shiftId: string,
     newEmployeeId: string
   ): Promise<Timesheet | null> => {
-    const timesheet = await this.getTimesheetByDate(date);
+    const timesheet = await timesheetService.getTimesheetByDate(date);
     if (!timesheet) return Promise.resolve(null);
     
     // Create a deep copy to avoid reference issues
@@ -198,7 +198,7 @@ export const timesheetService = {
     shiftId: string,
     reason?: string
   ): Promise<Timesheet | null> => {
-    const timesheet = await this.getTimesheetByDate(date);
+    const timesheet = await timesheetService.getTimesheetByDate(date);
     if (!timesheet) return Promise.resolve(null);
     
     // Create a deep copy to avoid reference issues
