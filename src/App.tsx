@@ -12,6 +12,7 @@ import DashboardPage from "./pages/DashboardPage";
 import RostersPage from "./pages/RostersPage";
 import TimesheetPage from "./pages/TimesheetPage";
 import ManagementPage from "./pages/ManagementPage";
+import EmployeeBidsPage from "./pages/EmployeeBidsPage";
 import InsightsPage from "./pages/InsightsPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -54,6 +55,13 @@ const App = () => (
             <Route path="/management/:type" element={
               <ProtectedRoute requiredRole="manager">
                 <ManagementPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Employee bids route */}
+            <Route path="/employee/bids" element={
+              <ProtectedRoute>
+                <EmployeeBidsPage />
               </ProtectedRoute>
             } />
             

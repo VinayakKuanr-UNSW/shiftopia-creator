@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { Check, Clock, Eye, MoreHorizontal, Pencil, Trash, X } from 'lucide-react';
+import { Check, Clock, Eye, MoreHorizontal, Pencil, Trash, X, AlertTriangle, RefreshCw } from 'lucide-react';
 import { ShiftStatusBadge } from './ShiftStatusBadge';
 import { ShiftHistoryDrawer } from './ShiftHistoryDrawer';
+import { useToast } from '@/hooks/use-toast';
 
 interface TimesheetEntry {
   id: number;
@@ -15,6 +16,10 @@ interface TimesheetEntry {
   breakDuration: string;
   totalHours: string;
   status: 'Completed' | 'Cancelled' | 'Active' | 'No-Show' | 'Swapped';
+  bidId?: number;
+  originalEmployee?: string | null;
+  replacementEmployee?: string | null;
+  cancellationReason?: string | null;
 }
 
 interface TimesheetRowProps {
@@ -25,6 +30,39 @@ interface TimesheetRowProps {
 export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const { toast } = useToast();
+  
+  const handleStatusUpdate = (newStatus: 'Completed' | 'Cancelled' | 'No-Show') => {
+    // In a real app, this would make an API call to update the status
+    toast({
+      title: "Status Updated",
+      description: `Shift status has been updated to ${newStatus}.`,
+    });
+  };
+  
+  const handleCancelShift = () => {
+    // In a real app, this would open a modal to confirm cancellation and record reason
+    toast({
+      title: "Shift Cancelled",
+      description: "This shift has been cancelled and will be available for re-assignment.",
+    });
+  };
+  
+  const handleCompleteShift = () => {
+    // In a real app, this would update the shift status to completed
+    toast({
+      title: "Shift Completed",
+      description: "This shift has been marked as completed.",
+    });
+  };
+  
+  const handleSwapRequest = () => {
+    // In a real app, this would open a modal to select swap options
+    toast({
+      title: "Swap Request",
+      description: "Your swap request has been submitted for approval.",
+    });
+  };
   
   return (
     <tr className="border-b border-white/10 hover:bg-white/5">
@@ -85,20 +123,35 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
           <td className="p-3 text-sm">{entry.totalHours}</td>
           <td className="p-3 text-sm">
             <ShiftStatusBadge status={entry.status} />
+            
+            {/* Show additional info for special statuses */}
+            {entry.status === 'Swapped' && entry.originalEmployee && (
+              <div className="text-xs text-white/60 mt-1">
+                Swapped from: {entry.originalEmployee}
+              </div>
+            )}
+            
+            {entry.status === 'Cancelled' && entry.cancellationReason && (
+              <div className="text-xs text-white/60 mt-1">
+                Reason: {entry.cancellationReason}
+              </div>
+            )}
           </td>
           <td className="p-3 text-sm">
             <div className="flex space-x-1">
               <button 
                 onClick={() => setHistoryOpen(true)}
                 className="p-1 rounded-full hover:bg-blue-500/20 text-blue-400"
+                title="View Shift History"
               >
                 <Clock size={16} />
               </button>
               
-              {!readOnly && entry.status !== 'Completed' && (
+              {!readOnly && entry.status !== 'Completed' && entry.status !== 'Cancelled' && entry.status !== 'No-Show' && (
                 <button 
                   onClick={() => setIsEditing(true)}
                   className="p-1 rounded-full hover:bg-purple-500/20 text-purple-400"
+                  title="Edit Shift"
                 >
                   <Pencil size={16} />
                 </button>
@@ -106,13 +159,37 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
               
               {!readOnly && entry.status === 'Active' && (
                 <>
-                  <button className="p-1 rounded-full hover:bg-green-500/20 text-green-400">
+                  <button 
+                    onClick={() => handleCompleteShift()}
+                    className="p-1 rounded-full hover:bg-green-500/20 text-green-400"
+                    title="Mark as Completed"
+                  >
                     <Check size={16} />
                   </button>
-                  <button className="p-1 rounded-full hover:bg-red-500/20 text-red-400">
+                  <button 
+                    onClick={() => handleCancelShift()}
+                    className="p-1 rounded-full hover:bg-red-500/20 text-red-400"
+                    title="Cancel Shift"
+                  >
                     <X size={16} />
                   </button>
+                  <button 
+                    onClick={() => handleSwapRequest()}
+                    className="p-1 rounded-full hover:bg-yellow-500/20 text-yellow-400"
+                    title="Request Swap"
+                  >
+                    <RefreshCw size={16} />
+                  </button>
                 </>
+              )}
+              
+              {!readOnly && entry.status === 'No-Show' && (
+                <button 
+                  className="p-1 rounded-full hover:bg-yellow-500/20 text-yellow-400"
+                  title="Report Details"
+                >
+                  <AlertTriangle size={16} />
+                </button>
               )}
             </div>
           </td>
@@ -132,7 +209,24 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
             name: entry.employee,
             status: entry.status
           },
-          replacementEmployees: []
+          replacementEmployees: entry.originalEmployee ? [
+            {
+              id: 1,
+              name: entry.originalEmployee,
+              status: 'Cancelled',
+              reason: 'Requested swap',
+              clockIn: null,
+              clockOut: null
+            },
+            {
+              id: 2,
+              name: entry.employee,
+              status: entry.status,
+              reason: 'Accepted swap request',
+              clockIn: entry.status === 'Completed' ? '08:00 AM' : null,
+              clockOut: entry.status === 'Completed' ? '04:00 PM' : null
+            }
+          ] : []
         }}
       />
     </tr>
