@@ -5,6 +5,7 @@ import { Clock, Plus } from 'lucide-react';
 
 interface RosterCalendarProps {
   selectedDate: Date;
+  readOnly?: boolean;
 }
 
 // Sample data for demonstration
@@ -70,7 +71,7 @@ const rosterGroups = [
   }
 ];
 
-export const RosterCalendar: React.FC<RosterCalendarProps> = ({ selectedDate }) => {
+export const RosterCalendar: React.FC<RosterCalendarProps> = ({ selectedDate, readOnly }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-4">
@@ -79,10 +80,12 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({ selectedDate }) 
           <span>Showing roster for {selectedDate.toLocaleDateString()}</span>
         </div>
         
-        <button className="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-purple-500/30 hover:bg-purple-500/40 text-white text-sm transition-all duration-200 border border-purple-500/30 hover:border-purple-500/50">
-          <Plus size={16} />
-          <span>Add Group</span>
-        </button>
+        {!readOnly && (
+          <button className="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-purple-500/30 hover:bg-purple-500/40 text-white text-sm transition-all duration-200 border border-purple-500/30 hover:border-purple-500/50">
+            <Plus size={16} />
+            <span>Add Group</span>
+          </button>
+        )}
       </div>
       
       {rosterGroups.map((group) => (
