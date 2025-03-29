@@ -20,7 +20,7 @@ export const TimesheetTable: React.FC<TimesheetTableProps> = ({ selectedDate, re
       endTime: '16:00', 
       breakDuration: '30 min',
       totalHours: '7.5',
-      status: 'approved'
+      status: 'Completed' as const
     },
     { 
       id: 2, 
@@ -32,7 +32,7 @@ export const TimesheetTable: React.FC<TimesheetTableProps> = ({ selectedDate, re
       endTime: '17:00', 
       breakDuration: '45 min',
       totalHours: '7.25',
-      status: 'pending'
+      status: 'Active' as const
     },
     { 
       id: 3, 
@@ -44,7 +44,7 @@ export const TimesheetTable: React.FC<TimesheetTableProps> = ({ selectedDate, re
       endTime: '22:00', 
       breakDuration: '60 min',
       totalHours: '7',
-      status: 'approved'
+      status: 'Completed' as const
     },
     { 
       id: 4, 
@@ -56,7 +56,7 @@ export const TimesheetTable: React.FC<TimesheetTableProps> = ({ selectedDate, re
       endTime: '17:00', 
       breakDuration: '45 min',
       totalHours: '7.25',
-      status: 'rejected'
+      status: 'Cancelled' as const
     },
     { 
       id: 5, 
@@ -68,7 +68,7 @@ export const TimesheetTable: React.FC<TimesheetTableProps> = ({ selectedDate, re
       endTime: '16:30', 
       breakDuration: '30 min',
       totalHours: '7.5',
-      status: 'pending'
+      status: 'Active' as const
     },
   ];
   

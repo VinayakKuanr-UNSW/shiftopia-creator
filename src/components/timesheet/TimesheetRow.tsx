@@ -14,7 +14,7 @@ interface TimesheetEntry {
   endTime: string;
   breakDuration: string;
   totalHours: string;
-  status: 'approved' | 'pending' | 'rejected';
+  status: 'Completed' | 'Cancelled' | 'Active' | 'No-Show' | 'Swapped';
 }
 
 interface TimesheetRowProps {
@@ -95,7 +95,7 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
                 <Clock size={16} />
               </button>
               
-              {!readOnly && entry.status !== 'approved' && (
+              {!readOnly && entry.status !== 'Completed' && (
                 <button 
                   onClick={() => setIsEditing(true)}
                   className="p-1 rounded-full hover:bg-purple-500/20 text-purple-400"
@@ -104,7 +104,7 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
                 </button>
               )}
               
-              {!readOnly && entry.status === 'pending' && (
+              {!readOnly && entry.status === 'Active' && (
                 <>
                   <button className="p-1 rounded-full hover:bg-green-500/20 text-green-400">
                     <Check size={16} />
@@ -123,7 +123,17 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
       <ShiftHistoryDrawer 
         isOpen={historyOpen} 
         onClose={() => setHistoryOpen(false)} 
-        shiftId={entry.id} 
+        shiftId={entry.id.toString()} 
+        data={{
+          position: entry.role,
+          location: entry.department,
+          subGroup: 'Main Group',
+          originalEmployee: {
+            name: entry.employee,
+            status: entry.status
+          },
+          replacementEmployees: []
+        }}
       />
     </tr>
   );
