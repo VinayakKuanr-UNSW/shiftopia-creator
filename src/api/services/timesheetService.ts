@@ -81,7 +81,7 @@ export const timesheetService = {
     shift.status = status;
     
     // Update the timesheet in our local "database"
-    return this.updateTimesheet(date, updatedTimesheet);
+    return timesheetService.updateTimesheet(date, updatedTimesheet);
   },
   
   clockInShift: async (
@@ -117,7 +117,7 @@ export const timesheetService = {
     shift.actualStartTime = actualStartTime;
     
     // Update the timesheet in our local "database"
-    return this.updateTimesheet(date, updatedTimesheet);
+    return timesheetService.updateTimesheet(date, updatedTimesheet);
   },
   
   clockOutShift: async (
@@ -153,7 +153,7 @@ export const timesheetService = {
     shift.actualEndTime = actualEndTime;
     
     // Update the timesheet in our local "database"
-    return this.updateTimesheet(date, updatedTimesheet);
+    return timesheetService.updateTimesheet(date, updatedTimesheet);
   },
   
   swapShift: async (
@@ -188,7 +188,7 @@ export const timesheetService = {
     shift.actualEndTime = undefined;
     
     // Update the timesheet in our local "database"
-    return this.updateTimesheet(date, updatedTimesheet);
+    return timesheetService.updateTimesheet(date, updatedTimesheet);
   },
   
   cancelShift: async (
@@ -219,6 +219,6 @@ export const timesheetService = {
     shift.notes = reason;
     
     // Update the timesheet in our local "database"
-    return this.updateTimesheet(date, updatedTimesheet);
+    return timesheetService.updateTimesheet(date, updatedTimesheet);
   }
 };

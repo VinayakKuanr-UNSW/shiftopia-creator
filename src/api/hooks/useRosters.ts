@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { rosterService } from '../services/rosterService';
-import { Roster } from '../models/types';
+import { Roster, Role, RemunerationLevel } from '../models/types';
 
 export const useRosters = () => {
   const queryClient = useQueryClient();
@@ -98,7 +98,7 @@ export const useRosters = () => {
         groupId: number; 
         subGroupId: number; 
         shiftId: string; 
-        updates: Partial<{ startTime: string; endTime: string; role: string; remunerationLevel: string; breakDuration: string }>;
+        updates: Partial<{ startTime: string; endTime: string; role: Role; remunerationLevel: RemunerationLevel; breakDuration: string }>;
       }) => 
         rosterService.updateShift(date, groupId, subGroupId, shiftId, updates),
       onSuccess: (data) => {

@@ -83,7 +83,7 @@ export const rosterService = {
     shift.status = 'Assigned';
     
     // Update the roster in our local "database"
-    return this.updateRoster(date, updatedRoster);
+    return rosterService.updateRoster(date, updatedRoster);
   },
   
   updateShift: async (
@@ -116,7 +116,7 @@ export const rosterService = {
     };
     
     // Update the roster in our local "database"
-    return this.updateRoster(date, updatedRoster);
+    return rosterService.updateRoster(date, updatedRoster);
   },
   
   addShiftToRoster: async (
@@ -148,7 +148,7 @@ export const rosterService = {
     subGroup.shifts.push(newShift);
     
     // Update the roster in our local "database"
-    return this.updateRoster(date, updatedRoster);
+    return rosterService.updateRoster(date, updatedRoster);
   },
   
   removeShiftFromRoster: async (
@@ -177,6 +177,6 @@ export const rosterService = {
     subGroup.shifts.splice(shiftIndex, 1);
     
     // Update the roster in our local "database"
-    return this.updateRoster(date, updatedRoster);
+    return rosterService.updateRoster(date, updatedRoster);
   }
 };
