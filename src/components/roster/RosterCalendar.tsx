@@ -163,6 +163,48 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({ selectedDate, re
                 <List size={14} />
               </TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="day" className="mt-0">
+              {rosterGroups.map((group) => (
+                <RosterGroup key={group.id} group={group} />
+              ))}
+            </TabsContent>
+            
+            <TabsContent value="3day" className="mt-0">
+              <div className="p-4 bg-black/20 rounded-lg border border-white/10 backdrop-blur-md">
+                <h3 className="text-lg font-medium mb-2">3-Day View</h3>
+                <p className="text-white/70">
+                  The 3-day view would display shifts across a 3-day period here.
+                  In a real implementation, this would show the groups and shifts organized in a 3-day calendar format.
+                </p>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="week" className="mt-0">
+              <div className="p-4 bg-black/20 rounded-lg border border-white/10 backdrop-blur-md">
+                <h3 className="text-lg font-medium mb-2">Week View</h3>
+                <p className="text-white/70">
+                  The week view would display shifts across a week period here.
+                  In a real implementation, this would show the groups and shifts organized in a weekly calendar format.
+                </p>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="month" className="mt-0">
+              <div className="p-4 bg-black/20 rounded-lg border border-white/10 backdrop-blur-md">
+                <h3 className="text-lg font-medium mb-2">Month View</h3>
+                <p className="text-white/70">
+                  The month view would display shifts across a month period here.
+                  In a real implementation, this would show the groups and shifts organized in a monthly calendar format.
+                </p>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="list" className="mt-0">
+              {rosterGroups.map((group) => (
+                <RosterGroup key={group.id} group={group} />
+              ))}
+            </TabsContent>
           </Tabs>
           
           {!readOnly && (
@@ -173,42 +215,6 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({ selectedDate, re
           )}
         </div>
       </div>
-      
-      <TabsContent value={viewMode === 'list' ? 'list' : 'day'} className="mt-0">
-        {rosterGroups.map((group) => (
-          <RosterGroup key={group.id} group={group} />
-        ))}
-      </TabsContent>
-      
-      <TabsContent value="3day" className="mt-0">
-        <div className="p-4 bg-black/20 rounded-lg border border-white/10 backdrop-blur-md">
-          <h3 className="text-lg font-medium mb-2">3-Day View</h3>
-          <p className="text-white/70">
-            The 3-day view would display shifts across a 3-day period here.
-            In a real implementation, this would show the groups and shifts organized in a 3-day calendar format.
-          </p>
-        </div>
-      </TabsContent>
-      
-      <TabsContent value="week" className="mt-0">
-        <div className="p-4 bg-black/20 rounded-lg border border-white/10 backdrop-blur-md">
-          <h3 className="text-lg font-medium mb-2">Week View</h3>
-          <p className="text-white/70">
-            The week view would display shifts across a week period here.
-            In a real implementation, this would show the groups and shifts organized in a weekly calendar format.
-          </p>
-        </div>
-      </TabsContent>
-      
-      <TabsContent value="month" className="mt-0">
-        <div className="p-4 bg-black/20 rounded-lg border border-white/10 backdrop-blur-md">
-          <h3 className="text-lg font-medium mb-2">Month View</h3>
-          <p className="text-white/70">
-            The month view would display shifts across a month period here.
-            In a real implementation, this would show the groups and shifts organized in a monthly calendar format.
-          </p>
-        </div>
-      </TabsContent>
     </div>
   );
 };
