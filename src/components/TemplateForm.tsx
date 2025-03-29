@@ -1,75 +1,129 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useTemplates } from '@/api/hooks';
 import { Calendar, ClipboardList, Building, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
-const TemplateForm: React.FC = () => {
+interface TemplateFormProps {
+  onComplete?: () => void;
+}
+
+const TemplateForm: React.FC<TemplateFormProps> = ({ onComplete }) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [department, setDepartment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { useCreateTemplate } = useTemplates();
+  const createTemplateMutation = useCreateTemplate();
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name.trim()) {
+      toast.error("Template name is required");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    // Create empty template structure with the basic info
+    createTemplateMutation.mutate({
+      name,
+      description,
+      groups: [
+        {
+          id: 1,
+          name: department as any || 'Convention Centre', // Default department
+          color: 'blue',
+          subGroups: [
+            {
+              id: 1,
+              name: 'Team A',
+              shifts: []
+            }
+          ]
+        }
+      ]
+    }, {
+      onSuccess: () => {
+        toast.success("Template created successfully");
+        setName('');
+        setDescription('');
+        setDepartment('');
+        setIsSubmitting(false);
+        if (onComplete) onComplete();
+      },
+      onError: () => {
+        toast.error("Failed to create template");
+        setIsSubmitting(false);
+      }
+    });
+  };
+  
   return (
-    <div className="animate-float w-full glass-panel p-6 mb-8 border border-purple-500/20 shadow-lg shadow-purple-500/5">
-      <h2 className="text-xl font-medium mb-6 flex items-center gap-2">
-        <ClipboardList className="text-purple-400" size={20} />
-        <span>Create New Template</span>
-      </h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="block text-white/80 mb-2">Template Name</label>
-          <input 
-            type="text" 
-            className="custom-input" 
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="name">Template Name</Label>
+          <Input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Enter template name"
+            className="mt-1"
           />
         </div>
         
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="block text-white/80 mb-2 flex items-center gap-1">
-              <Calendar size={16} className="text-blue-400" />
-              <span>Start Date</span>
-            </label>
-            <input 
-              type="date" 
-              className="custom-input"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="block text-white/80 mb-2 flex items-center gap-1">
-              <Calendar size={16} className="text-green-400" />
-              <span>End Date</span>
-            </label>
-            <input 
-              type="date" 
-              className="custom-input"
-            />
-          </div>
+        <div>
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter template description"
+            className="mt-1"
+          />
         </div>
         
-        <div className="space-y-2">
-          <label className="block text-white/80 mb-2 flex items-center gap-1">
-            <Building size={16} className="text-purple-400" />
-            <span>Department</span>
-          </label>
-          <select className="custom-input">
-            <option>Select Department</option>
-            <option>Operations</option>
-            <option>Finance</option>
-            <option>Human Resources</option>
-          </select>
-        </div>
-        
-        <div className="space-y-2">
-          <label className="block text-white/80 mb-2 flex items-center gap-1">
-            <Users size={16} className="text-orange-400" />
-            <span>Sub-Department</span>
-          </label>
-          <select className="custom-input">
-            <option>Select Sub-Department</option>
-            <option>Team Alpha</option>
-            <option>Team Beta</option>
-            <option>Team Gamma</option>
-          </select>
+        <div>
+          <Label htmlFor="department">Department</Label>
+          <Select value={department} onValueChange={setDepartment}>
+            <SelectTrigger id="department" className="mt-1">
+              <SelectValue placeholder="Select Department" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Convention Centre">Convention Centre</SelectItem>
+              <SelectItem value="Exhibition Centre">Exhibition Centre</SelectItem>
+              <SelectItem value="Theatre">Theatre</SelectItem>
+              <SelectItem value="IT">IT</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
-    </div>
+      
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          className="bg-purple-600 hover:bg-purple-700"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <span className="mr-2">Creating...</span>
+              <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div>
+            </>
+          ) : (
+            <>Create Template</>
+          )}
+        </Button>
+      </div>
+    </form>
   );
 };
 

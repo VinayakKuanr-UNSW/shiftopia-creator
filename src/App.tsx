@@ -11,6 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import RostersPage from "./pages/RostersPage";
 import TimesheetPage from "./pages/TimesheetPage";
+import TemplatesPage from "./pages/TemplatesPage";
 import ManagementPage from "./pages/ManagementPage";
 import EmployeeBidsPage from "./pages/EmployeeBidsPage";
 import InsightsPage from "./pages/InsightsPage";
@@ -40,6 +41,11 @@ const App = () => (
             } />
             
             {/* Rostering routes */}
+            <Route path="/rostering/templates" element={
+              <ProtectedRoute>
+                <TemplatesPage />
+              </ProtectedRoute>
+            } />
             <Route path="/rostering/rosters" element={
               <ProtectedRoute>
                 <RostersPage />
