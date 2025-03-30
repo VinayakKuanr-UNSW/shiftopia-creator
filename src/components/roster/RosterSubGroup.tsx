@@ -2,27 +2,14 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Edit, Plus, Trash } from 'lucide-react';
 import ShiftItem from '@/components/ShiftItem';
-
-interface Shift {
-  id: number;
-  role: string;
-  startTime: string;
-  endTime: string;
-  breakDuration: string;
-  remunerationLevel: string;
-}
-
-interface SubGroup {
-  id: number;
-  name: string;
-  shifts: Shift[];
-}
+import { SubGroup } from '@/api/models/types';
 
 interface RosterSubGroupProps {
   subGroup: SubGroup;
+  readOnly?: boolean;
 }
 
-export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({ subGroup }) => {
+export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({ subGroup, readOnly }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   
   return (
@@ -40,17 +27,19 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({ subGroup }) => {
           {subGroup.name}
         </h4>
         
-        <div className="flex items-center space-x-2">
-          <button className="p-1 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-white transition-all duration-200 hover:scale-110">
-            <Plus size={14} />
-          </button>
-          <button className="p-1 rounded-lg bg-black/20 hover:bg-black/40 text-blue-400/80 hover:text-blue-400 transition-all duration-200 hover:scale-110">
-            <Edit size={14} />
-          </button>
-          <button className="p-1 rounded-lg bg-black/20 hover:bg-black/40 text-red-400/80 hover:text-red-400 transition-all duration-200 hover:scale-110">
-            <Trash size={14} />
-          </button>
-        </div>
+        {!readOnly && (
+          <div className="flex items-center space-x-2">
+            <button className="p-1 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-white transition-all duration-200 hover:scale-110">
+              <Plus size={14} />
+            </button>
+            <button className="p-1 rounded-lg bg-black/20 hover:bg-black/40 text-blue-400/80 hover:text-blue-400 transition-all duration-200 hover:scale-110">
+              <Edit size={14} />
+            </button>
+            <button className="p-1 rounded-lg bg-black/20 hover:bg-black/40 text-red-400/80 hover:text-red-400 transition-all duration-200 hover:scale-110">
+              <Trash size={14} />
+            </button>
+          </div>
+        )}
       </div>
       
       {isExpanded && (
@@ -63,13 +52,18 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({ subGroup }) => {
               endTime={shift.endTime}
               breakDuration={shift.breakDuration}
               remunerationLevel={shift.remunerationLevel}
+              employeeId={shift.employeeId}
+              employee={shift.employee}
+              status={shift.status}
             />
           ))}
           
-          <button className="w-full py-1.5 mt-2 rounded-md flex items-center justify-center bg-black/20 hover:bg-black/30 text-white/70 hover:text-white border border-white/5 hover:border-white/10 transition-all duration-200 text-sm">
-            <Plus size={12} className="mr-1" />
-            <span>Add Shift</span>
-          </button>
+          {!readOnly && (
+            <button className="w-full py-1.5 mt-2 rounded-md flex items-center justify-center bg-black/20 hover:bg-black/30 text-white/70 hover:text-white border border-white/5 hover:border-white/10 transition-all duration-200 text-sm">
+              <Plus size={12} className="mr-1" />
+              <span>Add Shift</span>
+            </button>
+          )}
         </div>
       )}
     </div>
