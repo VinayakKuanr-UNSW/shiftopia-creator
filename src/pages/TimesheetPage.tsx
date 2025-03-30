@@ -7,12 +7,14 @@ import { TimesheetTable } from '@/components/timesheet/TimesheetTable';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const TimesheetPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const { hasPermission } = useAuth();
+  const { theme } = useTheme();
   
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -41,14 +43,14 @@ const TimesheetPage: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       
       <div className="flex-1 p-4 md:p-8">
-        <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-lg shadow-xl p-6 mb-6">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-lg shadow-xl p-6 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <h1 className="text-2xl font-bold text-white flex items-center">
-              <Clock className="mr-2 text-blue-400" size={24} />
+            <h1 className="text-2xl font-bold flex items-center">
+              <Clock className="mr-2 text-primary" size={24} />
               Timesheets
             </h1>
             
@@ -64,7 +66,7 @@ const TimesheetPage: React.FC = () => {
               )}
               
               <Button 
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 size="sm"
                 onClick={handleExport}
               >
@@ -75,7 +77,7 @@ const TimesheetPage: React.FC = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                className="bg-white/5 hover:bg-white/10 border-white/10"
+                className="border-border"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
               >

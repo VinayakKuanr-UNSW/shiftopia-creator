@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ThemeSelector } from '@/components/ThemeSelector';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -310,14 +311,14 @@ const Navbar: React.FC = () => {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 bg-gray-900/95 backdrop-blur-xl border-gray-800">
+            <DropdownMenuContent align="end" className="w-80 bg-popover border-border">
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {notifications.map(notification => (
                 <DropdownMenuItem key={notification.id} className="flex items-start p-3 space-x-3 cursor-pointer">
                   <div className={`w-2 h-2 mt-2 rounded-full ${notification.read ? 'bg-gray-500' : 'bg-purple-500'}`} />
                   <div className="flex-1">
-                    <p className={`text-sm ${notification.read ? 'text-gray-400' : 'text-white'}`}>
+                    <p className={`text-sm ${notification.read ? 'text-muted-foreground' : 'text-foreground'}`}>
                       {notification.message}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
@@ -326,6 +327,8 @@ const Navbar: React.FC = () => {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          
+          <ThemeSelector />
           
           {user ? (
             <DropdownMenu>
@@ -337,30 +340,30 @@ const Navbar: React.FC = () => {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-gray-900/95 backdrop-blur-xl border-gray-800">
+              <DropdownMenuContent align="end" className="w-56 bg-popover border-border">
                 <DropdownMenuLabel className="flex flex-col">
                   <span>{user.name}</span>
-                  <span className="text-xs text-white/50">{user.email}</span>
+                  <span className="text-xs text-muted-foreground">{user.email}</span>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuSeparator className="bg-border" />
                 <Link to="/profile">
-                  <DropdownMenuItem className="hover:bg-white/10 cursor-pointer">
+                  <DropdownMenuItem className="hover:bg-accent cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
                 </Link>
                 <Link to="/myroster">
-                  <DropdownMenuItem className="hover:bg-white/10 cursor-pointer">
+                  <DropdownMenuItem className="hover:bg-accent cursor-pointer">
                     <Calendar className="mr-2 h-4 w-4" />
                     <span>My Roster</span>
                   </DropdownMenuItem>
                 </Link>
-                <DropdownMenuItem className="hover:bg-white/10 cursor-pointer">
+                <DropdownMenuItem className="hover:bg-accent cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-white/10" />
-                <DropdownMenuItem onClick={logout} className="hover:bg-white/10 cursor-pointer text-red-400">
+                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuItem onClick={logout} className="hover:bg-accent cursor-pointer text-red-400">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
