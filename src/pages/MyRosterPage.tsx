@@ -40,7 +40,7 @@ const MyRosterPage: React.FC = () => {
               {viewOptions.map(option => (
                 <Button
                   key={option.value}
-                  onClick={() => setView(option.value as CalendarView)} {/* Cast the string value to CalendarView type */}
+                  onClick={() => setView(option.value as CalendarView)} 
                   variant="outline"
                   size="sm"
                   className={`${
