@@ -4,7 +4,7 @@ import { Edit, Trash, Clock, User, Award } from 'lucide-react';
 import { Employee, ShiftStatus } from '@/api/models/types';
 
 interface ShiftProps {
-  id?: string;
+  id: string;
   role: string;
   startTime: string;
   endTime: string;
@@ -19,6 +19,7 @@ interface ShiftProps {
 }
 
 const ShiftItem: React.FC<ShiftProps> = ({ 
+  id,
   role, 
   startTime, 
   endTime, 

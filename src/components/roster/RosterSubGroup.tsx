@@ -47,6 +47,7 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({ subGroup, readOn
           {subGroup.shifts.map((shift) => (
             <ShiftItem 
               key={shift.id}
+              id={shift.id}
               role={shift.role}
               startTime={shift.startTime}
               endTime={shift.endTime}

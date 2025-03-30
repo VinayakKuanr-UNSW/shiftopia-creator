@@ -1,4 +1,3 @@
-
 import { Roster, Group, Role, ShiftStatus, Employee, RemunerationLevel } from '../models/types';
 import { currentWeekRosters, generatePopulatedRoster } from '../data/mockData';
 
@@ -20,6 +19,30 @@ export const rosterService = {
     });
     
     return Promise.resolve(filteredRosters);
+  },
+  
+  getEmployeeRostersByDateRange: async (employeeId: string, startDate: string, endDate: string): Promise<Roster[]> => {
+    const allRosters = await rosterService.getRostersByDateRange(startDate, endDate);
+    
+    // Filter for rosters that have shifts assigned to this employee
+    const employeeRosters = allRosters.filter(roster => {
+      let hasShift = false;
+      
+      // Check each group, subgroup, and shift to find if the employee has any shift in this roster
+      roster.groups.forEach(group => {
+        group.subGroups.forEach(subGroup => {
+          subGroup.shifts.forEach(shift => {
+            if (shift.employeeId === employeeId) {
+              hasShift = true;
+            }
+          });
+        });
+      });
+      
+      return hasShift;
+    });
+    
+    return Promise.resolve(employeeRosters);
   },
   
   getRosterByDate: async (date: string): Promise<Roster | null> => {

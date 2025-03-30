@@ -44,7 +44,6 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-// Mock notifications data
 const notifications = [
   {
     id: 1,
@@ -83,7 +82,6 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   
   useEffect(() => {
-    // Count unread notifications
     const count = notifications.filter(n => !n.read).length;
     setUnreadCount(count);
   }, []);
@@ -99,7 +97,6 @@ const Navbar: React.FC = () => {
     <nav className="w-full h-16 backdrop-blur-xl bg-black/40 border-b border-white/10 shadow-lg flex items-center px-4 md:px-8 sticky top-0 z-50">
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center space-x-2 text-white/90">
-          {/* Mobile Menu Trigger */}
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
@@ -120,7 +117,14 @@ const Navbar: React.FC = () => {
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     Dashboard
                   </Link>
-                  {/* Add more mobile menu items */}
+                  <Link 
+                    to="/myroster" 
+                    className="flex items-center px-2 py-2 text-sm rounded-md hover:bg-white/5"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    My Roster
+                  </Link>
                 </div>
               </div>
             </SheetContent>
@@ -138,6 +142,10 @@ const Navbar: React.FC = () => {
                 <span className="font-medium bg-white/5 px-3 py-1 rounded-md border border-white/10">Dashboard</span>
               )}
               
+              {pathSegments[0] === 'myroster' && (
+                <span className="font-medium bg-white/5 px-3 py-1 rounded-md border border-white/10">My Roster</span>
+              )}
+              
               {pathSegments[0] === 'rostering' && (
                 <>
                   <NavigationMenu>
@@ -148,6 +156,17 @@ const Navbar: React.FC = () => {
                         </NavigationMenuTrigger>
                         <NavigationMenuContent className="bg-black/80 backdrop-blur-md border border-white/10">
                           <ul className="grid gap-3 p-4 w-[200px]">
+                            <li>
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  to="/myroster"
+                                  className="flex items-center p-2 hover:bg-white/5 rounded-md transition-all duration-200 hover:text-white"
+                                >
+                                  <Calendar className="h-4 w-4 mr-2 text-indigo-400" />
+                                  <span>My Roster</span>
+                                </Link>
+                              </NavigationMenuLink>
+                            </li>
                             <li>
                               <NavigationMenuLink asChild>
                                 <Link
@@ -280,7 +299,6 @@ const Navbar: React.FC = () => {
             <Search className="h-5 w-5 text-white/80 hover:text-white" />
           </Button>
 
-          {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all duration-200 relative">
@@ -329,6 +347,12 @@ const Navbar: React.FC = () => {
                   <DropdownMenuItem className="hover:bg-white/10 cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
+                  </DropdownMenuItem>
+                </Link>
+                <Link to="/myroster">
+                  <DropdownMenuItem className="hover:bg-white/10 cursor-pointer">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    <span>My Roster</span>
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuItem className="hover:bg-white/10 cursor-pointer">
