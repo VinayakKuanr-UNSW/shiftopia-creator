@@ -6,6 +6,7 @@ export type RemunerationLevel = 'GOLD' | 'SILVER' | 'BRONZE';
 export type ShiftStatus = 'Assigned' | 'Completed' | 'Cancelled' | 'Swapped' | 'No-Show';
 export type DepartmentName = 'Convention Centre' | 'Exhibition Centre' | 'Theatre' | 'IT';
 export type DepartmentColor = 'blue' | 'green' | 'red' | 'purple';
+export type AvailabilityStatus = 'Available' | 'Unavailable' | 'Partial';
 
 export interface Employee {
   id: string;
@@ -79,4 +80,32 @@ export interface Bid {
   status: 'Pending' | 'Approved' | 'Rejected';
   createdAt: string;
   notes?: string;
+}
+
+export interface TimeSlot {
+  id: string;
+  startTime: string;
+  endTime: string;
+  status: AvailabilityStatus;
+}
+
+export interface DayAvailability {
+  id: string;
+  date: string;
+  employeeId: string;
+  timeSlots: TimeSlot[];
+  status: AvailabilityStatus; // Overall status for the day
+  notes?: string;
+}
+
+export interface AvailabilityPreset {
+  id: string;
+  name: string;
+  type: 'weekdays' | 'weekends' | 'custom';
+  timeSlots: {
+    startTime: string;
+    endTime: string;
+    status: AvailabilityStatus;
+    daysOfWeek?: number[]; // 0 = Sunday, 1 = Monday, etc.
+  }[];
 }

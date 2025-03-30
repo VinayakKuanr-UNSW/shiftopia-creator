@@ -20,6 +20,7 @@ import InsightsPage from "./pages/InsightsPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ProfilePage from "./pages/ProfilePage";
 import MyRosterPage from "./pages/MyRosterPage";
+import AvailabilitiesPage from "./pages/AvailabilitiesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,13 @@ const App = () => (
                 <Route path="/myroster" element={
                   <ProtectedRoute>
                     <MyRosterPage />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Availabilities route */}
+                <Route path="/availabilities" element={
+                  <ProtectedRoute>
+                    <AvailabilitiesPage />
                   </ProtectedRoute>
                 } />
                 
