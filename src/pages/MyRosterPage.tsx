@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import MyRosterCalendar from '@/components/myroster/MyRosterCalendar';
-import { useRosterView } from '@/hooks/useRosterView';
+import { useRosterView, CalendarView } from '@/hooks/useRosterView';
 
 const MyRosterPage: React.FC = () => {
   const { user } = useAuth();
@@ -40,7 +40,7 @@ const MyRosterPage: React.FC = () => {
               {viewOptions.map(option => (
                 <Button
                   key={option.value}
-                  onClick={() => setView(option.value)}
+                  onClick={() => setView(option.value as CalendarView)} {/* Cast the string value to CalendarView type */}
                   variant="outline"
                   size="sm"
                   className={`${
