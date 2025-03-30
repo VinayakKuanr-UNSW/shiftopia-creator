@@ -12,7 +12,7 @@ export const useRosterView = () => {
     { label: '3-Day', value: '3day' },
     { label: 'Week', value: 'week' },
     { label: 'Month', value: 'month' },
-  ];
+  ] as const;
 
   return {
     view,

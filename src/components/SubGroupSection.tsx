@@ -14,7 +14,7 @@ const SubGroupSection: React.FC<SubGroupProps> = ({ id, name, shifts }) => {
   
   // Fake data for shifts
   const fakeShifts = Array.from({ length: shifts }, (_, i) => ({
-    id: `shift-${id}-${i + 1}`, // Add a string id that meets the ShiftItem requirements
+    id: `shift-${id}-${i + 1}`,
     role: ['Supervisor', 'Assistant', 'Manager', 'Coordinator', 'Operator'][Math.floor(Math.random() * 5)],
     startTime: `${Math.floor(Math.random() * 12) + 7}:00`,
     endTime: `${Math.floor(Math.random() * 12) + 12}:00`,
@@ -59,7 +59,7 @@ const SubGroupSection: React.FC<SubGroupProps> = ({ id, name, shifts }) => {
               {fakeShifts.map(shift => (
                 <ShiftItem 
                   key={shift.id}
-                  id={shift.id} // Add the id prop to fix the error
+                  id={shift.id}
                   role={shift.role}
                   startTime={shift.startTime}
                   endTime={shift.endTime}
