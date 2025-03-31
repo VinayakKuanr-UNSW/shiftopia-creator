@@ -22,6 +22,7 @@ import ProfilePage from "./pages/ProfilePage";
 import MyRosterPage from "./pages/MyRosterPage";
 import AvailabilitiesPage from "./pages/AvailabilitiesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const queryClient = new QueryClient();
 
