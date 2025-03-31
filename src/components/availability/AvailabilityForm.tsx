@@ -87,7 +87,7 @@ export function AvailabilityForm({ onClose }: AvailabilityFormProps) {
   const addTimeSlot = () => {
     const newTimeSlots = [
       ...timeSlots,
-      { startTime: '09:00', endTime: '17:00', status: 'Available' },
+      { startTime: '09:00', endTime: '17:00', status: 'Available' as AvailabilityStatus },
     ];
     setTimeSlots(newTimeSlots);
     form.setValue('timeSlots', newTimeSlots);
@@ -103,8 +103,12 @@ export function AvailabilityForm({ onClose }: AvailabilityFormProps) {
 
   const updateTimeSlot = (index: number, field: keyof Omit<TimeSlot, 'id'>, value: string) => {
     const newTimeSlots = [...timeSlots];
-    // @ts-ignore - We know the field exists
-    newTimeSlots[index][field] = field === 'status' ? value as AvailabilityStatus : value;
+    if (field === 'status') {
+      newTimeSlots[index][field] = value as AvailabilityStatus;
+    } else {
+      // @ts-ignore - We know the field exists
+      newTimeSlots[index][field] = value;
+    }
     setTimeSlots(newTimeSlots);
     form.setValue('timeSlots', newTimeSlots);
   };

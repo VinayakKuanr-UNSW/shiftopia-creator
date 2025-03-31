@@ -194,7 +194,7 @@ export const availabilityService = {
       });
       
       if (timeSlots.length > 0) {
-        const result = await this.setAvailabilityRange(
+        const result = await availabilityService.setAvailabilityRange(
           employeeId,
           day,
           day,
