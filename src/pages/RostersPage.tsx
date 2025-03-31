@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DepartmentName, DepartmentColor } from '@/api/models/types';
 
 const RostersPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -19,12 +20,24 @@ const RostersPage: React.FC = () => {
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const { hasPermission } = useAuth();
   const { toast } = useToast();
-  const { useRosterByDate, useCreateRoster, useUpdateRoster, useAssignEmployeeToShift } = useRosters();
+  const { 
+    useRosterByDate, 
+    useCreateRoster, 
+    useUpdateRoster, 
+    useAssignEmployeeToShift,
+    useAddShift,
+    useAddGroup,
+    useAddSubGroup,
+    useRemoveShift
+  } = useRosters();
   
   const { data: currentRoster, isLoading } = useRosterByDate(selectedDate.toISOString().split('T')[0]);
   const createRosterMutation = useCreateRoster();
   const updateRosterMutation = useUpdateRoster();
   const assignEmployeeMutation = useAssignEmployeeToShift();
+  const addGroupMutation = useAddGroup ? useAddGroup() : null;
+  const addSubGroupMutation = useAddSubGroup ? useAddSubGroup() : null;
+  const addShiftMutation = useAddShift ? useAddShift() : null;
 
   // Handle applying template
   const handleApplyTemplate = (templateId: number) => {
@@ -122,6 +135,39 @@ const RostersPage: React.FC = () => {
       );
     }
   };
+  
+  // Handle adding a new group
+  const handleAddGroup = (group: { name: DepartmentName; color: DepartmentColor }) => {
+    if (addGroupMutation) {
+      addGroupMutation.mutate(
+        {
+          date: selectedDate.toISOString().split('T')[0],
+          group
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Department Added",
+              description: `${group.name} department has been added to the roster.`,
+            });
+          },
+          onError: () => {
+            toast({
+              title: "Error",
+              description: "Failed to add department. Please try again.",
+              variant: "destructive",
+            });
+          },
+        }
+      );
+    } else {
+      // Mock implementation if mutation not available
+      toast({
+        title: "Department Added (Mock)",
+        description: `${group.name} department would be added to the roster.`,
+      });
+    }
+  };
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -146,6 +192,7 @@ const RostersPage: React.FC = () => {
                   roster={currentRoster}
                   isLoading={isLoading}
                   onAssignEmployee={handleAssignEmployee}
+                  onAddGroup={handleAddGroup}
                 />
               </div>
             </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Employee, Shift, Roster } from '@/api/models/types';
 import { useEmployees } from '@/api/hooks';
@@ -11,6 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO } from 'date-fns';
 import { ChevronDown, ChevronRight, Clock } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface RosterEmployeeViewProps {
   roster: Roster | null;
@@ -27,6 +29,7 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
   const { data: employees = [] } = useAllEmployees();
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
   const [isUnassignedOpen, setIsUnassignedOpen] = useState(true);
+  const { toast } = useToast();
 
   const unassignedShifts: Array<{ 
     shift: any, 
@@ -76,6 +79,23 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
 
   const formattedDate = selectedDate ? format(selectedDate, 'EEE dd/MM/yyyy') : '';
 
+  const handleAssignSelected = () => {
+    if (selectedShifts.length === 0) {
+      toast({
+        title: "No shifts selected",
+        description: "Please select at least one shift to assign",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // You would normally open the assign dialog here
+    toast({
+      title: "Ready to assign shifts",
+      description: `${selectedShifts.length} shifts selected for assignment`
+    });
+  };
+
   const renderShift = (shiftInfo: any) => {
     const { shift, groupName, groupColor, subGroupName } = shiftInfo;
     const startTime = shift.startTime ? format(parseISO(shift.startTime), 'HH:mm') : '';
@@ -105,6 +125,14 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
       </div>
     );
   };
+
+  if (!roster) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-white/60">No roster data available for the selected date</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full overflow-x-auto">
@@ -137,7 +165,12 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
               <div className="p-3">
                 <div className="text-white/70 text-xs mb-2">Select shifts to assign to employees</div>
                 {selectedShifts.length > 0 && (
-                  <Button variant="outline" size="sm" className="mb-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mb-2"
+                    onClick={handleAssignSelected}
+                  >
                     Assign Selected ({selectedShifts.length})
                   </Button>
                 )}
@@ -150,7 +183,13 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
           <Collapsible open={isUnassignedOpen}>
             <CollapsibleContent>
               <div className="flex flex-wrap p-2">
-                {unassignedShifts.map(shiftInfo => renderShift(shiftInfo))}
+                {unassignedShifts.length > 0 ? (
+                  unassignedShifts.map(shiftInfo => renderShift(shiftInfo))
+                ) : (
+                  <div className="w-full p-4 text-center text-white/60">
+                    No unassigned shifts available
+                  </div>
+                )}
               </div>
             </CollapsibleContent>
           </Collapsible>
@@ -171,6 +210,10 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
             <div className="p-2 border-b border-white/10 flex flex-wrap">
               {assignedShiftsByEmployee.get(employee.id)?.map(shiftInfo => 
                 renderShift(shiftInfo)
+              ) || (
+                <div className="w-full p-2 text-center text-xs text-white/40">
+                  No shifts assigned
+                </div>
               )}
             </div>
           </React.Fragment>

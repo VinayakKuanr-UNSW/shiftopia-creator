@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { rosterService } from '../services/rosterService';
-import { Roster, Role, RemunerationLevel } from '../models/types';
+import { Roster, Role, RemunerationLevel, DepartmentName, DepartmentColor } from '../models/types';
 
 export const useRosters = () => {
   const queryClient = useQueryClient();
@@ -158,6 +158,90 @@ export const useRosters = () => {
     });
   };
   
+  // Add group to roster
+  const useAddGroup = () => {
+    return useMutation({
+      mutationFn: ({ 
+        date, 
+        group 
+      }: { 
+        date: string; 
+        group: { name: DepartmentName; color: DepartmentColor };
+      }) => 
+        rosterService.addGroupToRoster(date, group),
+      onSuccess: (data) => {
+        if (data) {
+          queryClient.invalidateQueries({ queryKey: ['rosters'] });
+          queryClient.invalidateQueries({ queryKey: ['rosters', 'date', data.date] });
+        }
+      }
+    });
+  };
+  
+  // Add subgroup to roster
+  const useAddSubGroup = () => {
+    return useMutation({
+      mutationFn: ({ 
+        date, 
+        groupId, 
+        name 
+      }: { 
+        date: string; 
+        groupId: number; 
+        name: string;
+      }) => 
+        rosterService.addSubGroupToRoster(date, groupId, name),
+      onSuccess: (data) => {
+        if (data) {
+          queryClient.invalidateQueries({ queryKey: ['rosters'] });
+          queryClient.invalidateQueries({ queryKey: ['rosters', 'date', data.date] });
+        }
+      }
+    });
+  };
+  
+  // Remove group from roster
+  const useRemoveGroup = () => {
+    return useMutation({
+      mutationFn: ({ 
+        date, 
+        groupId 
+      }: { 
+        date: string; 
+        groupId: number;
+      }) => 
+        rosterService.removeGroupFromRoster(date, groupId),
+      onSuccess: (data) => {
+        if (data) {
+          queryClient.invalidateQueries({ queryKey: ['rosters'] });
+          queryClient.invalidateQueries({ queryKey: ['rosters', 'date', data.date] });
+        }
+      }
+    });
+  };
+  
+  // Remove subgroup from roster
+  const useRemoveSubGroup = () => {
+    return useMutation({
+      mutationFn: ({ 
+        date, 
+        groupId, 
+        subGroupId 
+      }: { 
+        date: string; 
+        groupId: number; 
+        subGroupId: number;
+      }) => 
+        rosterService.removeSubGroupFromRoster(date, groupId, subGroupId),
+      onSuccess: (data) => {
+        if (data) {
+          queryClient.invalidateQueries({ queryKey: ['rosters'] });
+          queryClient.invalidateQueries({ queryKey: ['rosters', 'date', data.date] });
+        }
+      }
+    });
+  };
+  
   return {
     useAllRosters,
     useRostersByDateRange,
@@ -167,6 +251,10 @@ export const useRosters = () => {
     useAssignEmployeeToShift,
     useUpdateShift,
     useAddShift,
-    useRemoveShift
+    useRemoveShift,
+    useAddGroup,
+    useAddSubGroup,
+    useRemoveGroup,
+    useRemoveSubGroup
   };
 };

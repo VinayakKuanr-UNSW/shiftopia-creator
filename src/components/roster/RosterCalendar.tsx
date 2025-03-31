@@ -1,15 +1,19 @@
 
 import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
-import { RosterGroup } from './RosterGroup';
+import RosterDayView from './views/RosterDayView';
+import RosterThreeDayView from './views/RosterThreeDayView';
+import RosterWeekView from './views/RosterWeekView';
+import RosterMonthView from './views/RosterMonthView';
+import RosterListView from './views/RosterListView';
 import { RosterEmployeeView } from './RosterEmployeeView';
 import { RosterFilter } from './RosterFilter';
 import { AssignShiftDialog } from './AssignShiftDialog';
+import AddGroupDialog from './dialogs/AddGroupDialog';
 import { Clock, Filter, Plus, Calendar as CalendarIcon, List, Grid2X2, Users } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Roster, Group } from '@/api/models/types';
+import { Roster, Group, DepartmentName, DepartmentColor } from '@/api/models/types';
 import { FilterCategory } from '@/types/roster';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +24,7 @@ interface RosterCalendarProps {
   roster?: Roster;
   isLoading?: boolean;
   onAssignEmployee?: (shiftId: string, employeeId: string) => void;
+  onAddGroup?: (group: { name: DepartmentName; color: DepartmentColor }) => void;
 }
 
 export const RosterCalendar: React.FC<RosterCalendarProps> = ({ 
@@ -27,7 +32,8 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({
   readOnly,
   roster,
   isLoading,
-  onAssignEmployee
+  onAssignEmployee,
+  onAddGroup
 }) => {
   const [viewMode, setViewMode] = useState<'day' | '3day' | 'week' | 'month' | 'list' | 'employee'>('day');
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
@@ -37,8 +43,10 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'EMPLOYEE',
     drop: (item: { id: string, name: string }, monitor) => {
-      // Handle employee drop
-      console.log('Dropped employee:', item);
+      toast({
+        title: "Employee Dropped",
+        description: `Employee ${item.name} was dropped onto the roster.`,
+      });
     },
     collect: monitor => ({
       isOver: !!monitor.isOver(),
@@ -104,6 +112,19 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({
     });
   };
 
+  // Handle adding a new group
+  const handleAddGroup = (group: { name: DepartmentName; color: DepartmentColor }) => {
+    if (onAddGroup) {
+      onAddGroup(group);
+    } else {
+      // Mock implementation for demo
+      toast({
+        title: "Department Added",
+        description: `${group.name} department would be added to the roster.`,
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -126,6 +147,18 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({
         <div className="flex items-center text-white/80 text-sm">
           <Clock size={14} className="mr-2 text-blue-400" />
           <span>Showing roster for {selectedDate.toLocaleDateString()}</span>
+          
+          {!readOnly && (
+            <AddGroupDialog
+              onAddGroup={handleAddGroup}
+              trigger={
+                <Button variant="outline" size="sm" className="ml-4">
+                  <Plus size={14} className="mr-1" />
+                  Add Department
+                </Button>
+              }
+            />
+          )}
         </div>
         
         <div className="flex flex-wrap gap-2">
@@ -169,37 +202,57 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({
 
       {/* Day View */}
       {viewMode === 'day' && (
-        <div className="mt-0">
-          {roster?.groups.map((group) => (
-            <RosterGroup 
-              key={group.id} 
-              group={group}
-              readOnly={readOnly}
-              isOver={isOver}
-            />
-          ))}
-        </div>
+        <RosterDayView 
+          roster={roster || null} 
+          isLoading={isLoading || false}
+          isOver={isOver}
+          readOnly={readOnly}
+        />
+      )}
+      
+      {/* 3-Day View */}
+      {viewMode === '3day' && (
+        <RosterThreeDayView 
+          roster={roster || null} 
+          selectedDate={selectedDate}
+          readOnly={readOnly}
+        />
+      )}
+      
+      {/* Week View */}
+      {viewMode === 'week' && (
+        <RosterWeekView 
+          roster={roster || null} 
+          selectedDate={selectedDate}
+          readOnly={readOnly}
+        />
+      )}
+      
+      {/* Month View */}
+      {viewMode === 'month' && (
+        <RosterMonthView 
+          roster={roster || null} 
+          selectedDate={selectedDate}
+          readOnly={readOnly}
+        />
       )}
       
       {/* Employee View */}
       {viewMode === 'employee' && (
-        <div className="mt-0">
-          <RosterEmployeeView 
-            roster={roster || null} 
-            selectedDate={selectedDate}
-            onAssignShift={onAssignEmployee}
-          />
-        </div>
+        <RosterEmployeeView 
+          roster={roster || null} 
+          selectedDate={selectedDate}
+          onAssignShift={onAssignEmployee}
+        />
       )}
       
-      {/* Other view modes */}
-      {['3day', 'week', 'month', 'list'].includes(viewMode) && (
-        <div className="p-4 bg-black/20 rounded-lg border border-white/10 backdrop-blur-md">
-          <h3 className="text-lg font-medium mb-2">{viewMode.charAt(0).toUpperCase() + viewMode.slice(1)} View</h3>
-          <p className="text-white/70">
-            This view is under development. Please use the Day or Employee view for now.
-          </p>
-        </div>
+      {/* List View */}
+      {viewMode === 'list' && (
+        <RosterListView 
+          roster={roster || null} 
+          selectedDate={selectedDate}
+          readOnly={readOnly}
+        />
       )}
     </div>
   );

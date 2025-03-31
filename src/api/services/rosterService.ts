@@ -1,4 +1,5 @@
-import { Roster, Group, Role, ShiftStatus, Employee, RemunerationLevel } from '../models/types';
+
+import { Roster, Group, Role, ShiftStatus, Employee, RemunerationLevel, DepartmentName, DepartmentColor, SubGroup } from '../models/types';
 import { currentWeekRosters, generatePopulatedRoster } from '../data/mockData';
 
 // Local storage for rosters - in a real app this would be a database
@@ -198,6 +199,113 @@ export const rosterService = {
     if (shiftIndex === -1) return Promise.resolve(null);
     
     subGroup.shifts.splice(shiftIndex, 1);
+    
+    // Update the roster in our local "database"
+    return rosterService.updateRoster(date, updatedRoster);
+  },
+  
+  // Add a new group to a roster
+  addGroupToRoster: async (
+    date: string,
+    group: { name: DepartmentName; color: DepartmentColor }
+  ): Promise<Roster | null> => {
+    const roster = await rosterService.getRosterByDate(date);
+    if (!roster) return Promise.resolve(null);
+    
+    // Create a deep copy to avoid reference issues
+    const updatedRoster = JSON.parse(JSON.stringify(roster)) as Roster;
+    
+    // Generate a new ID for the group
+    const maxGroupId = Math.max(...updatedRoster.groups.map(g => g.id), 0);
+    const newGroup: Group = {
+      id: maxGroupId + 1,
+      name: group.name,
+      color: group.color,
+      subGroups: []
+    };
+    
+    // Add the new group to the roster
+    updatedRoster.groups.push(newGroup);
+    
+    // Update the roster in our local "database"
+    return rosterService.updateRoster(date, updatedRoster);
+  },
+  
+  // Add a new subgroup to a group in a roster
+  addSubGroupToRoster: async (
+    date: string,
+    groupId: number,
+    name: string
+  ): Promise<Roster | null> => {
+    const roster = await rosterService.getRosterByDate(date);
+    if (!roster) return Promise.resolve(null);
+    
+    // Create a deep copy to avoid reference issues
+    const updatedRoster = JSON.parse(JSON.stringify(roster)) as Roster;
+    
+    // Find the group to add the subgroup to
+    const group = updatedRoster.groups.find(g => g.id === groupId);
+    if (!group) return Promise.resolve(null);
+    
+    // Generate a new ID for the subgroup
+    const maxSubGroupId = Math.max(...group.subGroups.map(sg => sg.id), 0);
+    const newSubGroup: SubGroup = {
+      id: maxSubGroupId + 1,
+      name,
+      shifts: []
+    };
+    
+    // Add the new subgroup to the group
+    group.subGroups.push(newSubGroup);
+    
+    // Update the roster in our local "database"
+    return rosterService.updateRoster(date, updatedRoster);
+  },
+  
+  // Remove a group from a roster
+  removeGroupFromRoster: async (
+    date: string,
+    groupId: number
+  ): Promise<Roster | null> => {
+    const roster = await rosterService.getRosterByDate(date);
+    if (!roster) return Promise.resolve(null);
+    
+    // Create a deep copy to avoid reference issues
+    const updatedRoster = JSON.parse(JSON.stringify(roster)) as Roster;
+    
+    // Find the index of the group to remove
+    const groupIndex = updatedRoster.groups.findIndex(g => g.id === groupId);
+    if (groupIndex === -1) return Promise.resolve(null);
+    
+    // Remove the group
+    updatedRoster.groups.splice(groupIndex, 1);
+    
+    // Update the roster in our local "database"
+    return rosterService.updateRoster(date, updatedRoster);
+  },
+  
+  // Remove a subgroup from a group in a roster
+  removeSubGroupFromRoster: async (
+    date: string,
+    groupId: number,
+    subGroupId: number
+  ): Promise<Roster | null> => {
+    const roster = await rosterService.getRosterByDate(date);
+    if (!roster) return Promise.resolve(null);
+    
+    // Create a deep copy to avoid reference issues
+    const updatedRoster = JSON.parse(JSON.stringify(roster)) as Roster;
+    
+    // Find the group that contains the subgroup
+    const group = updatedRoster.groups.find(g => g.id === groupId);
+    if (!group) return Promise.resolve(null);
+    
+    // Find the index of the subgroup to remove
+    const subGroupIndex = group.subGroups.findIndex(sg => sg.id === subGroupId);
+    if (subGroupIndex === -1) return Promise.resolve(null);
+    
+    // Remove the subgroup
+    group.subGroups.splice(subGroupIndex, 1);
     
     // Update the roster in our local "database"
     return rosterService.updateRoster(date, updatedRoster);
