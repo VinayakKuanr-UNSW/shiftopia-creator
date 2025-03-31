@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon, Plus, Trash2 } from 'lucide-react';
@@ -52,10 +51,11 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
+type TimeSlotNoId = Omit<TimeSlot, 'id'>;
 
 export function AvailabilityForm({ onClose }: AvailabilityFormProps) {
   const { setAvailability, isSettingAvailability } = useAvailabilities();
-  const [timeSlots, setTimeSlots] = useState<Omit<TimeSlot, 'id'>[]>([
+  const [timeSlots, setTimeSlots] = useState<TimeSlotNoId[]>([
     { startTime: '09:00', endTime: '17:00', status: 'Available' },
   ]);
 
@@ -75,7 +75,7 @@ export function AvailabilityForm({ onClose }: AvailabilityFormProps) {
     setAvailability({
       startDate: data.startDate,
       endDate: data.endDate,
-      timeSlots: data.timeSlots,
+      timeSlots: data.timeSlots as TimeSlotNoId[],
       notes: data.notes,
     }, {
       onSuccess: () => {
@@ -90,7 +90,7 @@ export function AvailabilityForm({ onClose }: AvailabilityFormProps) {
       { startTime: '09:00', endTime: '17:00', status: 'Available' as AvailabilityStatus },
     ];
     setTimeSlots(newTimeSlots);
-    form.setValue('timeSlots', newTimeSlots);
+    form.setValue('timeSlots', newTimeSlots as any);
   };
 
   const removeTimeSlot = (index: number) => {
@@ -98,19 +98,18 @@ export function AvailabilityForm({ onClose }: AvailabilityFormProps) {
     
     const newTimeSlots = timeSlots.filter((_, i) => i !== index);
     setTimeSlots(newTimeSlots);
-    form.setValue('timeSlots', newTimeSlots);
+    form.setValue('timeSlots', newTimeSlots as any);
   };
 
-  const updateTimeSlot = (index: number, field: keyof Omit<TimeSlot, 'id'>, value: string) => {
+  const updateTimeSlot = (index: number, field: keyof TimeSlotNoId, value: string) => {
     const newTimeSlots = [...timeSlots];
     if (field === 'status') {
       newTimeSlots[index][field] = value as AvailabilityStatus;
     } else {
-      // @ts-ignore - We know the field exists
       newTimeSlots[index][field] = value;
     }
     setTimeSlots(newTimeSlots);
-    form.setValue('timeSlots', newTimeSlots);
+    form.setValue('timeSlots', newTimeSlots as any);
   };
 
   return (
