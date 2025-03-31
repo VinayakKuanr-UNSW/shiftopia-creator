@@ -39,7 +39,7 @@ export function AppSidebar() {
   const [managementOpen, setManagementOpen] = React.useState(currentPath.includes('/management'));
 
   return (
-    <Sidebar>
+    <Sidebar variant="sidebar" collapsible="offcanvas">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>

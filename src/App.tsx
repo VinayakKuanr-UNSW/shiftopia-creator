@@ -24,19 +24,23 @@ import MyRosterPage from "./pages/MyRosterPage";
 import AvailabilitiesPage from "./pages/AvailabilitiesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
+import { AppSidebar } from "./components/AppSidebar";
 
 const queryClient = new QueryClient();
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="min-h-screen w-full flex flex-col">
-      <Navbar />
-      <div className="flex-1 flex">
-        <main className="flex-1 overflow-auto p-4 md:p-6">
-          {children}
-        </main>
+    <SidebarProvider defaultOpen={false}>
+      <div className="min-h-screen w-full flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex">
+          <AppSidebar />
+          <main className="flex-1 overflow-auto p-4 md:p-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

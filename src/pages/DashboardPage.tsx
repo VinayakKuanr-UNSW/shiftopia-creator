@@ -1,6 +1,5 @@
 
 import React from 'react';
-import Navbar from '@/components/Navbar';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Calendar, ClipboardList, Clock, MessageSquare, TrendingUp, AlertCircle } from 'lucide-react';
@@ -140,77 +139,73 @@ const DashboardPage: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-1 p-4 md:p-8">
-        <div className="glass-panel p-6 mb-6" style={{ animation: 'none' }}>
-          <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold mb-1">Dashboard</h1>
-              <p className="text-white/60">
-                Welcome back, {user?.name || 'User'}!
-              </p>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              {user?.role === 'admin' && (
-                <div className="bg-purple-600/20 text-purple-300 text-xs px-2.5 py-1 rounded-full border border-purple-600/30">
-                  Admin
-                </div>
-              )}
-              {user?.role === 'manager' && (
-                <div className="bg-blue-600/20 text-blue-300 text-xs px-2.5 py-1 rounded-full border border-blue-600/30">
-                  Manager
-                </div>
-              )}
-              {user?.role === 'teamlead' && (
-                <div className="bg-green-600/20 text-green-300 text-xs px-2.5 py-1 rounded-full border border-green-600/30">
-                  Team Lead
-                </div>
-              )}
-              
-              <div className="bg-white/10 text-white/80 text-xs px-2.5 py-1 rounded-full border border-white/20">
-                {user?.department?.charAt(0).toUpperCase() + user?.department?.slice(1) || 'Department'}
-              </div>
-            </div>
+    <div className="w-full">
+      <div className="glass-panel p-6 mb-6" style={{ animation: 'none' }}>
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Dashboard</h1>
+            <p className="text-white/60">
+              Welcome back, {user?.name || 'User'}!
+            </p>
           </div>
           
-          {/* Department-specific content */}
-          {getDepartmentContent()}
-          
-          <div className="mt-6">
-            <h2 className="text-xl font-bold mb-4">Quick Access</h2>
+          <div className="flex items-center space-x-2">
+            {user?.role === 'admin' && (
+              <div className="bg-purple-600/20 text-purple-300 text-xs px-2.5 py-1 rounded-full border border-purple-600/30">
+                Admin
+              </div>
+            )}
+            {user?.role === 'manager' && (
+              <div className="bg-blue-600/20 text-blue-300 text-xs px-2.5 py-1 rounded-full border border-blue-600/30">
+                Manager
+              </div>
+            )}
+            {user?.role === 'teamlead' && (
+              <div className="bg-green-600/20 text-green-300 text-xs px-2.5 py-1 rounded-full border border-green-600/30">
+                Team Lead
+              </div>
+            )}
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <QuickAccessCard 
-                title="Rosters" 
-                description="View and manage staff schedules" 
-                icon={<Calendar className="h-6 w-6" />}
-                link="/rostering/rosters"
-              />
-              <QuickAccessCard 
-                title="Timesheets" 
-                description="Review and approve work hours" 
-                icon={<ClipboardList className="h-6 w-6" />}
-                link="/rostering/timesheets"
-              />
-              <QuickAccessCard 
-                title="Open Bids" 
-                description="Manage shift bidding process" 
-                icon={<MessageSquare className="h-6 w-6" />}
-                link="/management/bids"
-              />
-              <QuickAccessCard 
-                title="Swap Requests" 
-                description="Handle staff swap requests" 
-                icon={<Users className="h-6 w-6" />}
-                link="/management/swaps"
-              />
+            <div className="bg-white/10 text-white/80 text-xs px-2.5 py-1 rounded-full border border-white/20">
+              {user?.department?.charAt(0).toUpperCase() + user?.department?.slice(1) || 'Department'}
             </div>
           </div>
         </div>
-      </main>
+        
+        {/* Department-specific content */}
+        {getDepartmentContent()}
+        
+        <div className="mt-6">
+          <h2 className="text-xl font-bold mb-4">Quick Access</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <QuickAccessCard 
+              title="Rosters" 
+              description="View and manage staff schedules" 
+              icon={<Calendar className="h-6 w-6" />}
+              link="/rostering/rosters"
+            />
+            <QuickAccessCard 
+              title="Timesheets" 
+              description="Review and approve work hours" 
+              icon={<ClipboardList className="h-6 w-6" />}
+              link="/rostering/timesheets"
+            />
+            <QuickAccessCard 
+              title="Open Bids" 
+              description="Manage shift bidding process" 
+              icon={<MessageSquare className="h-6 w-6" />}
+              link="/management/bids"
+            />
+            <QuickAccessCard 
+              title="Swap Requests" 
+              description="Handle staff swap requests" 
+              icon={<Users className="h-6 w-6" />}
+              link="/management/swaps"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
