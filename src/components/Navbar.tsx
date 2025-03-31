@@ -20,11 +20,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { NavBreadcrumb } from '@/components/NavBreadcrumb';
@@ -121,14 +116,14 @@ const Navbar: React.FC = () => {
           
           {/* Right section with search, notifications, theme toggle and profile */}
           <div className="flex items-center space-x-2">
-            <Button className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all duration-200">
-              <Search className="h-5 w-5 text-white/80 hover:text-white" />
+            <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
+              <Search className="h-5 w-5" />
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all duration-200 relative">
-                  <Bell className="h-5 w-5 text-white/80 hover:text-white" />
+                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white relative">
+                  <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 h-5 w-5 bg-purple-500 rounded-full text-xs flex items-center justify-center animate-pulse">
                       {unreadCount}
@@ -136,7 +131,7 @@ const Navbar: React.FC = () => {
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 bg-popover border-border">
+              <DropdownMenuContent align="end" className="w-80">
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {notifications.map(notification => (
@@ -158,39 +153,41 @@ const Navbar: React.FC = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button className="flex items-center space-x-2 p-1 rounded-full bg-white/5 hover:bg-white/10 transition-all duration-200">
-                    <Avatar className="h-7 w-7">
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar} />
                       <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-popover border-border">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="flex flex-col">
                     <span>{user.name}</span>
                     <span className="text-xs text-muted-foreground">{user.email}</span>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-border" />
+                  <DropdownMenuSeparator />
                   <Link to="/profile">
-                    <DropdownMenuItem className="hover:bg-accent cursor-pointer">
+                    <DropdownMenuItem className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
                     </DropdownMenuItem>
                   </Link>
-                  <DropdownMenuItem className="hover:bg-accent cursor-pointer">
+                  <DropdownMenuItem className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-border" />
-                  <DropdownMenuItem onClick={logout} className="hover:bg-accent cursor-pointer text-red-400">
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-400">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/login" className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all duration-200">
-                <User className="h-5 w-5 text-white/80 hover:text-white" />
+              <Link to="/login">
+                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
+                  <User className="h-5 w-5" />
+                </Button>
               </Link>
             )}
           </div>

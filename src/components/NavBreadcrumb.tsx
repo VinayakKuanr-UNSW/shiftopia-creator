@@ -9,7 +9,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Home } from 'lucide-react';
 
 export function NavBreadcrumb() {
   const location = useLocation();
@@ -34,14 +33,16 @@ export function NavBreadcrumb() {
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link to="/dashboard">
-              <Home className="h-4 w-4" />
-            </Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
+        {pathSegments[0] !== 'dashboard' && (
+          <>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+          </>
+        )}
         
         {breadcrumbItems.map((item, index) => (
           <React.Fragment key={item.url}>

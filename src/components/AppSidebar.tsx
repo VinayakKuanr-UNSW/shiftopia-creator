@@ -2,8 +2,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  ChevronDown, 
-  ChevronRight, 
   LayoutDashboard, 
   Calendar, 
   Clock,
@@ -11,7 +9,9 @@ import {
   FileText,
   TrendingUp,
   MessageSquare,
-  BarChart2
+  BarChart2,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import {
   Sidebar,
@@ -35,6 +35,8 @@ import {
 export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
+  const [rosteringOpen, setRosteringOpen] = React.useState(currentPath.includes('/rostering'));
+  const [managementOpen, setManagementOpen] = React.useState(currentPath.includes('/management'));
 
   return (
     <Sidebar>
@@ -82,9 +84,9 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {/* Rostering Dropdown */}
+              {/* Rostering Dropdown - Not a link */}
               <SidebarMenuItem>
-                <Collapsible>
+                <Collapsible open={rosteringOpen} onOpenChange={setRosteringOpen}>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton 
                       tooltip="Rostering" 
@@ -92,7 +94,11 @@ export function AppSidebar() {
                     >
                       <Users className="h-5 w-5" />
                       <span>Rostering</span>
-                      <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+                      {rosteringOpen ? (
+                        <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+                      ) : (
+                        <ChevronRight className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+                      )}
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
@@ -135,9 +141,9 @@ export function AppSidebar() {
                 </Collapsible>
               </SidebarMenuItem>
 
-              {/* Management Dropdown */}
+              {/* Management Dropdown - Not a link */}
               <SidebarMenuItem>
-                <Collapsible>
+                <Collapsible open={managementOpen} onOpenChange={setManagementOpen}>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton 
                       tooltip="Management" 
@@ -145,7 +151,11 @@ export function AppSidebar() {
                     >
                       <BarChart2 className="h-5 w-5" />
                       <span>Management</span>
-                      <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+                      {managementOpen ? (
+                        <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+                      ) : (
+                        <ChevronRight className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+                      )}
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>

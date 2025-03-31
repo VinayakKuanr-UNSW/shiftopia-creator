@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
@@ -22,9 +23,22 @@ import ProfilePage from "./pages/ProfilePage";
 import MyRosterPage from "./pages/MyRosterPage";
 import AvailabilitiesPage from "./pages/AvailabilitiesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();
+
+const AppLayout = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="min-h-screen w-full flex flex-col">
+      <Navbar />
+      <div className="flex-1 flex">
+        <main className="flex-1 overflow-auto p-4 md:p-6">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -41,68 +55,88 @@ const App = () => (
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/unauthorized" element={<UnauthorizedPage />} />
                 
-                {/* Protected routes */}
+                {/* Protected routes with layout */}
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
-                    <DashboardPage />
+                    <AppLayout>
+                      <DashboardPage />
+                    </AppLayout>
                   </ProtectedRoute>
                 } />
                 
                 <Route path="/profile" element={
                   <ProtectedRoute>
-                    <ProfilePage />
+                    <AppLayout>
+                      <ProfilePage />
+                    </AppLayout>
                   </ProtectedRoute>
                 } />
                 
                 {/* My Roster route */}
                 <Route path="/myroster" element={
                   <ProtectedRoute>
-                    <MyRosterPage />
+                    <AppLayout>
+                      <MyRosterPage />
+                    </AppLayout>
                   </ProtectedRoute>
                 } />
                 
                 {/* Availabilities route */}
                 <Route path="/availabilities" element={
                   <ProtectedRoute>
-                    <AvailabilitiesPage />
+                    <AppLayout>
+                      <AvailabilitiesPage />
+                    </AppLayout>
                   </ProtectedRoute>
                 } />
                 
                 {/* Rostering routes */}
                 <Route path="/rostering/templates" element={
                   <ProtectedRoute>
-                    <TemplatesPage />
+                    <AppLayout>
+                      <TemplatesPage />
+                    </AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/rostering/rosters" element={
                   <ProtectedRoute>
-                    <RostersPage />
+                    <AppLayout>
+                      <RostersPage />
+                    </AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/rostering/timesheets" element={
                   <ProtectedRoute>
-                    <TimesheetPage />
+                    <AppLayout>
+                      <TimesheetPage />
+                    </AppLayout>
                   </ProtectedRoute>
                 } />
                 
                 {/* Management routes */}
                 <Route path="/management/:type" element={
                   <ProtectedRoute requiredRole="manager">
-                    <ManagementPage />
+                    <AppLayout>
+                      <ManagementPage />
+                    </AppLayout>
                   </ProtectedRoute>
                 } />
                 
                 {/* Employee bids route */}
                 <Route path="/employee/bids" element={
                   <ProtectedRoute>
-                    <EmployeeBidsPage />
+                    <AppLayout>
+                      <EmployeeBidsPage />
+                    </AppLayout>
                   </ProtectedRoute>
                 } />
                 
                 {/* Insights route */}
                 <Route path="/insights" element={
                   <ProtectedRoute>
-                    <InsightsPage />
+                    <AppLayout>
+                      <InsightsPage />
+                    </AppLayout>
                   </ProtectedRoute>
                 } />
                 
