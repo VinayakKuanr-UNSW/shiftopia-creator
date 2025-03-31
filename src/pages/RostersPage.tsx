@@ -1,8 +1,8 @@
+
 import React, { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Calendar, Clock, Filter, Search, User, Users } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import { RosterSidebar } from '@/components/roster/RosterSidebar';
 import { RosterCalendar } from '@/components/roster/RosterCalendar';
 import { RosterHeader } from '@/components/roster/RosterHeader';
@@ -19,11 +19,12 @@ const RostersPage: React.FC = () => {
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const { hasPermission } = useAuth();
   const { toast } = useToast();
-  const { useRosterByDate, useCreateRoster, useUpdateRoster } = useRosters();
+  const { useRosterByDate, useCreateRoster, useUpdateRoster, useAssignEmployeeToShift } = useRosters();
   
   const { data: currentRoster, isLoading } = useRosterByDate(selectedDate.toISOString().split('T')[0]);
   const createRosterMutation = useCreateRoster();
   const updateRosterMutation = useUpdateRoster();
+  const assignEmployeeMutation = useAssignEmployeeToShift();
 
   // Handle applying template
   const handleApplyTemplate = (templateId: number) => {
@@ -74,16 +75,61 @@ const RostersPage: React.FC = () => {
       }
     );
   };
+  
+  // Handle assigning employee to shift
+  const handleAssignEmployee = (shiftId: string, employeeId: string) => {
+    if (!currentRoster) return;
+    
+    // Find the shift in the roster
+    let groupId = 0;
+    let subGroupId = 0;
+    
+    outer: for (const group of currentRoster.groups) {
+      for (const subGroup of group.subGroups) {
+        const shift = subGroup.shifts.find(s => s.id === shiftId);
+        if (shift) {
+          groupId = group.id;
+          subGroupId = subGroup.id;
+          break outer;
+        }
+      }
+    }
+    
+    if (groupId && subGroupId) {
+      assignEmployeeMutation.mutate(
+        {
+          date: selectedDate.toISOString().split('T')[0],
+          groupId,
+          subGroupId,
+          shiftId,
+          employeeId
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Employee Assigned",
+              description: "The employee has been assigned to the shift.",
+            });
+          },
+          onError: () => {
+            toast({
+              title: "Error",
+              description: "Failed to assign employee. Please try again.",
+              variant: "destructive",
+            });
+          },
+        }
+      );
+    }
+  };
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        
+      <div className="flex-1 flex flex-col">
         <div className="flex-1 flex">
           {/* Main content */}
-          <div className="flex-1 p-4 md:p-8">
-            <div className="glass-panel p-6 mb-6" style={{ animation: 'none' }}>
+          <div className="flex-1 p-4 md:p-6 overflow-hidden flex flex-col">
+            <div className="glass-panel p-4 md:p-6 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 mb-6 flex-grow overflow-auto" style={{ animation: 'none' }}>
               <RosterHeader 
                 sidebarOpen={sidebarOpen} 
                 toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -93,12 +139,13 @@ const RostersPage: React.FC = () => {
                 onSaveRoster={handleSaveRoster}
               />
               
-              <div className="mt-6">
+              <div className="mt-6 overflow-x-auto">
                 <RosterCalendar 
                   selectedDate={selectedDate} 
                   readOnly={!hasPermission('update')}
                   roster={currentRoster}
                   isLoading={isLoading}
+                  onAssignEmployee={handleAssignEmployee}
                 />
               </div>
             </div>
