@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Employee, Shift, Roster } from '@/api/models/types';
 import { useEmployees } from '@/api/hooks';
@@ -29,7 +28,6 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
   const [isUnassignedOpen, setIsUnassignedOpen] = useState(true);
 
-  // Extract all unassigned shifts from the roster
   const unassignedShifts: Array<{ 
     shift: any, 
     groupName: string, 
@@ -37,7 +35,6 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
     subGroupName: string 
   }> = [];
 
-  // Extract assigned shifts per employee
   const assignedShiftsByEmployee = new Map<string, Array<{
     shift: any,
     groupName: string,
@@ -69,7 +66,6 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
     });
   }
 
-  // Toggle shift selection
   const toggleShiftSelection = (shiftId: string) => {
     setSelectedShifts(prev => 
       prev.includes(shiftId) 
@@ -78,10 +74,8 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
     );
   };
 
-  // Get formatted date for display
   const formattedDate = selectedDate ? format(selectedDate, 'EEE dd/MM/yyyy') : '';
 
-  // Function to render a shift cell
   const renderShift = (shiftInfo: any) => {
     const { shift, groupName, groupColor, subGroupName } = shiftInfo;
     const startTime = shift.startTime ? format(parseISO(shift.startTime), 'HH:mm') : '';
@@ -115,7 +109,6 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
   return (
     <div className="w-full overflow-x-auto">
       <div className="min-w-[1000px] grid" style={{ gridTemplateColumns: "250px 1fr" }}>
-        {/* Header row with date */}
         <div className="bg-black/30 p-3 font-medium border-b border-white/10">
           EMPLOYEE
         </div>
@@ -123,7 +116,6 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
           {formattedDate}
         </div>
         
-        {/* Unassigned shifts section */}
         <div className="border-b border-white/10">
           <Collapsible
             open={isUnassignedOpen}
@@ -154,7 +146,6 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
           </Collapsible>
         </div>
         
-        {/* Unassigned shifts */}
         <div className="border-b border-white/10 bg-black/5">
           <Collapsible open={isUnassignedOpen}>
             <CollapsibleContent>
@@ -165,7 +156,6 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
           </Collapsible>
         </div>
         
-        {/* Employee rows */}
         {employees.map(employee => (
           <React.Fragment key={employee.id}>
             <div className="p-3 border-b border-white/10 flex items-center">
@@ -175,7 +165,7 @@ export const RosterEmployeeView: React.FC<RosterEmployeeViewProps> = ({
               </Avatar>
               <div>
                 <div className="font-medium">{employee.name}</div>
-                <div className="text-xs text-white/70">ID: {employee.id} | ${employee.hourlyRate}/hr</div>
+                <div className="text-xs text-white/70">ID: {employee.id} | {employee.tier}</div>
               </div>
             </div>
             <div className="p-2 border-b border-white/10 flex flex-wrap">

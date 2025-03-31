@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { RosterGroup } from './RosterGroup';
@@ -8,7 +9,8 @@ import { Clock, Filter, Plus, Calendar as CalendarIcon, List, Grid2X2, Users } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Roster, Group, FilterCategory } from '@/api/models/types';
+import { Roster, Group } from '@/api/models/types';
+import { FilterCategory } from '@/types/roster';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
