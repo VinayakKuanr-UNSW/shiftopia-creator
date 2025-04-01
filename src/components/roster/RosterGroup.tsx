@@ -11,6 +11,7 @@ import { Group, DepartmentName, DepartmentColor } from '@/api/models/types';
 
 interface RosterGroupProps {
   group: Group;
+  templateId?: number;
   onAddSubGroup?: (groupId: number, name: string) => void;
   onUpdateGroup?: (groupId: number, updates: Partial<Group>) => void;
   onDeleteGroup?: (groupId: number) => void;
@@ -20,6 +21,7 @@ interface RosterGroupProps {
 
 const RosterGroup: React.FC<RosterGroupProps> = ({
   group,
+  templateId,
   onAddSubGroup,
   onUpdateGroup,
   onDeleteGroup,
@@ -126,6 +128,7 @@ const RosterGroup: React.FC<RosterGroupProps> = ({
             {group.subGroups.map(subGroup => (
               <RosterSubGroup
                 key={subGroup.id}
+                templateId={templateId}
                 groupId={group.id}
                 groupColor={group.color}
                 subGroup={subGroup}
