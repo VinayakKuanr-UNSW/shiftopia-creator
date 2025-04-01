@@ -5,6 +5,7 @@ import { RosterSubGroup } from './RosterSubGroup';
 import { Group } from '@/api/models/types';
 import AddSubGroupDialog from './dialogs/AddSubGroupDialog';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from "@/components/ui/button"; // Added the missing import
 import {
   AlertDialog,
   AlertDialogAction,
