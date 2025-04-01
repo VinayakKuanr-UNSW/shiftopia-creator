@@ -1,19 +1,33 @@
+
 import { Template, Group, SubGroup, DBTemplate } from '../models/types';
 import { supabase } from '@/integrations/supabase/client';
 
 // Helper function to convert from DB format to our app format
 const dbToAppTemplate = (dbTemplate: DBTemplate): Template => {
+  // Parse groups if it's a string
+  let groups: Group[] = [];
+  if (typeof dbTemplate.groups === 'string') {
+    try {
+      groups = JSON.parse(dbTemplate.groups);
+    } catch (e) {
+      groups = [];
+    }
+  } else {
+    groups = dbTemplate.groups as Group[] || [];
+  }
+
   return {
     id: dbTemplate.template_id,
     name: dbTemplate.name,
     description: dbTemplate.description,
-    groups: dbTemplate.groups || [],
+    groups: groups,
     createdAt: dbTemplate.created_at,
     updatedAt: dbTemplate.updated_at,
     department_id: dbTemplate.department_id,
     sub_department_id: dbTemplate.sub_department_id,
     start_date: dbTemplate.start_date,
-    end_date: dbTemplate.end_date
+    end_date: dbTemplate.end_date,
+    status: dbTemplate.status
   };
 };
 
@@ -62,7 +76,8 @@ export const templatesService = {
       end_date: template.end_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       created_at: now,
       updated_at: now,
-      groups: JSON.stringify(template.groups || [])
+      groups: JSON.stringify(template.groups || []),
+      status: template.status || 'active'
     };
     
     const { data, error } = await supabase
@@ -76,19 +91,7 @@ export const templatesService = {
       throw error;
     }
     
-    // Transform the response data to match our expected format
-    const createdTemplate = dbToAppTemplate(data as unknown as DBTemplate);
-    
-    // If groups were stored as JSON string, parse them back
-    if (typeof createdTemplate.groups === 'string') {
-      try {
-        createdTemplate.groups = JSON.parse(createdTemplate.groups);
-      } catch (e) {
-        createdTemplate.groups = [];
-      }
-    }
-    
-    return createdTemplate;
+    return dbToAppTemplate(data as unknown as DBTemplate);
   },
   
   updateTemplate: async (id: number, updates: Partial<Template>): Promise<Template | null> => {
@@ -130,19 +133,7 @@ export const templatesService = {
     
     if (!data) return null;
     
-    // Transform the response data to match our expected format
-    const updatedTemplate = dbToAppTemplate(data as unknown as DBTemplate);
-    
-    // If groups were stored as JSON string, parse them back
-    if (typeof updatedTemplate.groups === 'string') {
-      try {
-        updatedTemplate.groups = JSON.parse(updatedTemplate.groups);
-      } catch (e) {
-        updatedTemplate.groups = [];
-      }
-    }
-    
-    return updatedTemplate;
+    return dbToAppTemplate(data as unknown as DBTemplate);
   },
   
   deleteTemplate: async (id: number): Promise<boolean> => {
@@ -320,324 +311,12 @@ export const templatesService = {
     return templatesService.updateTemplate(templateId, { groups });
   },
   
-  addShift: async (templateId: number, groupId: number, subGroupId: number, shift: any): Promise<Template | null> => {
-    // First get the current template
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
-    
-    if (fetchError) {
-      console.error('Error fetching template for shift addition:', fetchError);
-      throw fetchError;
-    }
-    
-    if (!currentTemplate) return null;
-    
-    // Find the group and subgroup
-    const groups = [...currentTemplate.groups];
-    const groupIndex = groups.findIndex(g => g.id === groupId);
-    
-    if (groupIndex === -1) {
-      throw new Error(`Group with ID ${groupId} not found in template ${templateId}`);
-    }
-    
-    const subGroups = [...groups[groupIndex].subGroups];
-    const subGroupIndex = subGroups.findIndex(sg => sg.id === subGroupId);
-    
-    if (subGroupIndex === -1) {
-      throw new Error(`SubGroup with ID ${subGroupId} not found in group ${groupId}`);
-    }
-    
-    // Add the new shift
-    const shifts = [...subGroups[subGroupIndex].shifts];
-    const newShift = {
-      id: crypto.randomUUID(), // Generate a UUID for the shift
-      ...shift
-    };
-    
-    shifts.push(newShift);
-    subGroups[subGroupIndex].shifts = shifts;
-    groups[groupIndex].subGroups = subGroups;
-    
-    // Update the template with the modified groups
-    const { data, error } = await supabase
-      .from('templates')
-      .update({
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error adding shift to template:', error);
-      throw error;
-    }
-    
-    // Transform the response data
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
-  },
-  
-  updateShift: async (templateId: number, groupId: number, subGroupId: number, shiftId: string, updates: any): Promise<Template | null> => {
-    // Implementation similar to other update methods
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
-    
-    if (fetchError || !currentTemplate) {
-      console.error('Error fetching template for shift update:', fetchError);
-      throw fetchError || new Error('Template not found');
-    }
-    
-    const groups = [...currentTemplate.groups];
-    const groupIndex = groups.findIndex(g => g.id === groupId);
-    
-    if (groupIndex === -1) {
-      throw new Error(`Group with ID ${groupId} not found`);
-    }
-    
-    const subGroups = [...groups[groupIndex].subGroups];
-    const subGroupIndex = subGroups.findIndex(sg => sg.id === subGroupId);
-    
-    if (subGroupIndex === -1) {
-      throw new Error(`SubGroup with ID ${subGroupId} not found`);
-    }
-    
-    const shifts = [...subGroups[subGroupIndex].shifts];
-    const shiftIndex = shifts.findIndex(s => s.id === shiftId);
-    
-    if (shiftIndex === -1) {
-      throw new Error(`Shift with ID ${shiftId} not found`);
-    }
-    
-    shifts[shiftIndex] = { ...shifts[shiftIndex], ...updates };
-    subGroups[subGroupIndex].shifts = shifts;
-    groups[groupIndex].subGroups = subGroups;
-    
-    const { data, error } = await supabase
-      .from('templates')
-      .update({ 
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error updating shift:', error);
-      throw error;
-    }
-    
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
-  },
-  
-  deleteShift: async (templateId: number, groupId: number, subGroupId: number, shiftId: string): Promise<Template | null> => {
-    // Implementation similar to other delete methods
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
-    
-    if (fetchError || !currentTemplate) {
-      console.error('Error fetching template for shift deletion:', fetchError);
-      throw fetchError || new Error('Template not found');
-    }
-    
-    const groups = [...currentTemplate.groups];
-    const groupIndex = groups.findIndex(g => g.id === groupId);
-    
-    if (groupIndex === -1) {
-      throw new Error(`Group with ID ${groupId} not found`);
-    }
-    
-    const subGroups = [...groups[groupIndex].subGroups];
-    const subGroupIndex = subGroups.findIndex(sg => sg.id === subGroupId);
-    
-    if (subGroupIndex === -1) {
-      throw new Error(`SubGroup with ID ${subGroupId} not found`);
-    }
-    
-    // Filter out the shift to delete
-    subGroups[subGroupIndex].shifts = subGroups[subGroupIndex].shifts.filter(s => s.id !== shiftId);
-    groups[groupIndex].subGroups = subGroups;
-    
-    const { data, error } = await supabase
-      .from('templates')
-      .update({
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error deleting shift:', error);
-      throw error;
-    }
-    
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
-  },
-  
-  cloneGroup: async (templateId: number, groupId: number): Promise<Template | null> => {
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
-    
-    if (fetchError || !currentTemplate) {
-      console.error('Error fetching template for group cloning:', fetchError);
-      throw fetchError || new Error('Template not found');
-    }
-    
-    const groups = [...currentTemplate.groups];
-    const groupToClone = groups.find(g => g.id === groupId);
-    
-    if (!groupToClone) {
-      throw new Error(`Group with ID ${groupId} not found`);
-    }
-    
-    // Create a deep clone of the group with a new ID
-    const newGroupId = Math.max(0, ...groups.map(g => g.id)) + 1;
-    const clonedGroup = JSON.parse(JSON.stringify(groupToClone));
-    clonedGroup.id = newGroupId;
-    clonedGroup.name = `${clonedGroup.name} (Copy)`;
-    
-    groups.push(clonedGroup);
-    
-    const { data, error } = await supabase
-      .from('templates')
-      .update({
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error cloning group:', error);
-      throw error;
-    }
-    
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
-  },
-  
-  cloneSubGroup: async (templateId: number, groupId: number, subGroupId: number): Promise<Template | null> => {
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
-    
-    if (fetchError || !currentTemplate) {
-      console.error('Error fetching template for subgroup cloning:', fetchError);
-      throw fetchError || new Error('Template not found');
-    }
-    
-    const groups = [...currentTemplate.groups];
-    const groupIndex = groups.findIndex(g => g.id === groupId);
-    
-    if (groupIndex === -1) {
-      throw new Error(`Group with ID ${groupId} not found`);
-    }
-    
-    const subGroups = [...groups[groupIndex].subGroups];
-    const subGroupToClone = subGroups.find(sg => sg.id === subGroupId);
-    
-    if (!subGroupToClone) {
-      throw new Error(`SubGroup with ID ${subGroupId} not found`);
-    }
-    
-    // Create a deep clone of the subgroup with a new ID
-    const newSubGroupId = Math.max(0, ...subGroups.map(sg => sg.id)) + 1;
-    const clonedSubGroup = JSON.parse(JSON.stringify(subGroupToClone));
-    clonedSubGroup.id = newSubGroupId;
-    clonedSubGroup.name = `${clonedSubGroup.name} (Copy)`;
-    
-    subGroups.push(clonedSubGroup);
-    groups[groupIndex].subGroups = subGroups;
-    
-    const { data, error } = await supabase
-      .from('templates')
-      .update({
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error cloning subgroup:', error);
-      throw error;
-    }
-    
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
-  },
-  
-  exportTemplateToPdf: async (templateId: number): Promise<Blob> => {
-    // This would typically be handled on the frontend
-    // But we'll implement a stub here that could be expanded later
-    const template = await templatesService.getTemplateById(templateId);
-    
-    if (!template) {
-      throw new Error('Template not found');
-    }
-    
-    // In a real implementation, you might generate the PDF on a server
-    // and return a URL or a blob
-    throw new Error('PDF export is not implemented on the backend yet');
-  },
-  
+  // Additional operations
   saveTemplateAsDraft: async (template: Partial<Template>): Promise<Template> => {
     // Save the template with a draft status
     const templateToSave = {
       ...template,
-      status: 'draft' // You might need to add this field to your model
+      status: 'draft'
     };
     
     // If it's a new draft
@@ -653,5 +332,20 @@ export const templatesService = {
     }
     
     return updated;
+  },
+
+  // Export template to PDF
+  exportTemplateToPdf: async (templateId: number): Promise<Blob> => {
+    // This would typically be handled on the frontend
+    // But we'll implement a stub here that could be expanded later
+    const template = await templatesService.getTemplateById(templateId);
+    
+    if (!template) {
+      throw new Error('Template not found');
+    }
+    
+    // In a real implementation, you might generate the PDF on a server
+    // and return a URL or a blob
+    throw new Error('PDF export is not implemented on the backend yet');
   }
 };
