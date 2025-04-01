@@ -97,9 +97,10 @@ export const BirdsViewGrid: React.FC<BirdsViewGridProps> = ({
                 hoursWorked += shiftDuration;
                 
                 // Calculate pay based on remuneration level
-                const hourlyRate = employee.tier === 'Junior' ? 20 : 
-                                   employee.tier === 'Regular' ? 25 : 
-                                   employee.tier === 'Senior' ? 30 : 25;
+                const hourlyRate = 
+                  employee.tier === 'GOLD' ? 30 : 
+                  employee.tier === 'SILVER' ? 25 : 
+                  employee.tier === 'BRONZE' ? 20 : 25; // Default to 25 if tier is undefined
                                    
                 const shiftPay = shiftDuration * hourlyRate;
                 totalPay += shiftPay;
