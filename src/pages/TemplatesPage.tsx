@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -215,13 +214,16 @@ const TemplatesPage: React.FC = () => {
                     group={group}
                     templateId={currentTemplate.id}
                     onUpdateGroup={(groupId, updates) => {
-                      // This would call the updateGroup function
+                      console.log('Update group', groupId, updates);
                     }}
                     onDeleteGroup={(groupId) => {
-                      // This would call the deleteGroup function
+                      console.log('Delete group', groupId);
                     }}
                     onCloneGroup={(groupId) => {
-                      // This would call the cloneGroup function
+                      console.log('Clone group', groupId);
+                    }}
+                    onAddSubGroup={(groupId, name) => {
+                      console.log('Add subgroup', groupId, name);
                     }}
                   />
                 ))}
@@ -231,7 +233,6 @@ const TemplatesPage: React.FC = () => {
         </div>
       )}
       
-      {/* Add Group Dialog */}
       <Dialog open={isAddGroupDialogOpen} onOpenChange={setIsAddGroupDialogOpen}>
         <DialogContent>
           <DialogHeader>
