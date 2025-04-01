@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -212,6 +213,7 @@ const TemplatesPage: React.FC = () => {
                   <RosterGroup
                     key={group.id}
                     group={group}
+                    templateId={currentTemplate.id}
                     onUpdateGroup={(groupId, updates) => {
                       // This would call the updateGroup function
                     }}
