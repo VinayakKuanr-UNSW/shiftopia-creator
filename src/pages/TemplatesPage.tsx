@@ -1,13 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Template, DepartmentName, DepartmentColor } from '@/api/models/types';
+import { Template, Group } from '@/api/models/types';
 import { useTemplates } from '@/api/hooks';
-import RosterGroup from '@/components/roster/RosterGroup';
+import TemplateHeader from '@/components/templates/TemplateHeader';
+import TemplateContent from '@/components/templates/TemplateContent';
+import AddGroupDialog from '@/components/templates/AddGroupDialog';
 
 const TemplatesPage: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -66,8 +64,8 @@ const TemplatesPage: React.FC = () => {
       const updatedTemplate = await addGroup(
         currentTemplate.id,
         {
-          name: newGroup.name as DepartmentName,
-          color: newGroup.color as DepartmentColor,
+          name: newGroup.name as any,
+          color: newGroup.color as any,
           subGroups: []
         }
       );
@@ -145,7 +143,6 @@ const TemplatesPage: React.FC = () => {
       const pdfUrl = await exportTemplateToPdf(currentTemplate.id);
       
       if (pdfUrl) {
-        // In a real app, this would open the PDF in a new tab or download it
         toast({
           title: 'Success',
           description: 'Template exported to PDF'
@@ -161,120 +158,49 @@ const TemplatesPage: React.FC = () => {
     }
   };
 
+  const handleUpdateGroup = (groupId: number, updates: Partial<Group>) => {
+    console.log('Update group', groupId, updates);
+  };
+
+  const handleDeleteGroup = (groupId: number) => {
+    console.log('Delete group', groupId);
+  };
+
+  const handleCloneGroup = (groupId: number) => {
+    console.log('Clone group', groupId);
+  };
+
+  const handleAddSubGroup = (groupId: number, name: string) => {
+    console.log('Add subgroup', groupId, name);
+  };
+
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Template Management</h1>
-        
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            onClick={handleSaveAsDraft}
-            disabled={!currentTemplate}
-          >
-            Save as Draft
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={handlePublish}
-            disabled={!currentTemplate}
-          >
-            Publish
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={handleExportToPdf}
-            disabled={!currentTemplate}
-          >
-            Export to PDF
-          </Button>
-          
-          <Button
-            onClick={() => setIsAddGroupDialogOpen(true)}
-            disabled={!currentTemplate}
-          >
-            Add Group
-          </Button>
-        </div>
-      </div>
+      <TemplateHeader 
+        currentTemplate={currentTemplate}
+        onSaveAsDraft={handleSaveAsDraft}
+        onPublish={handlePublish}
+        onExportToPdf={handleExportToPdf}
+        onAddGroup={() => setIsAddGroupDialogOpen(true)}
+      />
       
       {currentTemplate && (
-        <div className="mb-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{currentTemplate.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {currentTemplate.groups.map(group => (
-                  <RosterGroup
-                    key={group.id}
-                    group={group}
-                    templateId={currentTemplate.id}
-                    onUpdateGroup={(groupId, updates) => {
-                      console.log('Update group', groupId, updates);
-                    }}
-                    onDeleteGroup={(groupId) => {
-                      console.log('Delete group', groupId);
-                    }}
-                    onCloneGroup={(groupId) => {
-                      console.log('Clone group', groupId);
-                    }}
-                    onAddSubGroup={(groupId, name) => {
-                      console.log('Add subgroup', groupId, name);
-                    }}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <TemplateContent 
+          template={currentTemplate}
+          onUpdateGroup={handleUpdateGroup}
+          onDeleteGroup={handleDeleteGroup}
+          onCloneGroup={handleCloneGroup}
+          onAddSubGroup={handleAddSubGroup}
+        />
       )}
       
-      <Dialog open={isAddGroupDialogOpen} onOpenChange={setIsAddGroupDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Group</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label htmlFor="groupName">Group Name</label>
-              <Input
-                id="groupName"
-                value={newGroup.name}
-                onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
-                placeholder="Enter group name"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="groupColor">Group Color</label>
-              <Select
-                value={newGroup.color}
-                onValueChange={(value) => setNewGroup({ ...newGroup, color: value })}
-              >
-                <SelectTrigger id="groupColor">
-                  <SelectValue placeholder="Select a color" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="blue">Blue</SelectItem>
-                  <SelectItem value="green">Green</SelectItem>
-                  <SelectItem value="red">Red</SelectItem>
-                  <SelectItem value="purple">Purple</SelectItem>
-                  <SelectItem value="sky">Sky Blue</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddGroupDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddGroup}>Add Group</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddGroupDialog
+        isOpen={isAddGroupDialogOpen}
+        onOpenChange={setIsAddGroupDialogOpen}
+        newGroup={newGroup}
+        setNewGroup={setNewGroup}
+        onAddGroup={handleAddGroup}
+      />
     </div>
   );
 };
