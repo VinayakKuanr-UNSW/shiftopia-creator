@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Edit, Plus, Trash } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit, Plus, Trash, Copy } from 'lucide-react';
 import ShiftItem from '@/components/ShiftItem';
 import { SubGroup } from '@/api/models/types';
 import AddShiftDialog from './dialogs/AddShiftDialog';
+import { useTemplates } from '@/api/hooks';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,8 +18,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface RosterSubGroupProps {
+  templateId?: number;
   subGroup: SubGroup;
   groupId: number;
   groupColor: string;
@@ -26,23 +38,61 @@ interface RosterSubGroupProps {
   onAddShift?: (groupId: number, subGroupId: number, shift: any) => void;
   onEditSubGroup?: (groupId: number, subGroupId: number, name: string) => void;
   onDeleteSubGroup?: (groupId: number, subGroupId: number) => void;
+  onCloneSubGroup?: (groupId: number, subGroupId: number) => void;
 }
 
 export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({ 
+  templateId,
   subGroup, 
   groupId,
   groupColor,
   readOnly,
   onAddShift,
   onEditSubGroup,
-  onDeleteSubGroup
+  onDeleteSubGroup,
+  onCloneSubGroup
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editName, setEditName] = useState(subGroup.name);
   const { toast } = useToast();
+  
+  const { 
+    useAddShift, 
+    useUpdateSubGroup,
+    useDeleteSubGroup,
+    useCloneSubGroup
+  } = useTemplates();
+  
+  const addShiftMutation = useAddShift();
+  const updateSubGroupMutation = useUpdateSubGroup();
+  const deleteSubGroupMutation = useDeleteSubGroup();
+  const cloneSubGroupMutation = useCloneSubGroup();
   
   const handleAddShift = (groupId: number, subGroupId: number, shift: any) => {
     if (onAddShift) {
       onAddShift(groupId, subGroupId, shift);
+    } else if (templateId) {
+      addShiftMutation.mutate({
+        templateId,
+        groupId,
+        subGroupId,
+        shift
+      }, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: `${shift.role} shift added to ${subGroup.name}`,
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Error",
+            description: `Failed to add shift: ${error.message}`,
+            variant: "destructive"
+          });
+        }
+      });
     } else {
       // Mock implementation for demo
       toast({
@@ -52,26 +102,101 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
     }
   };
   
-  const handleEditSubGroup = () => {
+  const handleSaveEdit = () => {
     if (onEditSubGroup) {
-      onEditSubGroup(groupId, subGroup.id, subGroup.name);
+      onEditSubGroup(groupId, subGroup.id, editName);
+    } else if (templateId) {
+      updateSubGroupMutation.mutate({
+        templateId,
+        groupId,
+        subGroupId: subGroup.id,
+        updates: { name: editName }
+      }, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: `Subgroup updated successfully`,
+          });
+          setIsEditDialogOpen(false);
+        },
+        onError: (error) => {
+          toast({
+            title: "Error",
+            description: `Failed to update subgroup: ${error.message}`,
+            variant: "destructive"
+          });
+        }
+      });
     } else {
       // Mock implementation for demo
       toast({
-        title: "Edit Subgroup",
-        description: `Editing ${subGroup.name} subgroup`,
+        title: "Subgroup Updated",
+        description: `${subGroup.name} would be updated to ${editName}`,
       });
+      setIsEditDialogOpen(false);
     }
   };
   
   const handleDeleteSubGroup = () => {
     if (onDeleteSubGroup) {
       onDeleteSubGroup(groupId, subGroup.id);
+    } else if (templateId) {
+      deleteSubGroupMutation.mutate({
+        templateId,
+        groupId,
+        subGroupId: subGroup.id
+      }, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: `Subgroup deleted successfully`,
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Error",
+            description: `Failed to delete subgroup: ${error.message}`,
+            variant: "destructive"
+          });
+        }
+      });
     } else {
       // Mock implementation for demo
       toast({
-        title: "Delete Subgroup",
-        description: `${subGroup.name} subgroup would be deleted`,
+        title: "Subgroup Deleted",
+        description: `${subGroup.name} would be deleted`,
+      });
+    }
+  };
+  
+  const handleCloneSubGroup = () => {
+    if (onCloneSubGroup) {
+      onCloneSubGroup(groupId, subGroup.id);
+    } else if (templateId) {
+      cloneSubGroupMutation.mutate({
+        templateId,
+        groupId,
+        subGroupId: subGroup.id
+      }, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: `Subgroup cloned successfully`,
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Error",
+            description: `Failed to clone subgroup: ${error.message}`,
+            variant: "destructive"
+          });
+        }
+      });
+    } else {
+      // Mock implementation for demo
+      toast({
+        title: "Subgroup Cloned",
+        description: `A copy of ${subGroup.name} would be created`,
       });
     }
   };
@@ -89,6 +214,9 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
             <ChevronUp className="mr-2 h-4 w-4 text-white/60" />
           )}
           {subGroup.name}
+          <span className="ml-2 text-xs text-white/60">
+            {subGroup.shifts.length} shifts
+          </span>
         </h4>
         
         {!readOnly && (
@@ -108,14 +236,54 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
               }
             />
             
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogTrigger asChild>
+                <button 
+                  className="p-1 rounded-lg bg-black/20 hover:bg-black/40 text-blue-400/80 hover:text-blue-400 transition-all duration-200 hover:scale-110"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditName(subGroup.name);
+                  }}
+                >
+                  <Edit size={14} />
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] bg-gray-900 text-white border-gray-700">
+                <DialogHeader>
+                  <DialogTitle>Edit Subgroup</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="subgroup-name" className="text-right">
+                      Name
+                    </Label>
+                    <Input
+                      id="subgroup-name"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="col-span-3 bg-gray-800 border-gray-700"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" onClick={handleSaveEdit}>
+                    Save changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            
             <button 
-              className="p-1 rounded-lg bg-black/20 hover:bg-black/40 text-blue-400/80 hover:text-blue-400 transition-all duration-200 hover:scale-110"
+              className="p-1 rounded-lg bg-black/20 hover:bg-black/40 text-indigo-400/80 hover:text-indigo-400 transition-all duration-200 hover:scale-110"
               onClick={(e) => {
                 e.stopPropagation();
-                handleEditSubGroup();
+                handleCloneSubGroup();
               }}
             >
-              <Edit size={14} />
+              <Copy size={14} />
             </button>
             
             <AlertDialog>

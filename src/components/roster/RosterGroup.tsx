@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Edit, Plus, Trash } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit, Plus, Trash, Copy } from 'lucide-react';
 import { RosterSubGroup } from './RosterSubGroup';
 import { Group } from '@/api/models/types';
 import AddSubGroupDialog from './dialogs/AddSubGroupDialog';
+import { useTemplates } from '@/api/hooks';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from "@/components/ui/button"; // Added the missing import
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,45 +18,90 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface RosterGroupProps {
+  templateId?: number;
   group: Group;
   readOnly?: boolean;
   isOver?: boolean;
   onAddSubGroup?: (groupId: number, subGroupName: string) => void;
   onEditGroup?: (groupId: number, updates: Partial<Group>) => void;
   onDeleteGroup?: (groupId: number) => void;
+  onCloneGroup?: (groupId: number) => void;
 }
 
 export const RosterGroup: React.FC<RosterGroupProps> = ({ 
+  templateId,
   group, 
   readOnly, 
   isOver,
   onAddSubGroup,
   onEditGroup,
-  onDeleteGroup
+  onDeleteGroup,
+  onCloneGroup
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editName, setEditName] = useState(group.name);
+  const [editColor, setEditColor] = useState(group.color);
   const { toast } = useToast();
+  
+  const { useCloneGroup, useAddSubGroup, useUpdateGroup, useDeleteGroup } = useTemplates();
+  const cloneGroupMutation = useCloneGroup();
+  const addSubGroupMutation = useAddSubGroup();
+  const updateGroupMutation = useUpdateGroup();
+  const deleteGroupMutation = useDeleteGroup();
   
   const getGroupCardClass = () => {
     switch (group.color) {
       case 'blue':
-        return 'group-card-blue';
+        return 'bg-blue-900/20 border-blue-500/30 hover:bg-blue-900/30 hover:border-blue-500/50';
       case 'green':
-        return 'group-card-green';
+        return 'bg-green-900/20 border-green-500/30 hover:bg-green-900/30 hover:border-green-500/50';
       case 'red':
-        return 'group-card-red';
+        return 'bg-red-900/20 border-red-500/30 hover:bg-red-900/30 hover:border-red-500/50';
       case 'purple':
-        return 'group-card-purple';
+        return 'bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/30 hover:border-purple-500/50';
       default:
-        return 'group-card-blue';
+        return 'bg-blue-900/20 border-blue-500/30 hover:bg-blue-900/30 hover:border-blue-500/50';
     }
   };
   
   const handleAddSubGroup = (groupId: number, name: string) => {
     if (onAddSubGroup) {
       onAddSubGroup(groupId, name);
+    } else if (templateId) {
+      addSubGroupMutation.mutate({
+        templateId,
+        groupId,
+        subGroup: { name, shifts: [] }
+      }, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: `Subgroup "${name}" added to ${group.name}`,
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Error",
+            description: `Failed to add subgroup: ${error.message}`,
+            variant: "destructive"
+          });
+        }
+      });
     } else {
       // Mock implementation for demo
       toast({
@@ -65,34 +111,105 @@ export const RosterGroup: React.FC<RosterGroupProps> = ({
     }
   };
   
-  const handleEditGroup = () => {
+  const handleSaveEdit = () => {
     if (onEditGroup) {
-      // In a real app, you'd open a dialog to edit the group
-      onEditGroup(group.id, { name: group.name });
+      onEditGroup(group.id, { name: editName, color: editColor });
+    } else if (templateId) {
+      updateGroupMutation.mutate({
+        templateId,
+        groupId: group.id,
+        updates: { name: editName, color: editColor }
+      }, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: `Group updated successfully`,
+          });
+          setIsEditDialogOpen(false);
+        },
+        onError: (error) => {
+          toast({
+            title: "Error",
+            description: `Failed to update group: ${error.message}`,
+            variant: "destructive"
+          });
+        }
+      });
     } else {
       // Mock implementation for demo
       toast({
-        title: "Edit Group",
-        description: `Editing ${group.name} department`,
+        title: "Group Updated",
+        description: `${group.name} would be updated to ${editName}`,
       });
+      setIsEditDialogOpen(false);
     }
   };
   
   const handleDeleteGroup = () => {
     if (onDeleteGroup) {
       onDeleteGroup(group.id);
+    } else if (templateId) {
+      deleteGroupMutation.mutate({
+        templateId,
+        groupId: group.id
+      }, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: `Group deleted successfully`,
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Error",
+            description: `Failed to delete group: ${error.message}`,
+            variant: "destructive"
+          });
+        }
+      });
     } else {
       // Mock implementation for demo
       toast({
-        title: "Delete Group",
-        description: `${group.name} department would be deleted`,
+        title: "Group Deleted",
+        description: `${group.name} would be deleted`,
+      });
+    }
+  };
+  
+  const handleCloneGroup = () => {
+    if (onCloneGroup) {
+      onCloneGroup(group.id);
+    } else if (templateId) {
+      cloneGroupMutation.mutate({
+        templateId,
+        groupId: group.id
+      }, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: `Group cloned successfully`,
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Error",
+            description: `Failed to clone group: ${error.message}`,
+            variant: "destructive"
+          });
+        }
+      });
+    } else {
+      // Mock implementation for demo
+      toast({
+        title: "Group Cloned",
+        description: `A copy of ${group.name} would be created`,
       });
     }
   };
   
   return (
     <div className="animate-fade-in">
-      <div className={`rounded-lg p-4 ${getGroupCardClass()} hover-scale transition-all duration-300 ${isOver ? 'border-2 border-dashed border-white/50' : ''}`}>
+      <div className={`rounded-lg p-4 border ${getGroupCardClass()} transition-all duration-300 ${isOver ? 'border-2 border-dashed border-white/50' : ''}`}>
         <div 
           className="flex justify-between items-center cursor-pointer"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -104,6 +221,9 @@ export const RosterGroup: React.FC<RosterGroupProps> = ({
               <ChevronUp className="mr-2 h-5 w-5 text-white/80" />
             )}
             {group.name}
+            <span className="ml-2 text-sm text-white/60">
+              {group.subGroups.length} sub-groups
+            </span>
           </h3>
           
           {!readOnly && (
@@ -113,20 +233,86 @@ export const RosterGroup: React.FC<RosterGroupProps> = ({
                 groupName={group.name}
                 onAddSubGroup={handleAddSubGroup}
                 trigger={
-                  <button className="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-white transition-all duration-200 hover:scale-110">
+                  <button 
+                    className="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-white/80 hover:text-white transition-all duration-200 hover:scale-110"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <Plus size={16} />
                   </button>
                 }
               />
               
+              <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogTrigger asChild>
+                  <button 
+                    className="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-blue-400/80 hover:text-blue-400 transition-all duration-200 hover:scale-110"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditName(group.name);
+                      setEditColor(group.color);
+                    }}
+                  >
+                    <Edit size={16} />
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] bg-gray-900 text-white border-gray-700">
+                  <DialogHeader>
+                    <DialogTitle>Edit Group</DialogTitle>
+                    <DialogDescription>
+                      Make changes to the department group here.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="group-name" className="text-right">
+                        Name
+                      </Label>
+                      <Input
+                        id="group-name"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="col-span-3 bg-gray-800 border-gray-700"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="group-color" className="text-right">
+                        Color
+                      </Label>
+                      <Select
+                        value={editColor}
+                        onValueChange={setEditColor}
+                      >
+                        <SelectTrigger id="group-color" className="col-span-3 bg-gray-800 border-gray-700">
+                          <SelectValue placeholder="Select color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="blue">Blue</SelectItem>
+                          <SelectItem value="green">Green</SelectItem>
+                          <SelectItem value="red">Red</SelectItem>
+                          <SelectItem value="purple">Purple</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" onClick={handleSaveEdit}>
+                      Save changes
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
               <button 
-                className="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-blue-400/80 hover:text-blue-400 transition-all duration-200 hover:scale-110"
+                className="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-indigo-400/80 hover:text-indigo-400 transition-all duration-200 hover:scale-110"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleEditGroup();
+                  handleCloneGroup();
                 }}
               >
-                <Edit size={16} />
+                <Copy size={16} />
               </button>
               
               <AlertDialog>
@@ -162,6 +348,7 @@ export const RosterGroup: React.FC<RosterGroupProps> = ({
             {group.subGroups.map((subGroup) => (
               <RosterSubGroup 
                 key={subGroup.id} 
+                templateId={templateId}
                 subGroup={subGroup} 
                 groupId={group.id}
                 groupColor={group.color}

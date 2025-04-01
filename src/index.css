@@ -120,7 +120,61 @@
 }
 
 @layer utilities {
-  /* ... keep existing code (glass panel effect and other utilities) */
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  .glass-panel {
+    @apply backdrop-blur-md bg-opacity-20 border border-white/10;
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -100% 0;
+    }
+    100% {
+      background-position: 100% 0;
+    }
+  }
+  
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+  
+  .reveal-on-scroll.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Department group card styles */
+.group-card-blue {
+  @apply bg-blue-900/20 border border-blue-500/30 hover:bg-blue-900/30 hover:border-blue-500/50 transition-all duration-300;
+}
+
+.group-card-green {
+  @apply bg-green-900/20 border border-green-500/30 hover:bg-green-900/30 hover:border-green-500/50 transition-all duration-300;
+}
+
+.group-card-red {
+  @apply bg-red-900/20 border border-red-500/30 hover:bg-red-900/30 hover:border-red-500/50 transition-all duration-300;
+}
+
+.group-card-purple {
+  @apply bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 hover:border-purple-500/50 transition-all duration-300;
 }
 
 /* Theme-specific body styles */
@@ -149,6 +203,11 @@
     radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.05) 0%, transparent 40%);
   color: white;
   min-height: 100vh;
+}
+
+/* Button styling */
+.button-blue {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors duration-200;
 }
 
 /* Theme-specific component styles */
