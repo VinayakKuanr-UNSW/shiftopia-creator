@@ -93,7 +93,6 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
         }
       });
     } else {
-      // Mock implementation for demo
       toast({
         title: "Shift Added",
         description: `${shift.role} shift added to ${subGroup.name}`,
@@ -127,7 +126,6 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
         }
       });
     } else {
-      // Mock implementation for demo
       toast({
         title: "Subgroup Updated",
         description: `${subGroup.name} would be updated to ${editName}`,
@@ -160,7 +158,6 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
         }
       });
     } else {
-      // Mock implementation for demo
       toast({
         title: "Subgroup Deleted",
         description: `${subGroup.name} would be deleted`,
@@ -192,7 +189,6 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
         }
       });
     } else {
-      // Mock implementation for demo
       toast({
         title: "Subgroup Cloned",
         description: `A copy of ${subGroup.name} would be created`,
@@ -223,7 +219,7 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
             <AddShiftDialog
               groupId={groupId}
               subGroupId={subGroup.id}
-              date={new Date().toISOString().split('T')[0]} // This should come from props in a real app
+              date={new Date().toISOString().split('T')[0]}
               onAddShift={handleAddShift}
               trigger={
                 <button 
@@ -323,7 +319,7 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
               startTime={shift.startTime}
               endTime={shift.endTime}
               breakDuration={shift.breakDuration || ""}
-              remunerationLevel={shift.remunerationLevel?.toString() || ""}
+              remunerationLevel={String(shift.remunerationLevel || "")}
               employeeId={shift.employeeId}
               employee={shift.employee}
               status={shift.status}

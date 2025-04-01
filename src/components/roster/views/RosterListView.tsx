@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Roster, Employee } from '@/api/models/types';
 import { format, parseISO } from 'date-fns';
@@ -55,7 +56,9 @@ export const RosterListView: React.FC<RosterListViewProps> = ({
             ...shift,
             groupName: group.name,
             groupColor: group.color,
-            subGroupName: subGroup.name
+            subGroupName: subGroup.name,
+            breakDuration: shift.breakDuration || "",
+            remunerationLevel: shift.remunerationLevel ? String(shift.remunerationLevel) : ""
           });
         });
       });

@@ -7,7 +7,7 @@ export interface RosterDayViewProps {
   date: Date;
   roster: Roster | null;
   readOnly?: boolean;
-  onAddGroup?: (name: DepartmentName, color: DepartmentColor) => void;
+  onAddGroup?: (group: { name: DepartmentName; color: DepartmentColor }) => void;
 }
 
 export const RosterDayView: React.FC<RosterDayViewProps> = ({ 
