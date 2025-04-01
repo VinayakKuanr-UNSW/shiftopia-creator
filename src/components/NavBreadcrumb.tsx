@@ -18,8 +18,14 @@ export function NavBreadcrumb() {
     return null;
   }
 
+  // Format segment names for display (makes them more readable)
+  const formatSegmentName = (segment: string) => {
+    if (segment === 'birds-view') return 'Birds-view';
+    return segment.charAt(0).toUpperCase() + segment.slice(1);
+  };
+
   const breadcrumbItems = pathSegments.map((segment, index) => {
-    const formattedSegment = segment.charAt(0).toUpperCase() + segment.slice(1);
+    const formattedSegment = formatSegmentName(segment);
     const url = `/${pathSegments.slice(0, index + 1).join('/')}`;
     const isLast = index === pathSegments.length - 1;
 

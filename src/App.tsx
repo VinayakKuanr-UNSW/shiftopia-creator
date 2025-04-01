@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import RostersPage from "./pages/RostersPage";
+import BirdsViewPage from "./pages/BirdsViewPage";
 import TimesheetPage from "./pages/TimesheetPage";
 import TemplatesPage from "./pages/TemplatesPage";
 import ManagementPage from "./pages/ManagementPage";
@@ -35,7 +36,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         <Navbar />
         <div className="flex-1 flex">
           <AppSidebar />
-          <main className="flex-1 overflow-auto p-4 md:p-6">
+          <main className="flex-1 overflow-auto">
             {children}
           </main>
         </div>
@@ -106,6 +107,13 @@ const App = () => (
                   <ProtectedRoute>
                     <AppLayout>
                       <RostersPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/rostering/birds-view" element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <BirdsViewPage />
                     </AppLayout>
                   </ProtectedRoute>
                 } />

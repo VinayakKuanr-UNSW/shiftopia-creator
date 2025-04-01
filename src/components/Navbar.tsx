@@ -154,7 +154,7 @@ const Navbar: React.FC = () => {
         </div>
       </div>
       
-      {/* Mobile Breadcrumb - Appears below navbar on mobile */}
+      {/* Mobile Breadcrumb - Only show on small screens */}
       <div className="md:hidden px-4 py-2 bg-background/50 backdrop-blur-sm border-b border-border/40 absolute top-16 left-0 right-0">
         <NavBreadcrumb />
       </div>

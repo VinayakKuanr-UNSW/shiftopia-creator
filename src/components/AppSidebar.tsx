@@ -11,7 +11,8 @@ import {
   MessageSquare,
   BarChart2,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Eye
 } from 'lucide-react';
 import {
   Sidebar,
@@ -122,6 +123,17 @@ export function AppSidebar() {
                           <Link to="/rostering/rosters">
                             <Calendar className="h-4 w-4" />
                             <span>Rosters</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          isActive={currentPath === '/rostering/birds-view'}
+                          asChild
+                        >
+                          <Link to="/rostering/birds-view">
+                            <Eye className="h-4 w-4" />
+                            <span>Birds-view</span>
                           </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
