@@ -1,5 +1,4 @@
-
-import { Template, Group, SubGroup, DBTemplate } from '../models/types';
+import { Group, SubGroup, Template, DBTemplate, Shift, DepartmentName, DepartmentColor } from '../models/types';
 import { templates as mockTemplates } from '../data/mockData';
 import { supabase } from '@/integrations/supabase/client';
 

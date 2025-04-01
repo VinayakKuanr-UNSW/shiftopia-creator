@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Roster } from '@/api/models/types';
 import { format, parseISO } from 'date-fns';
@@ -154,49 +153,54 @@ export const RosterListView: React.FC<RosterListViewProps> = ({
         </TableHeader>
         <TableBody>
           {sortedShifts.length > 0 ? (
-            sortedShifts.map(shift => (
-              <TableRow key={shift.id}>
-                <TableCell>
-                  <div className="flex items-center">
-                    <Clock size={14} className="mr-2 text-blue-400" />
-                    <span>
-                      {shift.startTime ? format(parseISO(shift.startTime), 'HH:mm') : '--'} - 
-                      {shift.endTime ? format(parseISO(shift.endTime), 'HH:mm') : '--'}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="font-medium">{shift.role}</span>
-                </TableCell>
-                <TableCell>
-                  <Badge className={`bg-${shift.groupColor}-500/30`}>
-                    {shift.groupName}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="text-white/70">{shift.subGroupName}</span>
-                </TableCell>
-                <TableCell>
-                  {shift.employee ? (
+            sortedShifts.map(shift => {
+              // Create a compatible employee object if needed
+              const employeeObj = shift.employee ? {
+                id: shift.employee.id,
+                name: shift.employee.name || `${shift.employee.firstName || ''} ${shift.employee.lastName || ''}`.trim()
+              } : undefined;
+              
+              return (
+                <TableRow key={shift.id}>
+                  <TableCell>
                     <div className="flex items-center">
-                      <User size={14} className="mr-2 text-purple-400" />
-                      <span>{shift.employee.name}</span>
+                      <Clock size={14} className="mr-2 text-blue-400" />
+                      <span>
+                        {shift.startTime ? format(parseISO(shift.startTime), 'HH:mm') : '--'} - 
+                        {shift.endTime ? format(parseISO(shift.endTime), 'HH:mm') : '--'}
+                      </span>
                     </div>
-                  ) : (
-                    <span className="text-yellow-400">Unassigned</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-white/70">
-                    {shift.remunerationLevel}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-medium">{shift.role}</span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={`bg-${shift.groupColor}-500/30`}>
+                      {shift.groupName}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-white/70">{shift.subGroupName}</span>
+                  </TableCell>
+                  <TableCell>
+                    {employeeObj ? (
+                      <div className="flex items-center">
+                        <span>{employeeObj.name}</span>
+                      </div>
+                    ) : (
+                      <span className="text-white/50">Unassigned</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <span>{shift.remunerationLevel}</span>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-white/60 py-8">
-                No shifts available for this date
+              <TableCell colSpan={6} className="text-center py-4 text-white/60">
+                No shifts found for this date
               </TableCell>
             </TableRow>
           )}

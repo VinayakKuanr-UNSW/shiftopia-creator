@@ -1,11 +1,11 @@
-
-import React, { useState } from 'react';
-import { useDrop } from 'react-dnd';
-import RosterDayView from './views/RosterDayView';
-import RosterThreeDayView from './views/RosterThreeDayView';
-import RosterWeekView from './views/RosterWeekView';
-import RosterMonthView from './views/RosterMonthView';
-import RosterListView from './views/RosterListView';
+import React from 'react';
+import { Roster, Group } from '@/api/models/types';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday } from 'date-fns';
+import { RosterDayView } from './views/RosterDayView';
+import { RosterThreeDayView } from './views/RosterThreeDayView';
+import { RosterWeekView } from './views/RosterWeekView';
+import { RosterMonthView } from './views/RosterMonthView';
+import { RosterListView } from './views/RosterListView';
 import { RosterEmployeeView } from './RosterEmployeeView';
 import { RosterFilter } from './RosterFilter';
 import { AssignShiftDialog } from './AssignShiftDialog';
@@ -13,7 +13,6 @@ import AddGroupDialog from './dialogs/AddGroupDialog';
 import { Clock, Filter, Plus, Calendar as CalendarIcon, List, Grid2X2, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Roster, Group, DepartmentName, DepartmentColor } from '@/api/models/types';
 import { FilterCategory } from '@/types/roster';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';

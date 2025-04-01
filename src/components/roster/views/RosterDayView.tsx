@@ -3,7 +3,7 @@ import React from 'react';
 import { Roster } from '@/api/models/types';
 import RosterGroup from "../RosterGroup";
 
-interface RosterDayViewProps {
+export interface RosterDayViewProps {
   date: Date;
   roster: Roster | null;
   readOnly?: boolean;
@@ -34,3 +34,5 @@ export const RosterDayView: React.FC<RosterDayViewProps> = ({
     </div>
   );
 };
+
+export default RosterDayView;

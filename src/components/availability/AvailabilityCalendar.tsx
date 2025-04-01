@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, isSameMonth, isToday, startOfWeek, endOfWeek, addDays, eachDayOfInterval, getDay } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -128,7 +127,7 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
                         <div 
                           className={cn(
                             "w-full grow mt-1 rounded-md",
-                            getDayStatusColor(availability.status),
+                            getDayStatusColor(availability.status as AvailabilityStatus),
                             "flex items-center justify-center text-white text-xs font-medium"
                           )}
                         >

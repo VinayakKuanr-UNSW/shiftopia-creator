@@ -11,6 +11,7 @@ const PRESETS: AvailabilityPreset[] = [
     id: '1',
     name: 'Weekdays Only',
     type: 'weekdays',
+    pattern: {}, // Add the required pattern property
     timeSlots: [
       {
         startTime: '09:00',
@@ -24,6 +25,7 @@ const PRESETS: AvailabilityPreset[] = [
     id: '2',
     name: 'Weekends Only',
     type: 'weekends',
+    pattern: {}, // Add the required pattern property
     timeSlots: [
       {
         startTime: '10:00',
@@ -37,6 +39,7 @@ const PRESETS: AvailabilityPreset[] = [
     id: '3',
     name: 'Mornings Only',
     type: 'custom',
+    pattern: {}, // Add the required pattern property
     timeSlots: [
       {
         startTime: '07:00',
@@ -49,6 +52,7 @@ const PRESETS: AvailabilityPreset[] = [
     id: '4',
     name: 'Evenings Only',
     type: 'custom',
+    pattern: {}, // Add the required pattern property
     timeSlots: [
       {
         startTime: '17:00',
@@ -61,6 +65,7 @@ const PRESETS: AvailabilityPreset[] = [
     id: '5',
     name: 'Full Day',
     type: 'custom',
+    pattern: {}, // Add the required pattern property
     timeSlots: [
       {
         startTime: '00:00',
@@ -73,6 +78,7 @@ const PRESETS: AvailabilityPreset[] = [
     id: '6',
     name: 'Fully Unavailable',
     type: 'custom',
+    pattern: {}, // Add the required pattern property
     timeSlots: [
       {
         startTime: '00:00',
@@ -149,12 +155,12 @@ export const availabilityService = {
       // Create or update availability
       const existingIndex = MOCK_AVAILABILITIES[monthKey].findIndex(a => a.date === dateKey);
       const availability: DayAvailability = {
-        id: Math.random().toString(36).substring(2, 11),
         date: dateKey,
-        employeeId,
         timeSlots: slotsWithIds,
         status,
-        notes
+        notes,
+        id: Math.random().toString(36).substring(2, 11),
+        employeeId // Adding employeeId
       };
       
       if (existingIndex >= 0) {

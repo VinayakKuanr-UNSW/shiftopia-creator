@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format } from 'date-fns';
 import { Clock, Info } from 'lucide-react';
@@ -84,7 +83,7 @@ export function DayAvailabilityView({ date, onEdit }: DayAvailabilityViewProps) 
             <div 
               className={cn(
                 "w-3 h-3 rounded-full mr-2",
-                getDayStatusColor(availability.status)
+                getDayStatusColor(availability.status as AvailabilityStatus)
               )}
             />
             <span>

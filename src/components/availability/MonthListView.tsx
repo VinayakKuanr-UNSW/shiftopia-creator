@@ -97,7 +97,7 @@ export function MonthListView({ onSelectDate }: MonthListViewProps) {
                             <div
                               className={cn(
                                 "h-3 w-3 rounded-full mr-2",
-                                getDayStatusColor(availability.status)
+                                getDayStatusColor(availability.status as AvailabilityStatus)
                               )}
                             />
                             <span className="text-sm">

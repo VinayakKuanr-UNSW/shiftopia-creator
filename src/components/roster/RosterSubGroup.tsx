@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Edit, Plus, Trash, Copy } from 'lucide-react';
 import ShiftItem from '@/components/ShiftItem';
@@ -323,8 +322,8 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
               role={shift.role}
               startTime={shift.startTime}
               endTime={shift.endTime}
-              breakDuration={shift.breakDuration}
-              remunerationLevel={shift.remunerationLevel}
+              breakDuration={shift.breakDuration || ""}
+              remunerationLevel={shift.remunerationLevel?.toString() || ""}
               employeeId={shift.employeeId}
               employee={shift.employee}
               status={shift.status}

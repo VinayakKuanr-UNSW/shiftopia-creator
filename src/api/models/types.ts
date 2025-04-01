@@ -128,6 +128,7 @@ export interface DayAvailability {
   status?: string; // Added for compatibility
   notes?: string;  // Added for compatibility
   id?: string;     // Added for compatibility
+  employeeId?: string; // Added for compatability
 }
 
 export interface TimeSlot {

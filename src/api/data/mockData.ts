@@ -1,4 +1,3 @@
-
 import { Group, Template, Roster, Timesheet, Bid, Employee, ShiftStatus } from '../models/types';
 
 // Mock employees data
@@ -219,6 +218,7 @@ export const generateRoster = (date: string, templateId: number = 1): Roster => 
     date,
     templateId,
     groups: rosterGroups,
+    status: 'draft',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -313,6 +313,9 @@ export const generateTimesheet = (roster: Roster): Timesheet => {
     date: roster.date,
     rosterId: roster.id,
     groups: timesheetGroups,
+    totalHours: Math.floor(Math.random() * 40) + 20,
+    totalPay: Math.floor(Math.random() * 2000) + 1000,
+    status: 'pending',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
