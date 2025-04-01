@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAvailabilities } from '@/hooks/useAvailabilities';
+import { AvailabilityStatus } from '@/api/models/types';
 
 interface AvailabilityCalendarProps {
   onSelectDate: (date: Date) => void;
@@ -20,21 +21,16 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
     getDayAvailability,
   } = useAvailabilities();
 
-  // Create calendar grid
   const calendarDays = React.useMemo(() => {
-    // Get start of first week (Sunday)
     const firstDayOfMonth = startOfMonth;
     const start = startOfWeek(firstDayOfMonth);
     
-    // Get end of last week (Saturday)
     const lastDayOfMonth = endOfMonth;
     const end = endOfWeek(lastDayOfMonth);
 
-    // Get all days in the calendar view
     return eachDayOfInterval({ start, end });
   }, [startOfMonth, endOfMonth]);
 
-  // Organize days into weeks
   const calendarWeeks = React.useMemo(() => {
     const weeks = [];
     let week = [];
@@ -42,13 +38,12 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
     for (const day of calendarDays) {
       week.push(day);
       
-      if (getDay(day) === 6) {  // If it's Saturday, end the week
+      if (getDay(day) === 6) {
         weeks.push([...week]);
         week = [];
       }
     }
 
-    // Add any remaining days
     if (week.length > 0) {
       weeks.push(week);
     }

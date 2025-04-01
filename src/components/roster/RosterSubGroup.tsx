@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Edit, Plus, Trash, Copy } from 'lucide-react';
 import ShiftItem from '@/components/ShiftItem';
-import { SubGroup } from '@/api/models/types';
+import { SubGroup, RemunerationLevel } from '@/api/models/types';
 import AddShiftDialog from './dialogs/AddShiftDialog';
 import { useTemplates } from '@/api/hooks';
 import { useToast } from '@/hooks/use-toast';
@@ -367,3 +367,5 @@ export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
     </div>
   );
 };
+
+export { RosterSubGroup };

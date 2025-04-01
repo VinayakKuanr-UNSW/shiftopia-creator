@@ -1,5 +1,5 @@
-import React from 'react';
-import { Roster, Group } from '@/api/models/types';
+import React, { useState } from 'react';
+import { Roster, Group, DepartmentName, DepartmentColor } from '@/api/models/types';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday } from 'date-fns';
 import { RosterDayView } from './views/RosterDayView';
 import { RosterThreeDayView } from './views/RosterThreeDayView';
@@ -16,6 +16,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FilterCategory } from '@/types/roster';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { useDrop } from 'react-dnd';
 
 interface RosterCalendarProps {
   selectedDate: Date;
@@ -52,7 +53,6 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({
     }),
   }));
 
-  // Extract all shifts from roster
   const allShifts: Array<{ 
     shift: any, 
     groupName: string, 
@@ -75,14 +75,11 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({
     });
   }
 
-  // Handle filters
   const handleFilterChange = (filters: Record<string, string[]>) => {
     setActiveFilters(filters);
     
-    // You would filter the data based on these filters
     console.log('Filters applied:', filters);
     
-    // Show toast notification
     const totalFilters = Object.values(filters).reduce((sum, arr) => sum + arr.length, 0);
     if (totalFilters > 0) {
       toast({
@@ -92,31 +89,25 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({
     }
   };
 
-  // Handle assigning multiple shifts
   const handleAssignShifts = (assignments: Array<{ shiftId: string, employeeId: string }>) => {
-    // Process each assignment
     assignments.forEach(({ shiftId, employeeId }) => {
       if (onAssignEmployee) {
         onAssignEmployee(shiftId, employeeId);
       }
     });
     
-    // Clear selected shifts after assignment
     setSelectedShifts([]);
     
-    // Show confirmation toast
     toast({
       title: "Shifts Assigned",
       description: `Successfully assigned ${assignments.length} shift${assignments.length > 1 ? 's' : ''}.`,
     });
   };
 
-  // Handle adding a new group
   const handleAddGroup = (group: { name: DepartmentName; color: DepartmentColor }) => {
     if (onAddGroup) {
       onAddGroup(group);
     } else {
-      // Mock implementation for demo
       toast({
         title: "Department Added",
         description: `${group.name} department would be added to the roster.`,
@@ -202,10 +193,10 @@ export const RosterCalendar: React.FC<RosterCalendarProps> = ({
       {/* Day View */}
       {viewMode === 'day' && (
         <RosterDayView 
+          date={selectedDate}
           roster={roster || null} 
-          isLoading={isLoading || false}
-          isOver={isOver}
           readOnly={readOnly}
+          onAddGroup={onAddGroup}
         />
       )}
       

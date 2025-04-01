@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, eachDayOfInterval, startOfMonth, endOfMonth, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAvailabilities } from '@/hooks/useAvailabilities';
 import { Separator } from '@/components/ui/separator';
+import { AvailabilityStatus } from '@/api/models/types';
 
 interface MonthListViewProps {
   onSelectDate: (date: Date) => void;

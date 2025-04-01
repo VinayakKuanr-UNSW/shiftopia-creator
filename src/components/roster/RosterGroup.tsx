@@ -1,4 +1,3 @@
-
 // Update the import for RosterSubGroup to use named export
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -128,6 +127,7 @@ const RosterGroup: React.FC<RosterGroupProps> = ({
               <RosterSubGroup
                 key={subGroup.id}
                 groupId={group.id}
+                groupColor={group.color}
                 subGroup={subGroup}
                 readOnly={readOnly}
               />

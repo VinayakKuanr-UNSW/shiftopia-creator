@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { format } from 'date-fns';
 import { Clock, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAvailabilities } from '@/hooks/useAvailabilities';
-import { DayAvailability } from '@/api/models/types';
+import { DayAvailability, AvailabilityStatus } from '@/api/models/types';
 import { cn } from '@/lib/utils';
 
 interface DayAvailabilityViewProps {

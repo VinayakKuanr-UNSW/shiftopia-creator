@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Roster } from '@/api/models/types';
+import { Roster, Employee } from '@/api/models/types';
 import { format, parseISO } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Calendar, User, MapPin, Building } from 'lucide-react';
@@ -33,13 +33,12 @@ export const RosterListView: React.FC<RosterListViewProps> = ({
   const [sortField, setSortField] = useState<string>('startTime');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
-  // Collect all shifts from all groups and subgroups
   const allShifts: Array<{ 
     id: string;
     role: string;
     startTime: string;
     endTime: string;
-    employee?: { id: string; name: string; };
+    employee?: Employee;
     employeeId?: string;
     groupName: string;
     groupColor: string;
@@ -63,7 +62,6 @@ export const RosterListView: React.FC<RosterListViewProps> = ({
     });
   }
   
-  // Sort shifts
   const sortedShifts = [...allShifts].sort((a, b) => {
     if (sortField === 'startTime') {
       const dateA = new Date(a.startTime || '');
@@ -154,10 +152,12 @@ export const RosterListView: React.FC<RosterListViewProps> = ({
         <TableBody>
           {sortedShifts.length > 0 ? (
             sortedShifts.map(shift => {
-              // Create a compatible employee object if needed
               const employeeObj = shift.employee ? {
                 id: shift.employee.id,
                 name: shift.employee.name || `${shift.employee.firstName || ''} ${shift.employee.lastName || ''}`.trim()
+              } : shift.employeeId ? { 
+                id: shift.employeeId, 
+                name: "Unknown Employee" 
               } : undefined;
               
               return (
