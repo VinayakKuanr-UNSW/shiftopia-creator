@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Edit, Plus, Trash, Copy } from 'lucide-react';
 import ShiftItem from '@/components/ShiftItem';
@@ -40,7 +41,7 @@ interface RosterSubGroupProps {
   onCloneSubGroup?: (groupId: number, subGroupId: number) => void;
 }
 
-export const RosterSubGroup: React.FC<RosterSubGroupProps> = ({ 
+const RosterSubGroup: React.FC<RosterSubGroupProps> = ({ 
   templateId,
   subGroup, 
   groupId,
