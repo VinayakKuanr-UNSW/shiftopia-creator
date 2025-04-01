@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { DepartmentName } from '@/api/models/types';
 
 interface TemplateFormProps {
   onComplete?: () => void;
@@ -19,7 +20,7 @@ interface TemplateFormProps {
 const TemplateForm: React.FC<TemplateFormProps> = ({ onComplete }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [department, setDepartment] = useState('');
+  const [department, setDepartment] = useState<DepartmentName>('Convention Centre');
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
   const [subDepartment, setSubDepartment] = useState('');
@@ -42,10 +43,12 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ onComplete }) => {
     createTemplateMutation.mutate({
       name,
       description,
+      start_date: startDate ? format(startDate, 'yyyy-MM-dd') : undefined,
+      end_date: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
       groups: [
         {
           id: 1,
-          name: department || 'Convention Centre',
+          name: department,
           color: 'blue',
           subGroups: [
             {
@@ -61,7 +64,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ onComplete }) => {
         toast.success("Template created successfully");
         setName('');
         setDescription('');
-        setDepartment('');
+        setDepartment('Convention Centre');
         setSubDepartment('');
         setIsSubmitting(false);
         if (onComplete) onComplete();

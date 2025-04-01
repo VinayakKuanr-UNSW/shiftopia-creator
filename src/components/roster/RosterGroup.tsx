@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Edit, Plus, Trash, Copy } from 'lucide-react';
 import { RosterSubGroup } from './RosterSubGroup';
@@ -54,8 +53,8 @@ export const RosterGroup: React.FC<RosterGroupProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editName, setEditName] = useState(group.name);
-  const [editColor, setEditColor] = useState(group.color);
+  const [name, setName] = useState<DepartmentName>(group.name);
+  const [color, setColor] = useState<DepartmentColor>(group.color);
   const { toast } = useToast();
   
   const { useCloneGroup, useAddSubGroup, useUpdateGroup, useDeleteGroup } = useTemplates();
@@ -113,12 +112,12 @@ export const RosterGroup: React.FC<RosterGroupProps> = ({
   
   const handleSaveEdit = () => {
     if (onEditGroup) {
-      onEditGroup(group.id, { name: editName, color: editColor });
+      onEditGroup(group.id, { name, color });
     } else if (templateId) {
       updateGroupMutation.mutate({
         templateId,
         groupId: group.id,
-        updates: { name: editName, color: editColor }
+        updates: { name, color }
       }, {
         onSuccess: () => {
           toast({
@@ -139,7 +138,7 @@ export const RosterGroup: React.FC<RosterGroupProps> = ({
       // Mock implementation for demo
       toast({
         title: "Group Updated",
-        description: `${group.name} would be updated to ${editName}`,
+        description: `${group.name} would be updated to ${name}`,
       });
       setIsEditDialogOpen(false);
     }
@@ -248,8 +247,8 @@ export const RosterGroup: React.FC<RosterGroupProps> = ({
                     className="p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-blue-400/80 hover:text-blue-400 transition-all duration-200 hover:scale-110"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setEditName(group.name);
-                      setEditColor(group.color);
+                      setName(group.name);
+                      setColor(group.color);
                     }}
                   >
                     <Edit size={16} />
@@ -269,8 +268,8 @@ export const RosterGroup: React.FC<RosterGroupProps> = ({
                       </Label>
                       <Input
                         id="group-name"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         className="col-span-3 bg-gray-800 border-gray-700"
                       />
                     </div>
@@ -279,8 +278,8 @@ export const RosterGroup: React.FC<RosterGroupProps> = ({
                         Color
                       </Label>
                       <Select
-                        value={editColor}
-                        onValueChange={setEditColor}
+                        value={color}
+                        onValueChange={handleColorChange}
                       >
                         <SelectTrigger id="group-color" className="col-span-3 bg-gray-800 border-gray-700">
                           <SelectValue placeholder="Select color" />

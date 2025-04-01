@@ -1,6 +1,21 @@
-
-import { Template, Group, SubGroup } from '../models/types';
+import { Template, Group, SubGroup, DBTemplate } from '../models/types';
 import { supabase } from '@/integrations/supabase/client';
+
+// Helper function to convert from DB format to our app format
+const dbToAppTemplate = (dbTemplate: DBTemplate): Template => {
+  return {
+    id: dbTemplate.template_id,
+    name: dbTemplate.name,
+    description: dbTemplate.description,
+    groups: dbTemplate.groups || [],
+    createdAt: dbTemplate.created_at,
+    updatedAt: dbTemplate.updated_at,
+    department_id: dbTemplate.department_id,
+    sub_department_id: dbTemplate.sub_department_id,
+    start_date: dbTemplate.start_date,
+    end_date: dbTemplate.end_date
+  };
+};
 
 export const templatesService = {
   getAllTemplates: async (): Promise<Template[]> => {
@@ -14,14 +29,15 @@ export const templatesService = {
       throw error;
     }
     
-    return data || [];
+    // Convert from DB format to our app format
+    return (data || []).map(dbToAppTemplate);
   },
   
   getTemplateById: async (id: number): Promise<Template | null> => {
     const { data, error } = await supabase
       .from('templates')
       .select('*')
-      .eq('id', id)
+      .eq('template_id', id)
       .single();
     
     if (error) {
@@ -29,19 +45,29 @@ export const templatesService = {
       throw error;
     }
     
-    return data;
+    if (!data) return null;
+    
+    return dbToAppTemplate(data as DBTemplate);
   },
   
   createTemplate: async (template: Omit<Template, 'id' | 'createdAt' | 'updatedAt'>): Promise<Template> => {
+    // Default values for required fields
+    const now = new Date().toISOString();
+    const dbTemplate = {
+      name: template.name,
+      description: template.description,
+      department_id: template.department_id || 1,
+      sub_department_id: template.sub_department_id || 1,
+      start_date: template.start_date || now.split('T')[0],
+      end_date: template.end_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      created_at: now,
+      updated_at: now,
+      groups: JSON.stringify(template.groups || [])
+    };
+    
     const { data, error } = await supabase
       .from('templates')
-      .insert([{
-        name: template.name,
-        description: template.description,
-        groups: template.groups,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }])
+      .insert([dbTemplate])
       .select()
       .single();
     
@@ -51,14 +77,18 @@ export const templatesService = {
     }
     
     // Transform the response data to match our expected format
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
+    const createdTemplate = dbToAppTemplate(data as unknown as DBTemplate);
+    
+    // If groups were stored as JSON string, parse them back
+    if (typeof createdTemplate.groups === 'string') {
+      try {
+        createdTemplate.groups = JSON.parse(createdTemplate.groups);
+      } catch (e) {
+        createdTemplate.groups = [];
+      }
+    }
+    
+    return createdTemplate;
   },
   
   updateTemplate: async (id: number, updates: Partial<Template>): Promise<Template | null> => {
@@ -67,20 +97,29 @@ export const templatesService = {
       updated_at: new Date().toISOString()
     };
     
-    // Remove properties that don't match the database column names
-    if (updates.createdAt) {
+    // Handle properties that need to be remapped for the database
+    if (updates.id !== undefined) {
+      delete updateData.id;
+    }
+    
+    if (updates.createdAt !== undefined) {
       updateData.created_at = updates.createdAt;
       delete updateData.createdAt;
     }
-    if (updates.updatedAt) {
+    
+    if (updates.updatedAt !== undefined) {
       updateData.updated_at = updates.updatedAt;
       delete updateData.updatedAt;
+    }
+    
+    if (updates.groups !== undefined) {
+      updateData.groups = JSON.stringify(updates.groups);
     }
     
     const { data, error } = await supabase
       .from('templates')
       .update(updateData)
-      .eq('id', id)
+      .eq('template_id', id)
       .select()
       .single();
     
@@ -92,21 +131,25 @@ export const templatesService = {
     if (!data) return null;
     
     // Transform the response data to match our expected format
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
+    const updatedTemplate = dbToAppTemplate(data as unknown as DBTemplate);
+    
+    // If groups were stored as JSON string, parse them back
+    if (typeof updatedTemplate.groups === 'string') {
+      try {
+        updatedTemplate.groups = JSON.parse(updatedTemplate.groups);
+      } catch (e) {
+        updatedTemplate.groups = [];
+      }
+    }
+    
+    return updatedTemplate;
   },
   
   deleteTemplate: async (id: number): Promise<boolean> => {
     const { error } = await supabase
       .from('templates')
       .delete()
-      .eq('id', id);
+      .eq('template_id', id);
     
     if (error) {
       console.error('Error deleting template:', error);
@@ -116,24 +159,14 @@ export const templatesService = {
     return true;
   },
   
-  // New methods for group management
   addGroup: async (templateId: number, group: Omit<Group, 'id'>): Promise<Template | null> => {
     // First get the current template
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
+    const template = await templatesService.getTemplateById(templateId);
     
-    if (fetchError) {
-      console.error('Error fetching template for group addition:', fetchError);
-      throw fetchError;
-    }
-    
-    if (!currentTemplate) return null;
+    if (!template) return null;
     
     // Create a new group with a generated ID
-    const groups = [...currentTemplate.groups];
+    const groups = [...template.groups];
     const newGroupId = Math.max(0, ...groups.map(g => g.id)) + 1;
     const newGroup = {
       id: newGroupId,
@@ -143,49 +176,17 @@ export const templatesService = {
     groups.push(newGroup);
     
     // Update the template with the new group
-    const { data, error } = await supabase
-      .from('templates')
-      .update({
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error adding group to template:', error);
-      throw error;
-    }
-    
-    // Transform the response data
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
+    return templatesService.updateTemplate(templateId, { groups });
   },
   
   updateGroup: async (templateId: number, groupId: number, updates: Partial<Group>): Promise<Template | null> => {
     // First get the current template
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
+    const template = await templatesService.getTemplateById(templateId);
     
-    if (fetchError) {
-      console.error('Error fetching template for group update:', fetchError);
-      throw fetchError;
-    }
-    
-    if (!currentTemplate) return null;
+    if (!template) return null;
     
     // Find and update the group
-    const groups = [...currentTemplate.groups];
+    const groups = [...template.groups];
     const groupIndex = groups.findIndex(g => g.id === groupId);
     
     if (groupIndex === -1) {
@@ -198,95 +199,52 @@ export const templatesService = {
     };
     
     // Update the template with the modified groups
-    const { data, error } = await supabase
-      .from('templates')
-      .update({
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error updating group in template:', error);
-      throw error;
-    }
-    
-    // Transform the response data
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
+    return templatesService.updateTemplate(templateId, { groups });
   },
   
   deleteGroup: async (templateId: number, groupId: number): Promise<Template | null> => {
     // First get the current template
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
+    const template = await templatesService.getTemplateById(templateId);
     
-    if (fetchError) {
-      console.error('Error fetching template for group deletion:', fetchError);
-      throw fetchError;
-    }
-    
-    if (!currentTemplate) return null;
+    if (!template) return null;
     
     // Filter out the group to delete
-    const groups = currentTemplate.groups.filter(g => g.id !== groupId);
+    const groups = template.groups.filter(g => g.id !== groupId);
     
     // Update the template without the deleted group
-    const { data, error } = await supabase
-      .from('templates')
-      .update({
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error deleting group from template:', error);
-      throw error;
-    }
-    
-    // Transform the response data
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
+    return templatesService.updateTemplate(templateId, { groups });
   },
   
-  // SubGroup operations
-  addSubGroup: async (templateId: number, groupId: number, subGroup: Omit<SubGroup, 'id'>): Promise<Template | null> => {
-    // First get the current template
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
+  cloneGroup: async (templateId: number, groupId: number): Promise<Template | null> => {
+    const template = await templatesService.getTemplateById(templateId);
     
-    if (fetchError) {
-      console.error('Error fetching template for subgroup addition:', fetchError);
-      throw fetchError;
+    if (!template) return null;
+    
+    const groupToClone = template.groups.find(g => g.id === groupId);
+    
+    if (!groupToClone) {
+      throw new Error(`Group with ID ${groupId} not found in template ${templateId}`);
     }
     
-    if (!currentTemplate) return null;
+    // Create a deep clone of the group with a new ID
+    const newGroupId = Math.max(0, ...template.groups.map(g => g.id)) + 1;
+    const clonedGroup = JSON.parse(JSON.stringify(groupToClone));
+    clonedGroup.id = newGroupId;
+    clonedGroup.name = `${clonedGroup.name} (Copy)`;
+    
+    const groups = [...template.groups, clonedGroup];
+    
+    // Update the template with the cloned group
+    return templatesService.updateTemplate(templateId, { groups });
+  },
+  
+  addSubGroup: async (templateId: number, groupId: number, subGroup: Omit<SubGroup, 'id'>): Promise<Template | null> => {
+    const template = await templatesService.getTemplateById(templateId);
+    
+    if (!template) return null;
     
     // Find the group
-    const groups = [...currentTemplate.groups];
+    const groups = [...template.groups];
     const groupIndex = groups.findIndex(g => g.id === groupId);
     
     if (groupIndex === -1) {
@@ -305,49 +263,17 @@ export const templatesService = {
     groups[groupIndex].subGroups = subGroups;
     
     // Update the template with the modified groups
-    const { data, error } = await supabase
-      .from('templates')
-      .update({
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error adding subgroup to template:', error);
-      throw error;
-    }
-    
-    // Transform the response data
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
+    return templatesService.updateTemplate(templateId, { groups });
   },
   
   updateSubGroup: async (templateId: number, groupId: number, subGroupId: number, updates: Partial<SubGroup>): Promise<Template | null> => {
     // First get the current template
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
+    const template = await templatesService.getTemplateById(templateId);
     
-    if (fetchError) {
-      console.error('Error fetching template for subgroup update:', fetchError);
-      throw fetchError;
-    }
-    
-    if (!currentTemplate) return null;
+    if (!template) return null;
     
     // Find the group and subgroup
-    const groups = [...currentTemplate.groups];
+    const groups = [...template.groups];
     const groupIndex = groups.findIndex(g => g.id === groupId);
     
     if (groupIndex === -1) {
@@ -370,49 +296,17 @@ export const templatesService = {
     groups[groupIndex].subGroups = subGroups;
     
     // Update the template with the modified groups
-    const { data, error } = await supabase
-      .from('templates')
-      .update({
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error updating subgroup in template:', error);
-      throw error;
-    }
-    
-    // Transform the response data
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
+    return templatesService.updateTemplate(templateId, { groups });
   },
   
   deleteSubGroup: async (templateId: number, groupId: number, subGroupId: number): Promise<Template | null> => {
     // First get the current template
-    const { data: currentTemplate, error: fetchError } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', templateId)
-      .single();
+    const template = await templatesService.getTemplateById(templateId);
     
-    if (fetchError) {
-      console.error('Error fetching template for subgroup deletion:', fetchError);
-      throw fetchError;
-    }
-    
-    if (!currentTemplate) return null;
+    if (!template) return null;
     
     // Find the group
-    const groups = [...currentTemplate.groups];
+    const groups = [...template.groups];
     const groupIndex = groups.findIndex(g => g.id === groupId);
     
     if (groupIndex === -1) {
@@ -423,33 +317,9 @@ export const templatesService = {
     groups[groupIndex].subGroups = groups[groupIndex].subGroups.filter(sg => sg.id !== subGroupId);
     
     // Update the template with the modified groups
-    const { data, error } = await supabase
-      .from('templates')
-      .update({
-        groups,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error deleting subgroup from template:', error);
-      throw error;
-    }
-    
-    // Transform the response data
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      groups: data.groups,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
+    return templatesService.updateTemplate(templateId, { groups });
   },
   
-  // Shift operations
   addShift: async (templateId: number, groupId: number, subGroupId: number, shift: any): Promise<Template | null> => {
     // First get the current template
     const { data: currentTemplate, error: fetchError } = await supabase
@@ -690,7 +560,6 @@ export const templatesService = {
   },
   
   cloneSubGroup: async (templateId: number, groupId: number, subGroupId: number): Promise<Template | null> => {
-    // Similar to cloneGroup but for subgroups
     const { data: currentTemplate, error: fetchError } = await supabase
       .from('templates')
       .select('*')
