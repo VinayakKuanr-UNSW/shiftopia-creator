@@ -1,41 +1,36 @@
 
 import React from 'react';
-import { RosterGroup } from '../RosterGroup';
 import { Roster } from '@/api/models/types';
+import RosterGroup from "../RosterGroup";
 
 interface RosterDayViewProps {
+  date: Date;
   roster: Roster | null;
-  isLoading: boolean;
-  isOver?: boolean;
   readOnly?: boolean;
+  onAddGroup?: (name: string, color: string) => void;
 }
 
 export const RosterDayView: React.FC<RosterDayViewProps> = ({ 
+  date, 
   roster, 
-  isLoading, 
-  isOver,
-  readOnly 
+  readOnly = false,
+  onAddGroup
 }) => {
-  if (!roster) {
-    return (
-      <div className="p-8 text-center">
-        <p className="text-white/60">No roster data available for the selected date</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {roster.groups.map((group) => (
+      {roster && roster.groups.map(group => (
         <RosterGroup 
           key={group.id} 
           group={group}
           readOnly={readOnly}
-          isOver={isOver}
         />
       ))}
+      
+      {!roster && (
+        <div className="text-center py-10 text-white/60">
+          No roster found for this date. Click "Apply Template" to create one.
+        </div>
+      )}
     </div>
   );
 };
-
-export default RosterDayView;
