@@ -1,10 +1,24 @@
 
 import React, { useState } from 'react';
-import { Check, Clock, Eye, MoreHorizontal, Pencil, Trash, X, AlertTriangle, RefreshCw } from 'lucide-react';
+import { 
+  Clock, 
+  Pencil, 
+  Check, 
+  X, 
+  AlertTriangle, 
+  MoreHorizontal 
+} from 'lucide-react';
 import { ShiftStatusBadge } from './ShiftStatusBadge';
 import { ShiftHistoryDrawer } from './ShiftHistoryDrawer';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface TimesheetEntry {
   id: number;
@@ -37,34 +51,23 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
   const { toast } = useToast();
   
   const handleStatusUpdate = (newStatus: 'Completed' | 'Cancelled' | 'No-Show') => {
-    // In a real app, this would make an API call to update the status
     toast({
       title: "Status Updated",
       description: `Shift status has been updated to ${newStatus}.`,
     });
   };
   
-  const handleCancelShift = () => {
-    // In a real app, this would open a modal to confirm cancellation and record reason
+  const handleApprove = () => {
     toast({
-      title: "Shift Cancelled",
-      description: "This shift has been cancelled and will be available for re-assignment.",
+      title: "Timesheet Approved",
+      description: "This timesheet entry has been approved.",
     });
   };
   
-  const handleCompleteShift = () => {
-    // In a real app, this would update the shift status to completed
+  const handleReject = () => {
     toast({
-      title: "Shift Completed",
-      description: "This shift has been marked as completed.",
-    });
-  };
-  
-  const handleSwapRequest = () => {
-    // In a real app, this would open a modal to select swap options
-    toast({
-      title: "Swap Request",
-      description: "Your swap request has been submitted for approval.",
+      title: "Timesheet Rejected",
+      description: "This timesheet entry has been rejected.",
     });
   };
   
@@ -123,18 +126,22 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
           </td>
           <td className="p-3 text-sm">
             <div className="flex space-x-1">
-              <button 
+              <Button 
+                variant="ghost"
+                size="icon"
                 onClick={() => setIsEditing(false)}
-                className="p-1 rounded-full hover:bg-green-500/20 text-green-400"
+                className="h-8 w-8 rounded-full text-green-400 hover:bg-green-500/20"
               >
                 <Check size={16} />
-              </button>
-              <button 
+              </Button>
+              <Button 
+                variant="ghost"
+                size="icon"
                 onClick={() => setIsEditing(false)}
-                className="p-1 rounded-full hover:bg-red-500/20 text-red-400"
+                className="h-8 w-8 rounded-full text-red-400 hover:bg-red-500/20"
               >
                 <X size={16} />
-              </button>
+              </Button>
             </div>
           </td>
         </>
@@ -161,60 +168,46 @@ export const TimesheetRow: React.FC<TimesheetRowProps> = ({ entry, readOnly }) =
             )}
           </td>
           <td className="p-3 text-sm">
-            <div className="flex space-x-1">
-              <button 
-                onClick={() => setHistoryOpen(true)}
-                className="p-1 rounded-full hover:bg-blue-500/20 text-blue-400"
-                title="View Shift History"
-              >
-                <Clock size={16} />
-              </button>
-              
-              {!readOnly && entry.status !== 'Completed' && entry.status !== 'Cancelled' && entry.status !== 'No-Show' && (
-                <button 
-                  onClick={() => setIsEditing(true)}
-                  className="p-1 rounded-full hover:bg-purple-500/20 text-purple-400"
-                  title="Edit Shift"
-                >
-                  <Pencil size={16} />
-                </button>
-              )}
-              
-              {!readOnly && entry.status === 'Active' && (
-                <>
-                  <button 
-                    onClick={() => handleCompleteShift()}
-                    className="p-1 rounded-full hover:bg-green-500/20 text-green-400"
-                    title="Mark as Completed"
-                  >
-                    <Check size={16} />
-                  </button>
-                  <button 
-                    onClick={() => handleCancelShift()}
-                    className="p-1 rounded-full hover:bg-red-500/20 text-red-400"
-                    title="Cancel Shift"
-                  >
-                    <X size={16} />
-                  </button>
-                  <button 
-                    onClick={() => handleSwapRequest()}
-                    className="p-1 rounded-full hover:bg-yellow-500/20 text-yellow-400"
-                    title="Request Swap"
-                  >
-                    <RefreshCw size={16} />
-                  </button>
-                </>
-              )}
-              
-              {!readOnly && entry.status === 'No-Show' && (
-                <button 
-                  className="p-1 rounded-full hover:bg-yellow-500/20 text-yellow-400"
-                  title="Report Details"
-                >
-                  <AlertTriangle size={16} />
-                </button>
-              )}
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setHistoryOpen(true)}>
+                  <Clock className="mr-2 h-4 w-4" />
+                  <span>View History</span>
+                </DropdownMenuItem>
+                
+                {!readOnly && entry.status !== 'Completed' && entry.status !== 'Cancelled' && (
+                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    <span>Edit Times</span>
+                  </DropdownMenuItem>
+                )}
+                
+                {!readOnly && entry.status === 'Active' && (
+                  <>
+                    <DropdownMenuItem onClick={handleApprove}>
+                      <Check className="mr-2 h-4 w-4" />
+                      <span>Approve</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleReject}>
+                      <X className="mr-2 h-4 w-4" />
+                      <span>Reject</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                
+                {!readOnly && entry.status === 'No-Show' && (
+                  <DropdownMenuItem>
+                    <AlertTriangle className="mr-2 h-4 w-4" />
+                    <span>Report Details</span>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </td>
         </>
       )}

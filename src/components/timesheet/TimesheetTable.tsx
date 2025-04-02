@@ -1,20 +1,25 @@
 
-import React, { useState } from 'react';
-import { Filter, Clock, Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { TimesheetRow } from './TimesheetRow';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format } from 'date-fns';
 
 interface TimesheetTableProps {
   selectedDate: Date;
   readOnly?: boolean;
+  statusFilter: string | null;
+  viewMode: 'table' | 'group';
+  onViewChange: (view: 'table' | 'group') => void;
 }
 
-export const TimesheetTable: React.FC<TimesheetTableProps> = ({ selectedDate, readOnly }) => {
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<string>('tableView');
-  
-  // Sample data for demonstration, structured according to the template
+export const TimesheetTable: React.FC<TimesheetTableProps> = ({ 
+  selectedDate, 
+  readOnly,
+  statusFilter,
+  viewMode,
+  onViewChange
+}) => {
+  // Sample data for demonstration
   const timesheetEntries = [
     { 
       id: 1, 
@@ -212,184 +217,147 @@ export const TimesheetTable: React.FC<TimesheetTableProps> = ({ selectedDate, re
     return acc;
   }, {} as Record<string, Record<string, typeof timesheetEntries>>);
   
+  const formattedDate = format(selectedDate, 'MMMM d, yyyy');
+
   return (
     <div>
-      {/* View mode selection */}
-      <div className="mb-4 flex justify-between items-center">
-        <div className="flex flex-wrap gap-2">
-          <Button 
-            variant={statusFilter === null ? "outline" : "ghost"} 
-            size="sm" 
-            className={statusFilter === null ? "bg-white/5 border-white/10" : ""}
-            onClick={() => setStatusFilter(null)}
-          >
-            All Shifts
-          </Button>
-          <Button 
-            variant={statusFilter === 'Active' ? "outline" : "ghost"} 
-            size="sm"
-            className={statusFilter === 'Active' ? "bg-blue-900/20 border-blue-500/20 text-blue-300" : ""}
-            onClick={() => setStatusFilter('Active')}
-          >
-            Active
-          </Button>
-          <Button 
-            variant={statusFilter === 'Completed' ? "outline" : "ghost"} 
-            size="sm"
-            className={statusFilter === 'Completed' ? "bg-green-900/20 border-green-500/20 text-green-300" : ""}
-            onClick={() => setStatusFilter('Completed')}
-          >
-            Completed
-          </Button>
-          <Button 
-            variant={statusFilter === 'Cancelled' ? "outline" : "ghost"} 
-            size="sm"
-            className={statusFilter === 'Cancelled' ? "bg-red-900/20 border-red-500/20 text-red-300" : ""}
-            onClick={() => setStatusFilter('Cancelled')}
-          >
-            Cancelled
-          </Button>
-          <Button 
-            variant={statusFilter === 'Swapped' ? "outline" : "ghost"} 
-            size="sm"
-            className={statusFilter === 'Swapped' ? "bg-purple-900/20 border-purple-500/20 text-purple-300" : ""}
-            onClick={() => setStatusFilter('Swapped')}
-          >
-            Swapped
-          </Button>
-          <Button 
-            variant={statusFilter === 'No-Show' ? "outline" : "ghost"} 
-            size="sm"
-            className={statusFilter === 'No-Show' ? "bg-yellow-900/20 border-yellow-500/20 text-yellow-300" : ""}
-            onClick={() => setStatusFilter('No-Show')}
-          >
-            No-Show
-          </Button>
-        </div>
-        
-        <Tabs defaultValue="tableView" className="w-auto">
-          <TabsList className="bg-black/20 border border-white/10">
-            <TabsTrigger 
-              value="tableView" 
-              className="data-[state=active]:bg-white/10"
-              onClick={() => setViewMode('tableView')}
-            >
-              Table
-            </TabsTrigger>
-            <TabsTrigger 
-              value="groupView" 
-              className="data-[state=active]:bg-white/10"
-              onClick={() => setViewMode('groupView')}
-            >
-              Group
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="tableView" className="mt-0">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-white/5">
-                    <th className="text-left p-3 text-sm font-medium text-white/80">Employee</th>
-                    <th className="text-left p-3 text-sm font-medium text-white/80">Department</th>
-                    <th className="text-left p-3 text-sm font-medium text-white/80">Sub-Group</th>
-                    <th className="text-left p-3 text-sm font-medium text-white/80">Role</th>
-                    <th className="text-left p-3 text-sm font-medium text-white/80">Start Time</th>
-                    <th className="text-left p-3 text-sm font-medium text-white/80">End Time</th>
-                    <th className="text-left p-3 text-sm font-medium text-white/80">Break</th>
-                    <th className="text-left p-3 text-sm font-medium text-white/80">Total Hours</th>
-                    <th className="text-left p-3 text-sm font-medium text-white/80">Status</th>
-                    <th className="text-left p-3 text-sm font-medium text-white/80">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEntries.map((entry) => (
-                    <TimesheetRow key={entry.id} entry={entry} readOnly={readOnly} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      <Tabs value={viewMode} className="mt-6">
+        <TabsContent value="table" className="mt-0">
+          <div className="overflow-x-auto bg-black/20 rounded-lg border border-white/10 p-4">
+            <div className="text-lg font-semibold mb-4">Timesheets for {formattedDate}</div>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-black/30">
+                  <th className="text-left p-3 text-sm font-medium text-white/80 rounded-tl-md">Employee</th>
+                  <th className="text-left p-3 text-sm font-medium text-white/80">Department</th>
+                  <th className="text-left p-3 text-sm font-medium text-white/80">Sub-Group</th>
+                  <th className="text-left p-3 text-sm font-medium text-white/80">Role</th>
+                  <th className="text-left p-3 text-sm font-medium text-white/80">Start Time</th>
+                  <th className="text-left p-3 text-sm font-medium text-white/80">End Time</th>
+                  <th className="text-left p-3 text-sm font-medium text-white/80">Break</th>
+                  <th className="text-left p-3 text-sm font-medium text-white/80">Total Hours</th>
+                  <th className="text-left p-3 text-sm font-medium text-white/80">Status</th>
+                  <th className="text-left p-3 text-sm font-medium text-white/80 rounded-tr-md">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEntries.map((entry) => (
+                  <TimesheetRow key={entry.id} entry={entry} readOnly={readOnly} />
+                ))}
+              </tbody>
+            </table>
             
             {filteredEntries.length === 0 && (
               <div className="text-center py-8 text-white/60">
-                No shifts found matching the selected filter.
+                No shifts found matching the selected filter for {formattedDate}.
               </div>
             )}
-          </TabsContent>
-          
-          <TabsContent value="groupView" className="mt-0">
-            <div className="space-y-8">
-              {Object.entries(groupedEntries).map(([department, subGroups]) => (
-                <div key={department} className="space-y-6">
-                  <h3 className="text-xl font-bold mb-4 flex items-center">
-                    <span className={`w-3 h-3 rounded-full mr-2 ${
-                      department === 'Convention Centre' ? 'bg-blue-500' : 
-                      department === 'Exhibition Centre' ? 'bg-green-500' : 'bg-red-500'
-                    }`}></span>
-                    {department}
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    {Object.entries(subGroups).map(([subGroup, entries]) => (
-                      <div key={subGroup} className="bg-black/20 rounded-lg p-4 border border-white/10">
-                        <h4 className="text-lg font-medium mb-3">{subGroup}</h4>
-                        
-                        <div className="grid grid-cols-1 gap-3">
-                          {entries.map(entry => (
-                            <div key={entry.id} className="flex justify-between items-center p-3 bg-black/30 rounded-lg">
-                              <div className="flex-1">
-                                <div className="flex items-center mb-1">
-                                  <span className="font-medium text-white">{entry.employee}</span>
-                                  <span className="ml-3 text-xs px-2 py-0.5 rounded bg-blue-500/20 text-white/80 border border-blue-500/20">
-                                    {entry.role}
-                                  </span>
-                                  <span className={`ml-2 text-xs px-2 py-0.5 rounded ${
-                                    entry.remunerationLevel === 'GOLD' ? 'bg-yellow-500/30 text-yellow-300 border border-yellow-500/30' :
-                                    entry.remunerationLevel === 'SILVER' ? 'bg-slate-400/30 text-slate-300 border border-slate-400/30' :
-                                    'bg-orange-600/30 text-orange-300 border border-orange-600/30'
-                                  }`}>
-                                    {entry.remunerationLevel}
-                                  </span>
-                                </div>
-                                <div className="flex items-center text-sm text-white/70">
-                                  <Clock size={12} className="mr-1" />
-                                  {entry.startTime} - {entry.endTime} ({entry.totalHours} hrs)
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center space-x-3">
-                                <div className={`text-xs px-2 py-1 rounded-full ${
-                                  entry.status === 'Active' ? 'bg-blue-500/20 text-blue-300' :
-                                  entry.status === 'Completed' ? 'bg-green-500/20 text-green-300' :
-                                  entry.status === 'Cancelled' ? 'bg-red-500/20 text-red-300' :
-                                  entry.status === 'Swapped' ? 'bg-purple-500/20 text-purple-300' :
-                                  'bg-yellow-500/20 text-yellow-300'
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="group" className="mt-0">
+          <div className="space-y-8 bg-black/20 rounded-lg border border-white/10 p-4">
+            <div className="text-lg font-semibold mb-4">Timesheets for {formattedDate}</div>
+            {Object.entries(groupedEntries).map(([department, subGroups]) => (
+              <div key={department} className="space-y-6">
+                <h3 className="text-xl font-bold mb-4 flex items-center">
+                  <span className={`w-3 h-3 rounded-full mr-2 ${
+                    department === 'Convention Centre' ? 'bg-blue-500' : 
+                    department === 'Exhibition Centre' ? 'bg-green-500' : 'bg-red-500'
+                  }`}></span>
+                  {department}
+                </h3>
+                
+                <div className="space-y-4">
+                  {Object.entries(subGroups).map(([subGroup, entries]) => (
+                    <div key={subGroup} className="bg-black/30 rounded-lg p-4 border border-white/10">
+                      <h4 className="text-lg font-medium mb-3">{subGroup}</h4>
+                      
+                      <div className="grid grid-cols-1 gap-3">
+                        {entries.map(entry => (
+                          <div key={entry.id} className="flex justify-between items-center p-3 bg-black/40 rounded-lg">
+                            <div className="flex-1">
+                              <div className="flex items-center mb-1">
+                                <span className="font-medium text-white">{entry.employee}</span>
+                                <span className="ml-3 text-xs px-2 py-0.5 rounded bg-blue-500/20 text-white/80 border border-blue-500/20">
+                                  {entry.role}
+                                </span>
+                                <span className={`ml-2 text-xs px-2 py-0.5 rounded ${
+                                  entry.remunerationLevel === 'GOLD' ? 'bg-yellow-500/30 text-yellow-300 border border-yellow-500/30' :
+                                  entry.remunerationLevel === 'SILVER' ? 'bg-slate-400/30 text-slate-300 border border-slate-400/30' :
+                                  'bg-orange-600/30 text-orange-300 border border-orange-600/30'
                                 }`}>
-                                  {entry.status}
-                                </div>
-                                
-                                <button className="p-1.5 rounded-full bg-black/20 hover:bg-black/40 text-blue-400">
-                                  <Clock size={16} />
-                                </button>
+                                  {entry.remunerationLevel}
+                                </span>
+                              </div>
+                              <div className="flex items-center text-sm text-white/70">
+                                <Clock size={12} className="mr-1" />
+                                {entry.startTime} - {entry.endTime} ({entry.totalHours} hrs)
                               </div>
                             </div>
-                          ))}
-                        </div>
+                            
+                            <div className="flex items-center space-x-3">
+                              <div className={`text-xs px-2 py-1 rounded-full ${
+                                entry.status === 'Active' ? 'bg-blue-500/20 text-blue-300' :
+                                entry.status === 'Completed' ? 'bg-green-500/20 text-green-300' :
+                                entry.status === 'Cancelled' ? 'bg-red-500/20 text-red-300' :
+                                entry.status === 'Swapped' ? 'bg-purple-500/20 text-purple-300' :
+                                'bg-yellow-500/20 text-yellow-300'
+                              }`}>
+                                {entry.status}
+                              </div>
+                              
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => {}}>
+                                    <Clock className="mr-2 h-4 w-4" />
+                                    <span>View History</span>
+                                  </DropdownMenuItem>
+                                  
+                                  {!readOnly && entry.status !== 'Completed' && entry.status !== 'Cancelled' && (
+                                    <DropdownMenuItem onClick={() => {}}>
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      <span>Edit Times</span>
+                                    </DropdownMenuItem>
+                                  )}
+                                  
+                                  {!readOnly && entry.status === 'Active' && (
+                                    <>
+                                      <DropdownMenuItem onClick={() => {}}>
+                                        <Check className="mr-2 h-4 w-4" />
+                                        <span>Approve</span>
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => {}}>
+                                        <X className="mr-2 h-4 w-4" />
+                                        <span>Reject</span>
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              
-              {Object.keys(groupedEntries).length === 0 && (
-                <div className="text-center py-8 text-white/60">
-                  No shifts found matching the selected filter.
-                </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+              </div>
+            ))}
+            
+            {Object.keys(groupedEntries).length === 0 && (
+              <div className="text-center py-8 text-white/60">
+                No shifts found matching the selected filter for {formattedDate}.
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

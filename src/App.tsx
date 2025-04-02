@@ -24,11 +24,12 @@ import ProfilePage from "./pages/ProfilePage";
 import MyRosterPage from "./pages/MyRosterPage";
 import AvailabilitiesPage from "./pages/AvailabilitiesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Navbar from "./components/Navbar";
 import { AppSidebar } from "./components/AppSidebar";
+import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();
 
+// Remove Navbar from AppLayout since it was being included twice
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider defaultOpen={false}>
