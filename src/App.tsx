@@ -23,6 +23,7 @@ import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ProfilePage from "./pages/ProfilePage";
 import MyRosterPage from "./pages/MyRosterPage";
 import AvailabilitiesPage from "./pages/AvailabilitiesPage";
+import BroadcastPage from "./pages/BroadcastPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AppSidebar } from "./components/AppSidebar";
 import Navbar from "./components/Navbar";
@@ -92,6 +93,15 @@ const App = () => (
                   <ProtectedRoute>
                     <AppLayout>
                       <AvailabilitiesPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Broadcast route - Admin only */}
+                <Route path="/broadcasts" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AppLayout>
+                      <BroadcastPage />
                     </AppLayout>
                   </ProtectedRoute>
                 } />

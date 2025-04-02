@@ -12,7 +12,8 @@ import {
   BarChart2,
   ChevronDown,
   ChevronRight,
-  Eye
+  Eye,
+  Megaphone
 } from 'lucide-react';
 import {
   Sidebar,
@@ -32,12 +33,17 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useAuth } from '@/hooks/useAuth';
 
 export function AppSidebar() {
   const location = useLocation();
+  const { user } = useAuth();
   const currentPath = location.pathname;
   const [rosteringOpen, setRosteringOpen] = React.useState(currentPath.includes('/rostering'));
   const [managementOpen, setManagementOpen] = React.useState(currentPath.includes('/management'));
+
+  // Check if user is admin
+  const isAdmin = user?.role === 'admin';
 
   return (
     <Sidebar variant="sidebar" collapsible="offcanvas">
@@ -198,6 +204,22 @@ export function AppSidebar() {
                   </CollapsibleContent>
                 </Collapsible>
               </SidebarMenuItem>
+
+              {/* Broadcast Menu Item - Admin only */}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    tooltip="Broadcasts" 
+                    isActive={currentPath === '/broadcasts'}
+                    asChild
+                  >
+                    <Link to="/broadcasts">
+                      <Megaphone className="h-5 w-5" />
+                      <span>Broadcasts</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
 
               {/* Insights */}
               <SidebarMenuItem>
