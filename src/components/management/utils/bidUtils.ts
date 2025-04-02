@@ -46,11 +46,15 @@ export const getApplicantsForShift = (bids: BidWithEmployee[], shiftId: string, 
     .filter(bid => bid.shiftId === shiftId)
     .sort((a, b) => {
       if (sortByScore) {
-        const scoreA = a.employee?.tier || 0;
-        const scoreB = b.employee?.tier || 0;
+        // Convert tier to number for comparison or use 0 if undefined
+        const scoreA = typeof a.employee?.tier === 'number' ? a.employee.tier : 
+                     a.employee?.tier ? parseInt(a.employee.tier, 10) || 0 : 0;
+        const scoreB = typeof b.employee?.tier === 'number' ? b.employee.tier : 
+                     b.employee?.tier ? parseInt(b.employee.tier, 10) || 0 : 0;
         return scoreB - scoreA;
       } else {
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       }
     });
 };
+
