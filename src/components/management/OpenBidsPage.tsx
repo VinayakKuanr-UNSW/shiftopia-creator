@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, addDays, subDays, isSameDay, parseISO } from 'date-fns';
 import { useBids } from '@/api/hooks/useBids';
@@ -117,7 +116,6 @@ const OpenBidsPage: React.FC = () => {
     
     const remunerationValue = (shiftIdNum % 2 === 0) ? 'GOLD' : 'SILVER';
     
-    // Simply assign a string value directly without any arithmetic operations
     const breakDurationValue = "30 min";
     
     return {
