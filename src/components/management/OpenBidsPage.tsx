@@ -125,7 +125,7 @@ const OpenBidsPage: React.FC = () => {
         subDepartment: subDep,
         group: department,
         subGroup: subDep,
-        remunerationLevel: shiftIdNum % 2 === 0 ? 'GOLD' : 'SILVER',
+        remunerationLevel: String(shiftIdNum % 2 === 0 ? 'GOLD' : 'SILVER'),
         breakDuration: '30 min'
       }
     };
