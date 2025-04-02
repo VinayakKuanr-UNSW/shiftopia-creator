@@ -3,6 +3,20 @@ import React from 'react';
 import { TimesheetRow } from './TimesheetRow';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from 'date-fns';
+import { 
+  Clock, 
+  MoreHorizontal, 
+  Pencil, 
+  Check, 
+  X 
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface TimesheetTableProps {
   selectedDate: Date;
