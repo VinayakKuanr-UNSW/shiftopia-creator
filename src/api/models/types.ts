@@ -116,7 +116,7 @@ export interface Bid {
   id: string;
   shiftId: string;
   employeeId: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Confirmed';
   createdAt: string;
   notes?: string; // Added for compatibility
 }

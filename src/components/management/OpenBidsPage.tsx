@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, addDays, subDays, isSameDay, parseISO } from 'date-fns';
 import { useBids } from '@/api/hooks/useBids';
@@ -51,7 +50,6 @@ import {
 import { cn } from '@/lib/utils';
 import CreateBidModal from '@/components/management/CreateBidModal';
 
-// Type definitions for our data structure
 type BidWithEmployee = Bid & { 
   employee?: Employee,
   shiftDetails?: {
@@ -71,7 +69,6 @@ type GroupedBids = {
   [date: string]: BidWithEmployee[];
 };
 
-// Department filter options
 const departments = ['All Departments', 'Convention Centre', 'Exhibition Centre', 'Theatre'];
 const subDepartments = ['All Sub-departments', 'AM Base', 'PM Base', 'Floaters', 'Assist', 'Bump-In'];
 const roles = ['All Roles', 'Team Leader', 'Supervisor', 'TM3', 'TM2', 'Coordinator'];
@@ -84,7 +81,6 @@ const OpenBidsPage: React.FC = () => {
   const { toast } = useToast();
   const { mutate: updateBidStatus } = useUpdateBidStatus();
   
-  // State for filters and date range
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 7),
     to: addDays(new Date(), 7)
@@ -95,7 +91,6 @@ const OpenBidsPage: React.FC = () => {
   const [subDepartmentFilter, setSubDepartmentFilter] = useState('All Sub-departments');
   const [roleFilter, setRoleFilter] = useState('All Roles');
   
-  // State for UI controls
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
   const [expandedBids, setExpandedBids] = useState<Record<string, boolean>>({});
   const [selectedBids, setSelectedBids] = useState<string[]>([]);
@@ -104,12 +99,9 @@ const OpenBidsPage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [sortByScore, setSortByScore] = useState(false);
   
-  // Mock data for bids with shift details - in a real app you would get this from your API
   const bidsWithDetails: BidWithEmployee[] = allBids.map(bid => {
     const employee = employees.find(emp => emp.id === bid.employeeId);
     
-    // Generate mock shift details based on the shift ID
-    // In a real app, you'd fetch these from your API
     const shiftIdNum = parseInt(bid.shiftId.replace(/\D/g, ''), 10) || 0;
     const department = shiftIdNum % 3 === 0 ? 'Convention Centre' : 
                       shiftIdNum % 3 === 1 ? 'Exhibition Centre' : 'Theatre';
@@ -121,8 +113,8 @@ const OpenBidsPage: React.FC = () => {
       employee,
       shiftDetails: {
         role,
-        startTime: `${(8 + shiftIdNum % 4)}:00`,
-        endTime: `${(16 + shiftIdNum % 4)}:00`,
+        startTime: `${(8 + (shiftIdNum % 4))}:00`,
+        endTime: `${(16 + (shiftIdNum % 4))}:00`,
         department,
         subDepartment: subDep,
         group: department,
@@ -133,9 +125,7 @@ const OpenBidsPage: React.FC = () => {
     };
   });
   
-  // Filter bids based on all filters
   const filteredBids = bidsWithDetails.filter(bid => {
-    // Date range filter
     if (dateRange?.from && dateRange?.to) {
       const bidDate = new Date(bid.createdAt);
       if (bidDate < dateRange.from || bidDate > dateRange.to) {
@@ -143,30 +133,25 @@ const OpenBidsPage: React.FC = () => {
       }
     }
     
-    // Status filter
     if (statusFilter !== 'all' && bid.status !== statusFilter) {
       return false;
     }
     
-    // Department filter
     if (departmentFilter !== 'All Departments' && 
         bid.shiftDetails?.department !== departmentFilter) {
       return false;
     }
     
-    // Sub-department filter
     if (subDepartmentFilter !== 'All Sub-departments' && 
         bid.shiftDetails?.subDepartment !== subDepartmentFilter) {
       return false;
     }
     
-    // Role filter
     if (roleFilter !== 'All Roles' && 
         bid.shiftDetails?.role !== roleFilter) {
       return false;
     }
     
-    // Search query
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
       return (
@@ -180,7 +165,6 @@ const OpenBidsPage: React.FC = () => {
     return true;
   });
   
-  // Group bids by date
   const groupedBids: GroupedBids = filteredBids.reduce((groups, bid) => {
     const date = format(new Date(bid.createdAt), 'yyyy-MM-dd');
     if (!groups[date]) {
@@ -190,12 +174,10 @@ const OpenBidsPage: React.FC = () => {
     return groups;
   }, {} as GroupedBids);
   
-  // Sort the dates in reverse chronological order
   const sortedDates = Object.keys(groupedBids).sort((a, b) => 
     new Date(b).getTime() - new Date(a).getTime()
   );
   
-  // Toggle expanding a date
   const toggleExpandDate = (date: string) => {
     setExpandedDates(prev => ({
       ...prev,
@@ -203,7 +185,6 @@ const OpenBidsPage: React.FC = () => {
     }));
   };
   
-  // Toggle expanding a bid to show applicants
   const toggleExpandBid = (bidId: string) => {
     setExpandedBids(prev => ({
       ...prev,
@@ -211,7 +192,6 @@ const OpenBidsPage: React.FC = () => {
     }));
   };
   
-  // Toggle bid selection
   const toggleSelectBid = (bidId: string) => {
     setSelectedBids(prev => 
       prev.includes(bidId) 
@@ -220,13 +200,11 @@ const OpenBidsPage: React.FC = () => {
     );
   };
   
-  // Offer shift to employee
   const handleOfferShift = (bid: BidWithEmployee) => {
     setBidToOffer(bid);
     setOfferDialogOpen(true);
   };
   
-  // Confirm offering shift
   const confirmOfferShift = () => {
     if (!bidToOffer) return;
     
@@ -254,7 +232,6 @@ const OpenBidsPage: React.FC = () => {
     setBidToOffer(null);
   };
   
-  // Bulk offer shifts
   const handleBulkOffer = () => {
     if (selectedBids.length === 0) {
       toast({
@@ -265,8 +242,6 @@ const OpenBidsPage: React.FC = () => {
       return;
     }
     
-    // In a real app, you'd make a bulk update API call here
-    // For this demo, we'll just update them one by one
     let successCount = 0;
     
     selectedBids.forEach(bidId => {
@@ -292,14 +267,12 @@ const OpenBidsPage: React.FC = () => {
     });
   };
   
-  // Export bids data
   const handleExport = () => {
     toast({
       title: "Export Started",
       description: "Your data is being exported to CSV.",
     });
     
-    // In a real app, you'd implement the actual export logic here
     setTimeout(() => {
       toast({
         title: "Export Complete",
@@ -308,7 +281,6 @@ const OpenBidsPage: React.FC = () => {
     }, 1500);
   };
   
-  // Initialize expanded dates to show first 3 dates
   useEffect(() => {
     if (sortedDates.length > 0 && Object.keys(expandedDates).length === 0) {
       const initialExpandedDates: Record<string, boolean> = {};
@@ -319,7 +291,6 @@ const OpenBidsPage: React.FC = () => {
     }
   }, [sortedDates, expandedDates]);
   
-  // Get the status badge color
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Pending':
@@ -335,17 +306,14 @@ const OpenBidsPage: React.FC = () => {
     }
   };
   
-  // Get applicants for a shift
   const getApplicantsForShift = (shiftId: string): BidWithEmployee[] => {
     return filteredBids.filter(bid => bid.shiftId === shiftId)
       .sort((a, b) => {
         if (sortByScore) {
-          // Sort by mock suitability score (in a real app, use actual scores)
           const scoreA = a.employee?.tier || 0;
           const scoreB = b.employee?.tier || 0;
           return scoreB - scoreA;
         } else {
-          // Sort by creation time
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         }
       });
@@ -358,7 +326,6 @@ const OpenBidsPage: React.FC = () => {
         <p className="text-white/60">Manage shift bidding process and assignments.</p>
       </div>
       
-      {/* Top controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
           <DateRangePicker
@@ -390,7 +357,6 @@ const OpenBidsPage: React.FC = () => {
         </div>
       </div>
       
-      {/* Search and filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/40" />
@@ -543,7 +509,6 @@ const OpenBidsPage: React.FC = () => {
         </div>
       </div>
       
-      {/* Bulk actions */}
       {selectedBids.length > 0 && (
         <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-md flex items-center justify-between">
           <div className="text-sm">
@@ -571,7 +536,6 @@ const OpenBidsPage: React.FC = () => {
         </div>
       )}
       
-      {/* No results message */}
       {sortedDates.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -585,14 +549,12 @@ const OpenBidsPage: React.FC = () => {
         </div>
       )}
       
-      {/* Loading indicator */}
       {isLoading && (
         <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
         </div>
       )}
       
-      {/* Bid groups by date */}
       <div className="space-y-4">
         {sortedDates.map(date => {
           const bids = groupedBids[date];
@@ -755,7 +717,6 @@ const OpenBidsPage: React.FC = () => {
                                                 placeholder="Add notes about this applicant..."
                                                 defaultValue={applicant.notes || ''}
                                                 onChange={(e) => {
-                                                  // In a real app, you'd update the notes via API
                                                   console.log('Notes updated:', e.target.value);
                                                 }}
                                               />
@@ -813,7 +774,6 @@ const OpenBidsPage: React.FC = () => {
         })}
       </div>
       
-      {/* Confirmation Dialog */}
       <AlertDialog open={offerDialogOpen} onOpenChange={setOfferDialogOpen}>
         <AlertDialogContent className="bg-slate-900 text-white border-white/10">
           <AlertDialogHeader>
@@ -832,7 +792,6 @@ const OpenBidsPage: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
       
-      {/* Create Bid Modal */}
       <CreateBidModal 
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
