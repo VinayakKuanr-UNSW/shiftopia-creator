@@ -56,7 +56,7 @@ export const useBids = () => {
   // Update bid status
   const useUpdateBidStatus = () => {
     return useMutation({
-      mutationFn: ({ id, status }: { id: string, status: 'Pending' | 'Approved' | 'Rejected' }) => 
+      mutationFn: ({ id, status }: { id: string, status: 'Pending' | 'Approved' | 'Rejected' | 'Confirmed' }) => 
         bidService.updateBidStatus(id, status),
       onSuccess: (data) => {
         if (data) {
@@ -69,12 +69,39 @@ export const useBids = () => {
     });
   };
   
+  // Bulk update bid status
+  const useBulkUpdateBidStatus = () => {
+    return useMutation({
+      mutationFn: ({ ids, status }: { ids: string[], status: 'Pending' | 'Approved' | 'Rejected' | 'Confirmed' }) => 
+        bidService.updateBulkBidStatus(ids, status),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['bids'] });
+      }
+    });
+  };
+  
+  // Add notes to bid
+  const useAddNotesToBid = () => {
+    return useMutation({
+      mutationFn: ({ id, notes }: { id: string, notes: string }) => 
+        bidService.addNotesToBid(id, notes),
+      onSuccess: (data) => {
+        if (data) {
+          queryClient.invalidateQueries({ queryKey: ['bids'] });
+          queryClient.invalidateQueries({ queryKey: ['bids', data.id] });
+        }
+      }
+    });
+  };
+  
   return {
     useAllBids,
     useBid,
     useBidsByEmployee,
     useBidsForShift,
     useCreateBid,
-    useUpdateBidStatus
+    useUpdateBidStatus,
+    useBulkUpdateBidStatus,
+    useAddNotesToBid
   };
 };

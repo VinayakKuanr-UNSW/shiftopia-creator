@@ -36,13 +36,46 @@ export const bidService = {
     return Promise.resolve(newBid);
   },
   
-  updateBidStatus: async (id: string, status: 'Pending' | 'Approved' | 'Rejected'): Promise<Bid | null> => {
+  updateBidStatus: async (id: string, status: 'Pending' | 'Approved' | 'Rejected' | 'Confirmed'): Promise<Bid | null> => {
     const index = bids.findIndex(b => b.id === id);
     if (index === -1) return Promise.resolve(null);
     
     const updatedBid = {
       ...bids[index],
       status
+    };
+    
+    bids[index] = updatedBid;
+    return Promise.resolve(updatedBid);
+  },
+  
+  // New methods for bulk operations
+  updateBulkBidStatus: async (ids: string[], status: 'Pending' | 'Approved' | 'Rejected' | 'Confirmed'): Promise<Bid[]> => {
+    const updatedBids: Bid[] = [];
+    
+    ids.forEach(id => {
+      const index = bids.findIndex(b => b.id === id);
+      if (index !== -1) {
+        const updatedBid = {
+          ...bids[index],
+          status
+        };
+        
+        bids[index] = updatedBid;
+        updatedBids.push(updatedBid);
+      }
+    });
+    
+    return Promise.resolve(updatedBids);
+  },
+  
+  addNotesToBid: async (id: string, notes: string): Promise<Bid | null> => {
+    const index = bids.findIndex(b => b.id === id);
+    if (index === -1) return Promise.resolve(null);
+    
+    const updatedBid = {
+      ...bids[index],
+      notes
     };
     
     bids[index] = updatedBid;
