@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format, addDays, subDays, isSameDay, parseISO } from 'date-fns';
 import { useBids } from '@/api/hooks/useBids';
@@ -102,19 +103,24 @@ const OpenBidsPage: React.FC = () => {
   const bidsWithDetails: BidWithEmployee[] = allBids.map(bid => {
     const employee = employees.find(emp => emp.id === bid.employeeId);
     
+    // Extract a numeric value from shiftId for generating example data
     const shiftIdNum = parseInt(bid.shiftId.replace(/\D/g, ''), 10) || 0;
     const department = shiftIdNum % 3 === 0 ? 'Convention Centre' : 
                       shiftIdNum % 3 === 1 ? 'Exhibition Centre' : 'Theatre';
     const subDep = ['AM Base', 'PM Base', 'Floaters', 'Assist', 'Bump-In'][shiftIdNum % 5];
     const role = ['Team Leader', 'Supervisor', 'TM3', 'TM2', 'Coordinator'][shiftIdNum % 5];
     
+    // Calculate start and end times properly
+    const baseHour = 8 + (shiftIdNum % 4);
+    const endHour = 16 + (shiftIdNum % 4);
+    
     return {
       ...bid,
       employee,
       shiftDetails: {
         role,
-        startTime: `${(8 + (shiftIdNum % 4))}:00`,
-        endTime: `${(16 + (shiftIdNum % 4))}:00`,
+        startTime: `${baseHour}:00`,
+        endTime: `${endHour}:00`,
         department,
         subDepartment: subDep,
         group: department,
