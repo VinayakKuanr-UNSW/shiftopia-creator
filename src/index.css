@@ -316,6 +316,7 @@
   @apply glass-card;
 }
 
+/* Fix for circular dependency: don't use @apply for border here */
 .theme-glass .border {
   border-color: rgba(255, 255, 255, 0.2);
 }
