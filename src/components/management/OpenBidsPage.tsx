@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, addDays, subDays, isSameDay, parseISO } from 'date-fns';
 import { useBids } from '@/api/hooks/useBids';
@@ -109,16 +108,15 @@ const OpenBidsPage: React.FC = () => {
     const subDep = ['AM Base', 'PM Base', 'Floaters', 'Assist', 'Bump-In'][shiftIdNum % 5];
     const role = ['Team Leader', 'Supervisor', 'TM3', 'TM2', 'Coordinator'][shiftIdNum % 5];
     
-    // Fix arithmetic operations by ensuring we use numbers for calculations
     const baseHourNum = 8 + (shiftIdNum % 4);
     const endHourNum = 16 + (shiftIdNum % 4);
     
-    // Convert to string format after arithmetic operations
     const baseHour = `${baseHourNum}:00`;
     const endHour = `${endHourNum}:00`;
     
-    // Directly set string value without arithmetic
     const remunerationValue = (shiftIdNum % 2 === 0) ? 'GOLD' : 'SILVER';
+    
+    const breakDurationValue = "30 min";
     
     return {
       ...bid,
@@ -132,7 +130,7 @@ const OpenBidsPage: React.FC = () => {
         group: department,
         subGroup: subDep,
         remunerationLevel: remunerationValue,
-        breakDuration: '30 min'
+        breakDuration: breakDurationValue
       }
     };
   });
