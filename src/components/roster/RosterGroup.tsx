@@ -37,17 +37,17 @@ const RosterGroup: React.FC<RosterGroupProps> = ({
   const getGroupColorClass = (color: DepartmentColor) => {
     switch (color) {
       case 'blue':
-        return 'bg-blue-100 border-blue-300';
+        return 'bg-blue-900 border-blue-800 text-white';
       case 'green':
-        return 'bg-green-100 border-green-300';
+        return 'bg-green-900 border-green-800 text-white';
       case 'red':
-        return 'bg-red-100 border-red-300';
+        return 'bg-red-900 border-red-800 text-white';
       case 'purple':
-        return 'bg-purple-100 border-purple-300';
+        return 'bg-purple-900 border-purple-800 text-white';
       case 'sky':
-        return 'bg-sky-100 border-sky-300';
+        return 'bg-sky-900 border-sky-800 text-white';
       default:
-        return 'bg-gray-100 border-gray-300';
+        return 'bg-gray-900 border-gray-800 text-white';
     }
   };
 
@@ -144,9 +144,9 @@ const RosterGroup: React.FC<RosterGroupProps> = ({
 
         {!readOnly && (
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="mt-4 w-full"
+            className="mt-4 w-full bg-transparent hover:bg-transparent border-none text-white"
             onClick={() => setIsAddSubGroupDialogOpen(true)}
           >
             <Plus className="h-4 w-4 mr-2" /> Add Sub-Group

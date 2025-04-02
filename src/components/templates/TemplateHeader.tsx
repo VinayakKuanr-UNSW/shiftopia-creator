@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -20,36 +19,17 @@ const TemplateHeader: React.FC<TemplateHeaderProps> = ({
   return (
     <div className="flex justify-between items-center mb-6">
       <h1 className="text-2xl font-bold">Template Management</h1>
-      
       <div className="flex space-x-2">
-        <Button
-          variant="outline"
-          onClick={onSaveAsDraft}
-          disabled={!currentTemplate}
-        >
+        <Button variant="outline" onClick={onSaveAsDraft} disabled={!currentTemplate}>
           Save as Draft
         </Button>
-        
-        <Button
-          variant="outline"
-          onClick={onPublish}
-          disabled={!currentTemplate}
-        >
+        <Button variant="outline" onClick={onPublish} disabled={!currentTemplate}>
           Publish
         </Button>
-        
-        <Button
-          variant="outline"
-          onClick={onExportToPdf}
-          disabled={!currentTemplate}
-        >
+        <Button variant="outline" onClick={onExportToPdf} disabled={!currentTemplate}>
           Export to PDF
         </Button>
-        
-        <Button
-          onClick={onAddGroup}
-          disabled={!currentTemplate}
-        >
+        <Button onClick={onAddGroup} disabled={!currentTemplate}>
           Add Group
         </Button>
       </div>

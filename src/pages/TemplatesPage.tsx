@@ -1,8 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Template, Group } from '@/api/models/types';
-import { useTemplates } from '@/api/hooks';
 import TemplateHeader from '@/components/templates/TemplateHeader';
 import TemplateContent from '@/components/templates/TemplateContent';
 import AddGroupDialog from '@/components/templates/AddGroupDialog';
@@ -16,41 +14,91 @@ const TemplatesPage: React.FC = () => {
     color: 'blue'
   });
   const { toast } = useToast();
-  const {
-    getAllTemplates,
-    createTemplate,
-    updateTemplate,
-    addGroup,
-    cloneGroup,
-    saveAsDraft,
-    publishTemplate,
-    exportTemplateToPdf
-  } = useTemplates();
 
   useEffect(() => {
     loadTemplates();
   }, []);
 
-  const loadTemplates = async () => {
-    try {
-      const data = await getAllTemplates();
-      setTemplates(data);
-      if (data.length > 0 && !currentTemplate) {
-        setCurrentTemplate(data[0]);
+  // Load mock data with multiple templates, groups, and sub-groups.
+  const loadTemplates = () => {
+    const mockTemplates: Template[] = [
+      {
+        id: 1,
+        name: 'Morning Shift Template',
+        description: 'Covers all morning duties',
+        start_date: '2025-01-01',
+        end_date: '2025-01-31',
+        createdAt: '2025-01-01T08:00:00Z',
+        updatedAt: '2025-01-01T08:00:00Z',
+        // Optional fields like department_id, sub_department_id, status are omitted here
+        groups: [
+          {
+            id: 101,
+            name: 'Reception',
+            color: 'blue',
+            subGroups: [
+              { id: 1001, name: 'Morning Reception A', shifts: [] },
+              { id: 1002, name: 'Morning Reception B', shifts: [] }
+            ]
+          },
+          {
+            id: 102,
+            name: 'Security',
+            color: 'red',
+            subGroups: [
+              { id: 1003, name: 'Entrance Security', shifts: [] },
+              { id: 1004, name: 'VIP Security', shifts: [] }
+            ]
+          },
+          {
+            id: 103,
+            name: 'Customer Service',
+            color: 'purple',
+            subGroups: [
+              { id: 1005, name: 'Service Desk', shifts: [] }
+            ]
+          }
+        ]
+      },
+      {
+        id: 2,
+        name: 'Evening Shift Template',
+        description: 'Covers all evening duties',
+        start_date: '2025-02-01',
+        end_date: '2025-02-28',
+        createdAt: '2025-02-01T08:00:00Z',
+        updatedAt: '2025-02-01T08:00:00Z',
+        groups: [
+          {
+            id: 201,
+            name: 'Catering',
+            color: 'green',
+            subGroups: [
+              { id: 2001, name: 'Evening Catering A', shifts: [] },
+              { id: 2002, name: 'Evening Catering B', shifts: [] }
+            ]
+          },
+          {
+            id: 202,
+            name: 'Housekeeping',
+            color: 'sky',
+            subGroups: [
+              { id: 2003, name: 'Evening Housekeeping', shifts: [] },
+              { id: 2004, name: 'Room Service', shifts: [] }
+            ]
+          }
+        ]
       }
-    } catch (error) {
-      console.error('Error loading templates:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load templates',
-        variant: 'destructive'
-      });
+    ];
+
+    setTemplates(mockTemplates);
+    if (mockTemplates.length > 0 && !currentTemplate) {
+      setCurrentTemplate(mockTemplates[0]);
     }
   };
 
   const handleAddGroup = async () => {
     if (!currentTemplate) return;
-    
     if (!newGroup.name.trim()) {
       toast({
         title: 'Error',
@@ -59,24 +107,24 @@ const TemplatesPage: React.FC = () => {
       });
       return;
     }
-
     try {
-      const updatedTemplate = await addGroup(
-        currentTemplate.id,
-        {
-          name: newGroup.name as any,
-          color: newGroup.color as any,
-          subGroups: []
-        }
-      );
-
-      if (updatedTemplate) {
-        setCurrentTemplate(updatedTemplate);
-        toast({
-          title: 'Success',
-          description: `Added group "${newGroup.name}" to template`
-        });
-      }
+      // Simulate API call: create a new group and update the current template
+      const newGroupData = {
+        id: Date.now(), // generate a new unique ID
+        name: newGroup.name,
+        color: newGroup.color,
+        subGroups: []
+      };
+      const updatedTemplate = {
+        ...currentTemplate,
+        updatedAt: new Date().toISOString(),
+        groups: [...currentTemplate.groups, newGroupData]
+      };
+      setCurrentTemplate(updatedTemplate);
+      toast({
+        title: 'Success',
+        description: `Added group "${newGroup.name}" to template`
+      });
     } catch (error) {
       console.error('Error adding group:', error);
       toast({
@@ -85,24 +133,18 @@ const TemplatesPage: React.FC = () => {
         variant: 'destructive'
       });
     }
-
     setIsAddGroupDialogOpen(false);
     setNewGroup({ name: '', color: 'blue' });
   };
 
   const handleSaveAsDraft = async () => {
     if (!currentTemplate) return;
-    
     try {
-      const updatedTemplate = await saveAsDraft(currentTemplate.id);
-      
-      if (updatedTemplate) {
-        setCurrentTemplate(updatedTemplate);
-        toast({
-          title: 'Success',
-          description: 'Template saved as draft'
-        });
-      }
+      // For mock testing, just display a success toast.
+      toast({
+        title: 'Success',
+        description: 'Template saved as draft'
+      });
     } catch (error) {
       console.error('Error saving as draft:', error);
       toast({
@@ -112,20 +154,14 @@ const TemplatesPage: React.FC = () => {
       });
     }
   };
-  
+
   const handlePublish = async () => {
     if (!currentTemplate) return;
-    
     try {
-      const updatedTemplate = await publishTemplate(currentTemplate.id);
-      
-      if (updatedTemplate) {
-        setCurrentTemplate(updatedTemplate);
-        toast({
-          title: 'Success',
-          description: 'Template published successfully'
-        });
-      }
+      toast({
+        title: 'Success',
+        description: 'Template published successfully'
+      });
     } catch (error) {
       console.error('Error publishing template:', error);
       toast({
@@ -135,19 +171,14 @@ const TemplatesPage: React.FC = () => {
       });
     }
   };
-  
+
   const handleExportToPdf = async () => {
     if (!currentTemplate) return;
-    
     try {
-      const pdfUrl = await exportTemplateToPdf(currentTemplate.id);
-      
-      if (pdfUrl) {
-        toast({
-          title: 'Success',
-          description: 'Template exported to PDF'
-        });
-      }
+      toast({
+        title: 'Success',
+        description: 'Template exported to PDF'
+      });
     } catch (error) {
       console.error('Error exporting to PDF:', error);
       toast({
@@ -158,34 +189,80 @@ const TemplatesPage: React.FC = () => {
     }
   };
 
+  // Inline update: update a group’s properties
   const handleUpdateGroup = (groupId: number, updates: Partial<Group>) => {
-    console.log('Update group', groupId, updates);
+    if (!currentTemplate) return;
+    const updatedGroups = currentTemplate.groups.map((group) =>
+      group.id === groupId ? { ...group, ...updates } : group
+    );
+    const updatedTemplate = { ...currentTemplate, groups: updatedGroups };
+    setCurrentTemplate(updatedTemplate);
+    toast({ title: 'Success', description: 'Group updated' });
   };
 
+  // Delete group with confirmation
   const handleDeleteGroup = (groupId: number) => {
-    console.log('Delete group', groupId);
+    if (!currentTemplate) return;
+    if (!window.confirm('Are you sure you want to delete this group?')) return;
+    const updatedGroups = currentTemplate.groups.filter((group) => group.id !== groupId);
+    const updatedTemplate = { ...currentTemplate, groups: updatedGroups };
+    setCurrentTemplate(updatedTemplate);
+    toast({ title: 'Success', description: 'Group deleted' });
   };
 
+  // Clone the entire group (with sub-groups and shifts)
   const handleCloneGroup = (groupId: number) => {
-    console.log('Clone group', groupId);
+    if (!currentTemplate) return;
+    const groupToClone = currentTemplate.groups.find((group) => group.id === groupId);
+    if (!groupToClone) return;
+    const clonedGroup = {
+      ...groupToClone,
+      id: Date.now(), // simulate new ID
+      name: `${groupToClone.name} (Copy)`,
+      subGroups: groupToClone.subGroups.map((sub) => ({ ...sub, id: Date.now() + Math.random() }))
+    };
+    const updatedTemplate = {
+      ...currentTemplate,
+      groups: [...currentTemplate.groups, clonedGroup]
+    };
+    setCurrentTemplate(updatedTemplate);
+    toast({ title: 'Success', description: 'Group cloned' });
   };
 
-  const handleAddSubGroup = (groupId: number, name: string) => {
-    console.log('Add subgroup', groupId, name);
+  // Inline addition of sub-group
+  const handleAddSubGroup = (groupId: number, subGroupName: string) => {
+    if (!currentTemplate) return;
+    if (!subGroupName.trim()) {
+      toast({ title: 'Error', description: 'Sub-group name cannot be empty', variant: 'destructive' });
+      return;
+    }
+    const updatedGroups = currentTemplate.groups.map((group) => {
+      if (group.id === groupId) {
+        const newSubGroup = {
+          id: Date.now(), // generate a new id
+          name: subGroupName,
+          shifts: [] // empty shifts array
+        };
+        return { ...group, subGroups: [...group.subGroups, newSubGroup] };
+      }
+      return group;
+    });
+    const updatedTemplate = { ...currentTemplate, groups: updatedGroups };
+    setCurrentTemplate(updatedTemplate);
+    toast({ title: 'Success', description: 'Sub-group added' });
   };
 
   return (
     <div className="container mx-auto p-6">
-      <TemplateHeader 
+      <TemplateHeader
         currentTemplate={currentTemplate}
         onSaveAsDraft={handleSaveAsDraft}
         onPublish={handlePublish}
         onExportToPdf={handleExportToPdf}
         onAddGroup={() => setIsAddGroupDialogOpen(true)}
       />
-      
       {currentTemplate && (
-        <TemplateContent 
+        <TemplateContent
           template={currentTemplate}
           onUpdateGroup={handleUpdateGroup}
           onDeleteGroup={handleDeleteGroup}
@@ -193,7 +270,6 @@ const TemplatesPage: React.FC = () => {
           onAddSubGroup={handleAddSubGroup}
         />
       )}
-      
       <AddGroupDialog
         isOpen={isAddGroupDialogOpen}
         onOpenChange={setIsAddGroupDialogOpen}

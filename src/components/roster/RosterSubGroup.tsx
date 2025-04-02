@@ -327,7 +327,7 @@ const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
           ))}
           
           {!readOnly && subGroup.shifts.length === 0 && (
-            <div className="text-center p-3 bg-black/10 rounded-lg border border-white/5">
+            <div className="text-center p-3 rounded-lg border border-white/5">
               <p className="text-white/60 text-sm mb-2">No shifts in this subgroup</p>
               <AddShiftDialog
                 groupId={groupId}
@@ -335,9 +335,9 @@ const RosterSubGroup: React.FC<RosterSubGroupProps> = ({
                 date={new Date().toISOString().split('T')[0]}
                 onAddShift={handleAddShift}
                 trigger={
-                  <Button variant="outline" size="sm">
+                  <Button variant="ghost" size="sm" className='bg-transparent hover:bg-transparent border-none text-white'>
                     <Plus size={12} className="mr-1" />
-                    Add First Shift
+                    Add Shift
                   </Button>
                 }
               />

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,10 +37,7 @@ const AddGroupDialog: React.FC<AddGroupDialogProps> = ({
           </div>
           <div className="space-y-2">
             <label htmlFor="groupColor">Group Color</label>
-            <Select
-              value={newGroup.color}
-              onValueChange={(value) => setNewGroup({ ...newGroup, color: value })}
-            >
+            <Select value={newGroup.color} onValueChange={(value) => setNewGroup({ ...newGroup, color: value })}>
               <SelectTrigger id="groupColor">
                 <SelectValue placeholder="Select a color" />
               </SelectTrigger>

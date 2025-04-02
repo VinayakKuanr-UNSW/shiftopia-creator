@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import RosterGroup from '@/components/roster/RosterGroup';
@@ -27,7 +26,7 @@ const TemplateContent: React.FC<TemplateContentProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {template.groups.map(group => (
+            {template.groups.map((group) => (
               <RosterGroup
                 key={group.id}
                 group={group}
