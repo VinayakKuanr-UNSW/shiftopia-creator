@@ -20,7 +20,7 @@ export const processBidsWithDetails = (bids: Bid[], employees: Employee[]): BidW
     
     const remunerationValue = (shiftIdNum % 2 === 0) ? 'GOLD' : 'SILVER';
     
-    // Fix: Instead of attempting arithmetic operations with strings, directly use a string value
+    // Fix: Directly use a string value instead of arithmetic operations with strings
     const breakDurationValue = "30 min";
     
     return {
