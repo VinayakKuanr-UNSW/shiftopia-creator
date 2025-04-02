@@ -44,6 +44,45 @@
     --radius: 0.5rem;
   }
 
+  .theme-glass {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 252 56% 55%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 100%;
+    --input: 240 3.7% 15.9%;
+    --ring: 252 56% 55%;
+    
+    /* Sidebar specific colors */
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 252 56% 55%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 100%;
+    --sidebar-ring: 252 56% 55%;
+    
+    /* Department colors */
+    --convention-color: 210 100% 50%;
+    --exhibition-color: 142 76% 47%;
+    --theatre-color: 0 100% 50%;
+    
+    --radius: 0.75rem;
+  }
+
   .theme-light {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
@@ -128,6 +167,14 @@
     @apply backdrop-blur-md bg-opacity-20 border border-white/10;
   }
   
+  .glass-card {
+    @apply backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg;
+  }
+  
+  .glass-button {
+    @apply backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 transition-all;
+  }
+  
   .animate-shimmer {
     animation: shimmer 2s linear infinite;
     background: linear-gradient(
@@ -177,6 +224,10 @@
   @apply bg-purple-900/20 border border-purple-500/30 hover:bg-purple-900/30 hover:border-purple-500/50 transition-all duration-300;
 }
 
+.group-card-sky {
+  @apply bg-sky-900/20 border border-sky-500/30 hover:bg-sky-900/30 hover:border-sky-500/50 transition-all duration-300;
+}
+
 /* Theme-specific body styles */
 .theme-default body {
   background-color: #0a0a0f;
@@ -185,6 +236,16 @@
     radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.07) 0%, transparent 40%);
   color: white;
   min-height: 100vh;
+}
+
+.theme-glass body {
+  background-color: #0a0a0f;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.15) 0%, transparent 50%);
+  color: white;
+  min-height: 100vh;
+  backdrop-filter: blur(20px);
 }
 
 .theme-light body {
@@ -247,4 +308,46 @@
   backdrop-filter: blur(12px);
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Glass theme specific styles */
+.theme-glass .card,
+.theme-glass .bg-card {
+  @apply glass-card;
+}
+
+.theme-glass .border {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-glass .bg-background {
+  background-color: rgba(10, 10, 15, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.theme-glass .bg-popover {
+  background-color: rgba(20, 20, 25, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.theme-glass .bg-input {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-glass .button,
+.theme-glass .btn {
+  @apply glass-button;
+}
+
+.theme-glass nav {
+  background-color: rgba(10, 10, 15, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-glass .dropdown-content {
+  background-color: rgba(30, 30, 35, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }

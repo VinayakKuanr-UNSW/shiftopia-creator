@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -66,6 +67,8 @@ export default {
 					blue: 'rgba(20, 100, 220, 0.6)',
 					green: 'rgba(20, 180, 80, 0.6)',
 					red: 'rgba(220, 60, 60, 0.6)',
+					purple: 'rgba(180, 60, 220, 0.6)',
+					sky: 'rgba(60, 180, 220, 0.6)',
 					action: 'rgba(50, 150, 230, 0.9)',
 					delete: 'rgba(230, 70, 70, 0.9)'
 				}
@@ -99,6 +102,10 @@ export default {
 				'pulse-light': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.7' }
+				},
+				'glass-shimmer': {
+					'0%': { backgroundPosition: '-200% 0' },
+					'100%': { backgroundPosition: '200% 0' }
 				}
 			},
 			animation: {
@@ -107,7 +114,21 @@ export default {
 				'fade-in': 'fade-in 0.4s ease-out',
 				'slide-up': 'slide-up 0.5s ease-out',
 				'scale-in': 'scale-in 0.2s ease-out',
-				'pulse-light': 'pulse-light 2s infinite'
+				'pulse-light': 'pulse-light 2s infinite',
+				'glass-shimmer': 'glass-shimmer 3s infinite linear'
+			},
+			backdropBlur: {
+				xs: '2px',
+				sm: '4px',
+				md: '8px',
+				lg: '12px',
+				xl: '16px',
+				'2xl': '24px',
+				'3xl': '32px',
+			},
+			backgroundImage: {
+				'glass-gradient': 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0))',
+				'glass-shine': 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
 			}
 		}
 	},

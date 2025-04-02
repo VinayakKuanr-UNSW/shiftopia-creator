@@ -1,6 +1,6 @@
 
 import { useTheme } from '@/contexts/ThemeContext';
-import { Moon, Sun, Monitor } from 'lucide-react';
+import { Moon, Sun, Monitor, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -14,11 +14,12 @@ export const ThemeSelector = () => {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   
-  const handleThemeChange = (newTheme: 'default' | 'light' | 'dark') => {
+  const handleThemeChange = (newTheme: 'default' | 'glass' | 'light' | 'dark') => {
     setTheme(newTheme);
     
     const themeNames = {
       default: 'Default',
+      glass: 'Glass',
       light: 'Light',
       dark: 'Dark'
     };
@@ -37,6 +38,7 @@ export const ThemeSelector = () => {
           {theme === 'light' && <Sun className="h-5 w-5" />}
           {theme === 'dark' && <Moon className="h-5 w-5" />}
           {theme === 'default' && <Monitor className="h-5 w-5" />}
+          {theme === 'glass' && <Sparkles className="h-5 w-5" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40 bg-popover border border-border">
@@ -46,6 +48,13 @@ export const ThemeSelector = () => {
         >
           <Monitor className="h-4 w-4" />
           <span>Default</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          className={`flex items-center gap-2 cursor-pointer ${theme === 'glass' ? 'bg-accent/50' : ''}`}
+          onClick={() => handleThemeChange('glass')}
+        >
+          <Sparkles className="h-4 w-4" />
+          <span>Glass</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           className={`flex items-center gap-2 cursor-pointer ${theme === 'light' ? 'bg-accent/50' : ''}`}

@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface AddGroupDialogProps {
   isOpen: boolean;
@@ -19,9 +21,12 @@ const AddGroupDialog: React.FC<AddGroupDialogProps> = ({
   setNewGroup,
   onAddGroup
 }) => {
+  const { theme } = useTheme();
+  const isGlassTheme = theme === 'glass';
+  
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className={isGlassTheme ? "backdrop-blur-xl bg-black/40 border border-white/20" : ""}>
         <DialogHeader>
           <DialogTitle>Add Group</DialogTitle>
         </DialogHeader>
@@ -33,15 +38,16 @@ const AddGroupDialog: React.FC<AddGroupDialogProps> = ({
               value={newGroup.name}
               onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
               placeholder="Enter group name"
+              className={isGlassTheme ? "bg-white/10 border-white/20" : ""}
             />
           </div>
           <div className="space-y-2">
             <label htmlFor="groupColor">Group Color</label>
             <Select value={newGroup.color} onValueChange={(value) => setNewGroup({ ...newGroup, color: value })}>
-              <SelectTrigger id="groupColor">
+              <SelectTrigger id="groupColor" className={isGlassTheme ? "bg-white/10 border-white/20" : ""}>
                 <SelectValue placeholder="Select a color" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={isGlassTheme ? "backdrop-blur-xl bg-black/80 border border-white/20" : ""}>
                 <SelectItem value="blue">Blue</SelectItem>
                 <SelectItem value="green">Green</SelectItem>
                 <SelectItem value="red">Red</SelectItem>
@@ -52,10 +58,18 @@ const AddGroupDialog: React.FC<AddGroupDialogProps> = ({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button 
+            variant={isGlassTheme ? "glass" : "outline"} 
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <Button onClick={onAddGroup}>Add Group</Button>
+          <Button 
+            variant={isGlassTheme ? "glass" : "default"} 
+            onClick={onAddGroup}
+          >
+            Add Group
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
