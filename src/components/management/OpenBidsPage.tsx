@@ -117,7 +117,7 @@ const OpenBidsPage: React.FC = () => {
     
     const remunerationValue = (shiftIdNum % 2 === 0) ? 'GOLD' : 'SILVER';
     
-    // Fixed: Use a string literal directly without any arithmetic operations
+    // Fix: Define breakDurationValue as a string literal without any arithmetic operations
     const breakDurationValue = "30 min";
     
     return {
