@@ -1,286 +1,184 @@
 
 import React, { useState } from 'react';
-import { format } from 'date-fns';
-import { CalendarRange, CalendarDays, ListFilter, CalendarClock, CirclePlus } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format, addMonths, subMonths } from 'date-fns';
+import { useAvailabilities } from '@/hooks/useAvailabilities';
 import { AvailabilityCalendar } from '@/components/availability/AvailabilityCalendar';
 import { AvailabilityForm } from '@/components/availability/AvailabilityForm';
-import { PresetSelector } from '@/components/availability/PresetSelector';
-import { DayAvailabilityView } from '@/components/availability/DayAvailabilityView';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MonthListView } from '@/components/availability/MonthListView';
-import { useAvailabilities } from '@/hooks/useAvailabilities';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@/components/ui/toggle-group';
+import { PresetSelector } from '@/components/availability/PresetSelector';
+import { useToast } from '@/hooks/use-toast';
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, List } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
-type ViewMode = 'calendar' | 'list';
-
-const AvailabilitiesPage: React.FC = () => {
+const AvailabilitiesPage = () => {
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const { useMonthlyAvailabilities, useSaveAvailability, useApplyPreset } = useAvailabilities();
   const { user } = useAuth();
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showDayDialog, setShowDayDialog] = useState(false);
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [activeTabInAdd, setActiveTabInAdd] = useState('custom');
-  const { 
-    isLoading, 
-    selectedMonth, 
-    goToPreviousMonth, 
-    goToNextMonth,
-    getDayStatusColor,
-    setFullDayAvailable,
-    setFullDayUnavailable
-  } = useAvailabilities();
+  const { toast } = useToast();
 
-  const handleSelectDate = (date: Date) => {
+  const userId = user?.id || '';
+  const year = selectedMonth.getFullYear();
+  const month = selectedMonth.getMonth() + 1;
+
+  const { data: availabilities, isLoading, refetch } = useMonthlyAvailabilities(userId, year, month);
+  const { mutateAsync: saveAvailability } = useSaveAvailability();
+  const { mutateAsync: applyPreset } = useApplyPreset();
+
+  const handleNextMonth = () => {
+    setSelectedMonth(addMonths(selectedMonth, 1));
+  };
+
+  const handlePrevMonth = () => {
+    setSelectedMonth(subMonths(selectedMonth, 1));
+  };
+
+  const handleSaveAvailability = async (data: any) => {
+    if (!selectedDate) return;
+
+    await saveAvailability({
+      employeeId: userId,
+      startDate: selectedDate,
+      endDate: selectedDate,
+      timeSlots: data.timeSlots,
+      notes: data.notes
+    });
+
+    toast({
+      title: "Availability Saved",
+      description: `Your availability for ${format(selectedDate, 'dd MMM yyyy')} has been saved successfully.`,
+    });
+
+    setIsFormOpen(false);
+    setSelectedDate(null);
+    refetch();
+  };
+
+  const handleApplyPreset = async (presetId: string, startDate: Date, endDate: Date) => {
+    await applyPreset({
+      employeeId: userId,
+      presetId,
+      startDate,
+      endDate
+    });
+
+    toast({
+      title: "Preset Applied",
+      description: `Availability preset has been applied from ${format(startDate, 'dd MMM')} to ${format(endDate, 'dd MMM yyyy')}.`,
+    });
+
+    refetch();
+  };
+
+  const handleDateClick = (date: Date) => {
     setSelectedDate(date);
-    setShowDayDialog(true);
+    setIsFormOpen(true);
   };
 
-  const handleEditDay = () => {
-    setShowDayDialog(false);
-    setShowAddDialog(true);
-    setActiveTabInAdd('custom');
-  };
-
-  const handleQuickSetAvailable = (date: Date) => {
-    setFullDayAvailable(date);
-  };
-
-  const handleQuickSetUnavailable = (date: Date) => {
-    setFullDayUnavailable(date);
-  };
-
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full p-4">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold">Please log in to manage availabilities</h2>
-        </div>
-      </div>
-    );
-  }
+  const currentMonthLabel = format(selectedMonth, 'MMMM yyyy');
 
   return (
-    <div className="w-full h-[calc(100vh-3.5rem)] overflow-auto p-4 md:p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-4 flex items-center">
-          <CalendarClock className="mr-2 text-primary" size={28} />
-          Manage Your Availability
-        </h1>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <p className="text-lg">Welcome back, {user.name}</p>
-            <p className="text-sm text-muted-foreground">Department: {user.department?.charAt(0).toUpperCase() + user.department?.slice(1) || 'Not assigned'}</p>
-          </div>
-
-          <div className="flex gap-2">
-            <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as ViewMode)}>
-              <ToggleGroupItem value="calendar" aria-label="Calendar view">
-                <CalendarRange className="h-4 w-4 mr-1" />
-                Calendar
-              </ToggleGroupItem>
-              <ToggleGroupItem value="list" aria-label="List view">
-                <CalendarDays className="h-4 w-4 mr-1" />
-                List
-              </ToggleGroupItem>
-            </ToggleGroup>
-
-            <Button 
-              onClick={() => {
-                setShowAddDialog(true);
-                setActiveTabInAdd('custom');
-              }}
-              className="ml-2"
+    <div className="h-full flex flex-col p-4 md:p-6 gap-4 overflow-auto">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-2xl font-bold tracking-tight">Availability Management</h1>
+          
+          <div className="flex items-center gap-2">
+            <Tabs 
+              value={viewMode} 
+              onValueChange={(val) => setViewMode(val as 'calendar' | 'list')}
+              className="hidden sm:block"
             >
-              <CirclePlus className="h-4 w-4 mr-1" />
+              <TabsList>
+                <TabsTrigger value="calendar">
+                  <CalendarIcon className="h-4 w-4 mr-2" />
+                  Calendar
+                </TabsTrigger>
+                <TabsTrigger value="list">
+                  <List className="h-4 w-4 mr-2" />
+                  List
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            <Button 
+              variant="default" 
+              onClick={() => {
+                setSelectedDate(new Date());
+                setIsFormOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4 mr-2" />
               Add Availability
             </Button>
           </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="md:col-span-3">
-          <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border shadow-lg p-4 mb-4 min-h-[600px]">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-[500px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Button variant="outline" size="icon" onClick={handlePrevMonth}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="w-36 text-center font-medium">
+                {currentMonthLabel}
               </div>
-            ) : viewMode === 'calendar' ? (
-              <AvailabilityCalendar onSelectDate={handleSelectDate} />
-            ) : (
-              <MonthListView onSelectDate={handleSelectDate} />
-            )}
+              <Button variant="outline" size="icon" onClick={handleNextMonth}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <PresetSelector onApply={handleApplyPreset} />
           </div>
         </div>
-        
-        <div className="md:col-span-1">
-          <Card className="sticky top-4">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <ListFilter className="h-5 w-5 mr-2" />
-                Quick Actions
-              </CardTitle>
-              <CardDescription>Apply presets to your schedule</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start" 
-                onClick={() => {
-                  setShowAddDialog(true);
-                  setActiveTabInAdd('presets');
-                }}
-              >
-                <CalendarRange className="h-4 w-4 mr-2" />
-                Apply Availability Preset
-              </Button>
-              
-              <div className="pt-2">
-                <h4 className="text-sm font-medium mb-2">Month Navigation</h4>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={goToPreviousMonth}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline" 
-                    size="sm"
-                    className="flex-1"
-                    onClick={goToNextMonth}
-                  >
-                    Next
-                  </Button>
-                </div>
-                <div className="text-center mt-2 text-sm">
-                  {format(selectedMonth, 'MMMM yyyy')}
-                </div>
-              </div>
-              
-              <div className="pt-2">
-                <h4 className="text-sm font-medium mb-2">Color Legend</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 rounded-full bg-green-500 mr-2" />
-                    <span className="text-sm">Available</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 rounded-full bg-yellow-400 mr-2" />
-                    <span className="text-sm">Partially Available</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 rounded-full bg-red-500 mr-2" />
-                    <span className="text-sm">Unavailable</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 rounded-full bg-gray-300 mr-2" />
-                    <span className="text-sm">Not Set</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="pt-2">
-                <h4 className="text-sm font-medium mb-2">Quick Set</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    className="bg-green-500/20 hover:bg-green-500/30 text-green-700 dark:text-green-300"
-                    onClick={() => handleQuickSetAvailable(selectedDate)}
-                  >
-                    Set Available
-                  </Button>
-                  <Button 
-                    variant="secondary"
-                    size="sm"
-                    className="bg-red-500/20 hover:bg-red-500/30 text-red-700 dark:text-red-300"
-                    onClick={() => handleQuickSetUnavailable(selectedDate)}
-                  >
-                    Set Unavailable
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="pt-2">
-                <h4 className="text-sm font-medium mb-2">Tips</h4>
-                <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>• Click on a date to view or edit availability</li>
-                  <li>• Use presets to quickly apply common schedules</li>
-                  <li>• Switch between calendar and list views</li>
-                  <li>• Use quick set buttons for immediate changes</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
       
-      {/* Day detail dialog */}
-      <Dialog open={showDayDialog} onOpenChange={setShowDayDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Availability for {format(selectedDate, 'EEEE, MMMM d, yyyy')}</DialogTitle>
-          </DialogHeader>
-          <DayAvailabilityView date={selectedDate} onEdit={handleEditDay} />
-        </DialogContent>
-      </Dialog>
+      {isLoading ? (
+        <div className="grid gap-4 mt-4">
+          <Skeleton className="h-96 w-full" />
+        </div>
+      ) : (
+        <div className="grid flex-1 h-full">
+          {viewMode === 'calendar' ? (
+            <Card className="h-full overflow-hidden flex flex-col">
+              <CardHeader className="pb-2">
+                <CardTitle>My Availability</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 p-0 overflow-auto">
+                <AvailabilityCalendar 
+                  month={selectedMonth} 
+                  availabilities={availabilities || []} 
+                  onDateClick={handleDateClick} 
+                />
+              </CardContent>
+            </Card>
+          ) : (
+            <MonthListView
+              month={selectedMonth}
+              availabilities={availabilities || []}
+              onEditDay={(date) => handleDateClick(new Date(date))}
+            />
+          )}
+        </div>
+      )}
       
-      {/* Add/Edit availability dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-[700px]">
-          <DialogHeader>
-            <DialogTitle>
-              {activeTabInAdd === 'custom' 
-                ? 'Set Availability' 
-                : 'Apply Availability Preset'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <Tabs 
-            defaultValue={activeTabInAdd} 
-            value={activeTabInAdd}
-            onValueChange={setActiveTabInAdd}
-          >
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="custom">Custom Schedule</TabsTrigger>
-              <TabsTrigger value="presets">Use Presets</TabsTrigger>
-            </TabsList>
-            <TabsContent value="custom">
-              <AvailabilityForm onClose={() => setShowAddDialog(false)} />
-            </TabsContent>
-            <TabsContent value="presets">
-              <PresetSelector onClose={() => setShowAddDialog(false)} />
-            </TabsContent>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
+      {isFormOpen && selectedDate && (
+        <AvailabilityForm
+          date={selectedDate}
+          onSubmit={handleSaveAvailability}
+          onCancel={() => {
+            setIsFormOpen(false);
+            setSelectedDate(null);
+          }}
+          existingAvailability={availabilities?.find(a => a.date === format(selectedDate, 'yyyy-MM-dd'))}
+        />
+      )}
     </div>
   );
 };

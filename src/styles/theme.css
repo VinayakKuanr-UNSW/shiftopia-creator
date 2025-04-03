@@ -7,7 +7,7 @@
   --card-foreground: 240 10% 3.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 240 10% 3.9%;
-  --primary: 240 5.9% 10%;
+  --primary: 252 56% 55%;
   --primary-foreground: 0 0% 98%;
   --secondary: 240 4.8% 95.9%;
   --secondary-foreground: 240 5.9% 10%;
@@ -19,15 +19,15 @@
   --destructive-foreground: 0 0% 98%;
   --border: 240 5.9% 90%;
   --input: 240 5.9% 90%;
-  --ring: 240 5.9% 10%;
+  --ring: 252 56% 55%;
   --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 240 10% 3.9%;
-  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary: 252 56% 55%;
   --sidebar-primary-foreground: 0 0% 98%;
   --sidebar-accent: 240 4.8% 95.9%;
   --sidebar-accent-foreground: 240 5.9% 10%;
   --sidebar-border: 240 5.9% 90%;
-  --sidebar-ring: 240 5.9% 10%;
+  --sidebar-ring: 252 56% 55%;
   --radius: 0.5rem;
 }
 
@@ -39,8 +39,8 @@
   --card-foreground: 0 0% 98%;
   --popover: 240 10% 3.9%;
   --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 240 5.9% 10%;
+  --primary: 252 56% 55%;
+  --primary-foreground: 0 0% 98%;
   --secondary: 240 3.7% 15.9%;
   --secondary-foreground: 0 0% 98%;
   --muted: 240 3.7% 15.9%;
@@ -51,15 +51,15 @@
   --destructive-foreground: 0 0% 98%;
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
-  --ring: 240 4.9% 83.9%;
+  --ring: 252 56% 55%;
   --sidebar-background: 240 10% 3.9%;
   --sidebar-foreground: 0 0% 98%;
-  --sidebar-primary: 0 0% 98%;
-  --sidebar-primary-foreground: 240 5.9% 10%;
+  --sidebar-primary: 252 56% 55%;
+  --sidebar-primary-foreground: 0 0% 98%;
   --sidebar-accent: 240 3.7% 15.9%;
   --sidebar-accent-foreground: 0 0% 98%;
   --sidebar-border: 240 3.7% 15.9%;
-  --sidebar-ring: 240 4.9% 83.9%;
+  --sidebar-ring: 252 56% 55%;
 }
 
 /* Glass theme */
@@ -68,9 +68,9 @@
   --foreground: 0 0% 98%;
   --card: 240 10% 3.9%;
   --card-foreground: 0 0% 98%;
-  --card-opacity: 0.1;
+  --card-opacity: 0.3;
   --popover: 0 0% 0%;
-  --popover-opacity: 0.7;
+  --popover-opacity: 0.8;
   --popover-foreground: 0 0% 98%;
   --primary: 252 56% 55%;
   --primary-foreground: 0 0% 98%;
@@ -83,7 +83,7 @@
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
   --border: 0 0% 100%;
-  --border-opacity: 0.1;
+  --border-opacity: 0.15;
   --input: 240 3.7% 15.9%;
   --ring: 252 56% 55%;
   --sidebar-background: 240 10% 3.9%;
@@ -93,77 +93,76 @@
   --sidebar-accent: 240 3.7% 15.9%;
   --sidebar-accent-foreground: 0 0% 98%;
   --sidebar-border: 0 0% 100%;
-  --sidebar-border-opacity: 0.1;
+  --sidebar-border-opacity: 0.15;
   --sidebar-ring: 252 56% 55%;
 }
 
-/* Default theme */
-.theme-default {
-  --background: 220 14% 96%;
-  --foreground: 220 60% 10%;
+/* Light theme (explicitly named) */
+.light {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
   --card: 0 0% 100%;
-  --card-foreground: 220 60% 10%;
+  --card-foreground: 240 10% 3.9%;
   --popover: 0 0% 100%;
-  --popover-foreground: 220 60% 10%;
-  --primary: 220 70% 50%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 220 20% 90%;
-  --secondary-foreground: 220 60% 10%;
-  --muted: 220 20% 90%;
-  --muted-foreground: 220 20% 40%;
-  --accent: 220 20% 90%;
-  --accent-foreground: 220 60% 10%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary: 252 56% 55%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
-  --border: 220 20% 90%;
-  --input: 220 20% 90%;
-  --ring: 220 70% 50%;
-  --sidebar-background: 220 70% 50%;
-  --sidebar-foreground: 0 0% 100%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 252 56% 55%;
+  --sidebar-background: 252 56% 55%;
+  --sidebar-foreground: 0 0% 98%;
   --sidebar-primary: 0 0% 100%;
-  --sidebar-primary-foreground: 220 70% 50%;
-  --sidebar-accent: 0 0% 90%;
-  --sidebar-accent-foreground: 220 70% 50%;
-  --sidebar-border: 220 60% 45%;
+  --sidebar-primary-foreground: 252 56% 55%;
+  --sidebar-accent: 0 0% 100%;
+  --sidebar-accent-foreground: 252 56% 55%;
+  --sidebar-border: 252 46% 45%;
   --sidebar-ring: 0 0% 100%;
 }
 
 /* Glass theme specific styles */
 .theme-glass .glass-effect {
-  background-color: rgba(255, 255, 255, var(--background-opacity, 0.05));
+  background-color: rgba(255, 255, 255, var(--background-opacity, 0.1));
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, var(--border-opacity, 0.1));
+  border: 1px solid rgba(255, 255, 255, var(--border-opacity, 0.15));
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .theme-glass .card,
 .theme-glass .bg-card {
-  background-color: rgba(255, 255, 255, var(--card-opacity, 0.1));
+  background-color: rgba(30, 30, 40, var(--card-opacity, 0.3));
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, var(--border-opacity, 0.1));
+  border: 1px solid rgba(255, 255, 255, var(--border-opacity, 0.15));
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .theme-glass .popover,
 .theme-glass .dropdown-content {
-  background-color: rgba(0, 0, 0, var(--popover-opacity, 0.7));
+  background-color: rgba(20, 20, 25, var(--popover-opacity, 0.8));
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, var(--border-opacity, 0.1));
+  border: 1px solid rgba(255, 255, 255, var(--border-opacity, 0.15));
 }
 
 .theme-glass .bg-popover {
-  background-color: rgba(0, 0, 0, var(--popover-opacity, 0.7));
+  background-color: rgba(20, 20, 25, var(--popover-opacity, 0.8));
   backdrop-filter: blur(12px);
 }
 
-.theme-glass .bg-background,
-.theme-glass.theme-glass .bg-background/50 {
+.theme-glass .bg-background {
   background-color: rgba(10, 10, 15, 0.5);
   backdrop-filter: blur(8px);
 }
 
 .theme-glass .border {
-  border-color: rgba(255, 255, 255, var(--border-opacity, 0.1));
+  border-color: rgba(255, 255, 255, var(--border-opacity, 0.15));
 }
 
 /* Apply consistent theme styles to all components */
@@ -171,6 +170,8 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   transition: background-color 0.3s, color 0.3s;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .card,
@@ -207,7 +208,7 @@ body {
 .theme-glass [data-sidebar="sidebar"] {
   background-color: rgba(10, 10, 15, 0.7);
   backdrop-filter: blur(12px);
-  border-right: 1px solid rgba(255, 255, 255, var(--sidebar-border-opacity, 0.1));
+  border-right: 1px solid rgba(255, 255, 255, var(--sidebar-border-opacity, 0.15));
 }
 
 /* New responsive styles for Navbar and Sidebar */
@@ -257,27 +258,21 @@ body {
   animation: fadeIn 0.3s ease forwards;
 }
 
-/* Glass morphism utilities */
-.glass-morphism {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.glass-card {
-  background-color: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 /* Theme-specific body styles */
-.theme-default body {
-  background-color: #f0f4f8;
+.light body {
+  background-color: #f5f5f7;
   background-image: 
     radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.03) 0%, transparent 40%),
     radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.03) 0%, transparent 40%);
+  color: #0a0a0f;
+}
+
+.dark body {
+  background-color: #050507;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.05) 0%, transparent 40%);
+  color: white;
 }
 
 .theme-glass body {
@@ -285,19 +280,5 @@ body {
   background-image: 
     radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.15) 0%, transparent 50%);
-  backdrop-filter: blur(20px);
-}
-
-.theme-light body {
-  background-color: #ffffff;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.01) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.01) 0%, transparent 40%);
-}
-
-.theme-dark body {
-  background-color: #0a0a0f;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.05) 0%, transparent 40%);
+  color: white;
 }

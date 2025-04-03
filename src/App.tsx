@@ -33,11 +33,11 @@ const queryClient = new QueryClient();
 // Layout component that includes the Navbar and Sidebar
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex h-screen w-full flex-col overflow-hidden">
       <Navbar />
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto w-full h-full">
           {children}
         </main>
       </div>

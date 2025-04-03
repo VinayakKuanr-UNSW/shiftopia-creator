@@ -36,8 +36,8 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full">
-      <div className="bg-background/80 backdrop-blur-md border-b border-border">
+    <header className="sticky top-0 z-50 w-full h-14 flex-shrink-0">
+      <div className="bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <TooltipProvider>
@@ -121,7 +121,7 @@ const Navbar = () => {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuContent className="w-56 bg-popover/95 backdrop-blur-sm" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">{user.name}</p>

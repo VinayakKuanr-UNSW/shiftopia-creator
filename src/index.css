@@ -4,85 +4,7 @@
 
 @layer base {
   :root,
-  .theme-default {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 252 56% 55%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 255 47% 60%;
-    
-    /* Sidebar specific colors */
-    --sidebar-background: 240 10% 3.9%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 252 56% 55%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 255 47% 60%;
-    
-    /* Department colors */
-    --convention-color: 210 100% 50%;
-    --exhibition-color: 142 76% 47%;
-    --theatre-color: 0 100% 50%;
-    
-    --radius: 0.5rem;
-  }
-
-  .theme-glass {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 10%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 252 56% 55%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 100%;
-    --input: 240 3.7% 15.9%;
-    --ring: 252 56% 55%;
-    
-    /* Sidebar specific colors */
-    --sidebar-background: 240 10% 3.9%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 252 56% 55%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 100%;
-    --sidebar-ring: 252 56% 55%;
-    
-    /* Department colors */
-    --convention-color: 210 100% 50%;
-    --exhibition-color: 142 76% 47%;
-    --theatre-color: 0 100% 50%;
-    
-    --radius: 0.75rem;
-  }
-
-  .theme-light {
+  .light {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -117,9 +39,11 @@
     --convention-color: 210 100% 50%;
     --exhibition-color: 142 76% 47%;
     --theatre-color: 0 100% 50%;
+    
+    --radius: 0.5rem;
   }
 
-  .theme-dark {
+  .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
@@ -154,6 +78,45 @@
     --convention-color: 210 100% 50%;
     --exhibition-color: 142 76% 47%;
     --theatre-color: 0 100% 50%;
+  }
+
+  .theme-glass {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 252 56% 55%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 100%;
+    --input: 240 3.7% 15.9%;
+    --ring: 252 56% 55%;
+    
+    /* Sidebar specific colors */
+    --sidebar-background: 240 10% 10%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 252 56% 55%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 100%;
+    --sidebar-ring: 252 56% 55%;
+    
+    /* Department colors */
+    --convention-color: 210 100% 50%;
+    --exhibition-color: 142 76% 47%;
+    --theatre-color: 0 100% 50%;
+    
+    --radius: 0.75rem;
   }
 }
 
@@ -275,11 +238,20 @@
 }
 
 /* Theme-specific body styles */
-.theme-default body {
-  background-color: #0a0a0f;
+.light body {
+  background-color: #f5f5f7;
   background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.07) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.07) 0%, transparent 40%);
+    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.03) 0%, transparent 40%);
+  color: #0a0a0f;
+  min-height: 100vh;
+}
+
+.dark body {
+  background-color: #050507;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.05) 0%, transparent 40%);
   color: white;
   min-height: 100vh;
 }
@@ -292,24 +264,6 @@
   color: white;
   min-height: 100vh;
   backdrop-filter: blur(20px);
-}
-
-.theme-light body {
-  background-color: #f5f5f7;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.03) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.03) 0%, transparent 40%);
-  color: #0a0a0f;
-  min-height: 100vh;
-}
-
-.theme-dark body {
-  background-color: #050507;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.05) 0%, transparent 40%);
-  color: white;
-  min-height: 100vh;
 }
 
 /* Button styling */
@@ -326,50 +280,11 @@
   background-color: rgb(29, 78, 216);
 }
 
-/* Theme-specific component styles */
-.theme-light .bg-gray-900 {
-  background-color: #ffffff;
-}
-
-.theme-light .bg-gray-800\/50 {
-  background-color: rgba(245, 245, 247, 0.8);
-}
-
-.theme-light .text-white,
-.theme-light .text-white\/80,
-.theme-light .text-white\/60 {
-  color: #0a0a0f;
-}
-
-.theme-light .border-white\/10 {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.theme-light .bg-blue-900\/20 {
-  background-color: rgba(220, 230, 255, 0.7);
-}
-
-.theme-light .border-blue-500\/30 {
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-.theme-light .text-blue-300,
-.theme-light .text-blue-400 {
-  color: #3b82f6;
-}
-
-.theme-light .glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
 /* Glass theme specific styles */
 .theme-glass .card,
 .theme-glass .bg-card {
   backdrop-filter: blur(16px);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(30, 30, 40, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -389,24 +304,24 @@
 }
 
 .theme-glass .bg-input {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .theme-glass .button,
 .theme-glass .btn {
   backdrop-filter: blur(8px);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.2s ease;
 }
 
 .theme-glass .button:hover,
 .theme-glass .btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 .theme-glass nav {
-  background-color: rgba(10, 10, 15, 0.8) !important;
+  background-color: rgba(10, el0, 15, 0.7) !important;
   backdrop-filter: blur(12px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
@@ -416,4 +331,10 @@
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.theme-glass [data-sidebar="sidebar"] {
+  background-color: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
 }
