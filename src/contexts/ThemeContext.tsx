@@ -1,12 +1,12 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light' | 'system';
+type Theme = 'dark' | 'light' | 'system' | 'default' | 'glass';
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  toggleTheme: () => void; // Added toggleTheme function
+  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -24,11 +24,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const root = window.document.documentElement;
     
-    root.classList.remove('light', 'dark');
+    root.classList.remove('light', 'dark', 'theme-default', 'theme-glass');
     
     if (theme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       root.classList.add(systemTheme);
+    } else if (theme === 'default' || theme === 'glass') {
+      root.classList.add(`theme-${theme}`);
     } else {
       root.classList.add(theme);
     }
@@ -37,7 +39,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
+    setTheme(prevTheme => {
+      if (prevTheme === 'dark') return 'light';
+      if (prevTheme === 'light') return 'dark';
+      if (prevTheme === 'default') return 'glass';
+      if (prevTheme === 'glass') return 'default';
+      // For 'system', default to dark/light based on user preference
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark';
+    });
   };
 
   return (
