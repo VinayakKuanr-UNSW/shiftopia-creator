@@ -25,7 +25,7 @@ import MyRosterPage from "./pages/MyRosterPage";
 import AvailabilitiesPage from "./pages/AvailabilitiesPage";
 import BroadcastPage from "./pages/BroadcastPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { AppSidebar } from "./components/AppSidebar";
+import AppSidebar from "./components/AppSidebar";
 import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();

@@ -16,3 +16,108 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: typeof window !== 'undefined' ? localStorage : undefined
   }
 });
+
+// Add custom types for the Supabase client to handle the broadcast tables properly
+declare module '@supabase/supabase-js' {
+  interface Database {
+    public: {
+      Tables: {
+        broadcast_groups: {
+          Row: {
+            id: string;
+            name: string;
+            created_at: string;
+          };
+          Insert: {
+            id?: string;
+            name: string;
+            created_at?: string;
+          };
+          Update: {
+            id?: string;
+            name?: string;
+            created_at?: string;
+          };
+        };
+        broadcast_group_members: {
+          Row: {
+            id: string;
+            group_id: string;
+            user_id: string;
+            is_admin: boolean;
+            created_at: string;
+          };
+          Insert: {
+            id?: string;
+            group_id: string;
+            user_id: string;
+            is_admin?: boolean;
+            created_at?: string;
+          };
+          Update: {
+            id?: string;
+            group_id?: string;
+            user_id?: string;
+            is_admin?: boolean;
+            created_at?: string;
+          };
+        };
+        broadcasts: {
+          Row: {
+            id: string;
+            group_id: string;
+            sender_id: string;
+            message: string;
+            created_at: string;
+          };
+          Insert: {
+            id?: string;
+            group_id: string;
+            sender_id: string;
+            message: string;
+            created_at?: string;
+          };
+          Update: {
+            id?: string;
+            group_id?: string;
+            sender_id?: string;
+            message?: string;
+            created_at?: string;
+          };
+        };
+        broadcast_notifications: {
+          Row: {
+            id: string;
+            user_id: string;
+            broadcast_id: string;
+            read: boolean;
+            created_at: string;
+          };
+          Insert: {
+            id?: string;
+            user_id: string;
+            broadcast_id: string;
+            read?: boolean;
+            created_at?: string;
+          };
+          Update: {
+            id?: string;
+            user_id?: string;
+            broadcast_id?: string;
+            read?: boolean;
+            created_at?: string;
+          };
+        };
+        auth_users_view: {
+          Row: {
+            id: string;
+            name: string;
+            email: string;
+            role: string;
+            department: string;
+          };
+        };
+      };
+    };
+  }
+}

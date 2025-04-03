@@ -1,20 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  department: string;
-}
+import { BroadcastDbClient } from '@/utils/db-client';
+import { Employee } from '@/types/broadcast';
 
 interface EmployeeSelectorProps {
   onSelect: (employeeId: string, isAdmin?: boolean) => void;
@@ -33,13 +26,7 @@ const EmployeeSelector: React.FC<EmployeeSelectorProps> = ({ onSelect }) => {
     const fetchEmployees = async () => {
       try {
         setIsLoading(true);
-        const { data, error } = await supabase
-          .from('auth_users_view')
-          .select('id, name, email, role, department')
-          .order('name');
-
-        if (error) throw error;
-        
+        const data = await BroadcastDbClient.fetchUsers();
         setEmployees(data || []);
         setFilteredEmployees(data || []);
       } catch (error: any) {

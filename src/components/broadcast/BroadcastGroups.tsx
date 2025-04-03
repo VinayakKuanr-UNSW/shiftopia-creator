@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
 import { PlusCircle, Edit, Trash2, UserPlus, ShieldAlert, UserMinus, Shield } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,27 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmployeeSelector from './EmployeeSelector';
-
-// Define types
-interface BroadcastGroup {
-  id: string;
-  name: string;
-  created_at: string;
-}
-
-interface GroupMember {
-  id: string;
-  group_id: string;
-  user_id: string;
-  is_admin: boolean;
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    department: string;
-  }
-}
+import { BroadcastDbClient } from '@/utils/db-client';
+import { BroadcastGroup, GroupMember } from '@/types/broadcast';
 
 const BroadcastGroups = () => {
   const [groups, setGroups] = useState<BroadcastGroup[]>([]);
@@ -48,13 +27,8 @@ const BroadcastGroups = () => {
   const fetchGroups = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('broadcast_groups')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      setGroups(data || []);
+      const data = await BroadcastDbClient.fetchBroadcastGroups();
+      setGroups(data);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -69,22 +43,8 @@ const BroadcastGroups = () => {
   // Fetch members of a group
   const fetchGroupMembers = async (groupId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('broadcast_group_members')
-        .select(`
-          *,
-          user:user_id (
-            id,
-            name,
-            email,
-            role,
-            department
-          )
-        `)
-        .eq('group_id', groupId);
-
-      if (error) throw error;
-      setGroupMembers(data || []);
+      const data = await BroadcastDbClient.fetchGroupMembers(groupId);
+      setGroupMembers(data);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -106,12 +66,7 @@ const BroadcastGroups = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('broadcast_groups')
-        .insert([{ name: newGroupName.trim() }])
-        .select();
-
-      if (error) throw error;
+      await BroadcastDbClient.createBroadcastGroup(newGroupName.trim());
       
       toast({
         title: "Success",
@@ -143,12 +98,7 @@ const BroadcastGroups = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('broadcast_groups')
-        .update({ name: editGroupName.trim() })
-        .eq('id', selectedGroup.id);
-
-      if (error) throw error;
+      await BroadcastDbClient.updateBroadcastGroup(selectedGroup.id, editGroupName.trim());
       
       toast({
         title: "Success",
@@ -173,12 +123,7 @@ const BroadcastGroups = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('broadcast_groups')
-        .delete()
-        .eq('id', groupId);
-
-      if (error) throw error;
+      await BroadcastDbClient.deleteBroadcastGroup(groupId);
       
       toast({
         title: "Success",
@@ -205,34 +150,7 @@ const BroadcastGroups = () => {
     if (!selectedGroup) return;
 
     try {
-      // Check if user is already a member
-      const { data: existingMember, error: checkError } = await supabase
-        .from('broadcast_group_members')
-        .select('*')
-        .eq('group_id', selectedGroup.id)
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (checkError) throw checkError;
-
-      if (existingMember) {
-        toast({
-          title: "Info",
-          description: "This user is already a member of this group"
-        });
-        return;
-      }
-
-      // Add the user as a member
-      const { error } = await supabase
-        .from('broadcast_group_members')
-        .insert([{
-          group_id: selectedGroup.id,
-          user_id: userId,
-          is_admin: isAdmin
-        }]);
-
-      if (error) throw error;
+      await BroadcastDbClient.addGroupMember(selectedGroup.id, userId, isAdmin);
       
       toast({
         title: "Success",
@@ -257,12 +175,7 @@ const BroadcastGroups = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('broadcast_group_members')
-        .delete()
-        .eq('id', memberId);
-
-      if (error) throw error;
+      await BroadcastDbClient.removeGroupMember(memberId);
       
       toast({
         title: "Success",
@@ -284,12 +197,7 @@ const BroadcastGroups = () => {
   // Toggle admin status for a member
   const toggleAdminStatus = async (memberId: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
-        .from('broadcast_group_members')
-        .update({ is_admin: !currentStatus })
-        .eq('id', memberId);
-
-      if (error) throw error;
+      await BroadcastDbClient.updateMemberAdminStatus(memberId, !currentStatus);
       
       toast({
         title: "Success",
@@ -430,7 +338,7 @@ const BroadcastGroups = () => {
                   <DialogTitle>Add Member to {selectedGroup.name}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
-                  <EmployeeSelector onSelect={(userId) => addMemberToGroup(userId)} />
+                  <EmployeeSelector onSelect={(userId, isAdmin) => addMemberToGroup(userId, isAdmin || false)} />
                 </div>
               </DialogContent>
             </Dialog>

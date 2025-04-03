@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Send } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -9,55 +8,37 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BroadcastDbClient } from '@/utils/db-client';
 
-interface BroadcastGroup {
+interface GroupWithAdminStatus {
   id: string;
   name: string;
+  is_admin: boolean;
 }
 
 const BroadcastForm = () => {
   const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
-  const [groups, setGroups] = useState<BroadcastGroup[]>([]);
+  const [groups, setGroups] = useState<GroupWithAdminStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
 
-  // Fetch broadcast groups
+  // Fetch broadcast groups where the current user is an admin
   useEffect(() => {
     const fetchGroups = async () => {
+      if (!user?.id) return;
+      
       try {
         setIsLoading(true);
+        const userGroups = await BroadcastDbClient.fetchUserGroups(user.id);
         
-        // Fetch groups where the current user is an admin
-        const { data, error } = await supabase
-          .from('broadcast_group_members')
-          .select(`
-            group_id,
-            broadcast_groups:group_id (
-              id,
-              name
-            )
-          `)
-          .eq('user_id', user?.id)
-          .eq('is_admin', true);
-
-        if (error) throw error;
+        // Filter to only include groups where the user is an admin
+        const adminGroups = userGroups.filter(group => group.is_admin);
         
-        const uniqueGroups = data
-          ? Array.from(
-              new Map(
-                data.map(item => [
-                  item.broadcast_groups.id,
-                  { id: item.broadcast_groups.id, name: item.broadcast_groups.name }
-                ])
-              ).values()
-            )
-          : [];
-        
-        setGroups(uniqueGroups);
-        if (uniqueGroups.length > 0) {
-          setSelectedGroupId(uniqueGroups[0].id);
+        setGroups(adminGroups);
+        if (adminGroups.length > 0) {
+          setSelectedGroupId(adminGroups[0].id);
         }
       } catch (error: any) {
         toast({
@@ -95,44 +76,32 @@ const BroadcastForm = () => {
       return;
     }
 
+    if (!user?.id) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to send broadcasts",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       setIsSending(true);
       
       // Create a new broadcast
-      const { data: broadcastData, error: broadcastError } = await supabase
-        .from('broadcasts')
-        .insert([{
-          group_id: selectedGroupId,
-          sender_id: user?.id,
-          message: message.trim()
-        }])
-        .select();
-
-      if (broadcastError) throw broadcastError;
+      const broadcast = await BroadcastDbClient.createBroadcast(
+        selectedGroupId,
+        user.id,
+        message.trim()
+      );
       
-      if (broadcastData && broadcastData.length > 0) {
-        // Get all members of the selected group
-        const { data: membersData, error: membersError } = await supabase
-          .from('broadcast_group_members')
-          .select('user_id')
-          .eq('group_id', selectedGroupId);
-
-        if (membersError) throw membersError;
-        
-        if (membersData && membersData.length > 0) {
-          // Create notifications for all members
-          const notifications = membersData.map(member => ({
-            user_id: member.user_id,
-            broadcast_id: broadcastData[0].id,
-            read: false
-          }));
-          
-          const { error: notificationsError } = await supabase
-            .from('broadcast_notifications')
-            .insert(notifications);
-
-          if (notificationsError) throw notificationsError;
-        }
+      // Get all members of the selected group
+      const groupMembers = await BroadcastDbClient.fetchGroupMembers(selectedGroupId);
+      
+      if (groupMembers.length > 0) {
+        // Create notifications for all members
+        const memberIds = groupMembers.map(member => member.user_id);
+        await BroadcastDbClient.createNotificationsForBroadcast(broadcast.id, memberIds);
       }
       
       toast({

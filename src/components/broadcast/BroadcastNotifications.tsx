@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bell, Check, X } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -14,27 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-
-interface Notification {
-  id: string;
-  user_id: string;
-  broadcast_id: string;
-  read: boolean;
-  created_at: string;
-  broadcast: {
-    id: string;
-    message: string;
-    created_at: string;
-    sender: {
-      id: string;
-      name: string;
-    }
-    group: {
-      id: string;
-      name: string;
-    }
-  }
-}
+import { BroadcastDbClient } from '@/utils/db-client';
+import { Notification } from '@/types/broadcast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const BroadcastNotifications = () => {
   const { user } = useAuth();
@@ -49,33 +29,9 @@ export const BroadcastNotifications = () => {
     
     try {
       setIsLoading(true);
-      
-      const { data, error } = await supabase
-        .from('broadcast_notifications')
-        .select(`
-          *,
-          broadcast:broadcast_id (
-            id,
-            message,
-            created_at,
-            sender:sender_id (
-              id,
-              name
-            ),
-            group:group_id (
-              id,
-              name
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      
-      setNotifications(data || []);
-      setUnreadCount(data ? data.filter(n => !n.read).length : 0);
+      const data = await BroadcastDbClient.fetchUserNotifications(user.id);
+      setNotifications(data);
+      setUnreadCount(data.filter(n => !n.read).length);
     } catch (error: any) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -86,12 +42,7 @@ export const BroadcastNotifications = () => {
   // Mark a notification as read
   const markAsRead = async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from('broadcast_notifications')
-        .update({ read: true })
-        .eq('id', notificationId);
-
-      if (error) throw error;
+      await BroadcastDbClient.markNotificationAsRead(notificationId);
       
       setNotifications(prevNotifications => 
         prevNotifications.map(notification => 
@@ -112,18 +63,7 @@ export const BroadcastNotifications = () => {
     if (!user?.id || notifications.length === 0) return;
     
     try {
-      const unreadIds = notifications
-        .filter(n => !n.read)
-        .map(n => n.id);
-      
-      if (unreadIds.length === 0) return;
-      
-      const { error } = await supabase
-        .from('broadcast_notifications')
-        .update({ read: true })
-        .in('id', unreadIds);
-
-      if (error) throw error;
+      await BroadcastDbClient.markAllNotificationsAsRead(user.id);
       
       setNotifications(prevNotifications => 
         prevNotifications.map(notification => ({ ...notification, read: true }))
@@ -161,49 +101,27 @@ export const BroadcastNotifications = () => {
           table: 'broadcast_notifications',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
+        async (payload) => {
           // Fetch the complete notification with related data
-          const fetchNewNotification = async () => {
-            try {
-              const { data, error } = await supabase
-                .from('broadcast_notifications')
-                .select(`
-                  *,
-                  broadcast:broadcast_id (
-                    id,
-                    message,
-                    created_at,
-                    sender:sender_id (
-                      id,
-                      name
-                    ),
-                    group:group_id (
-                      id,
-                      name
-                    )
-                  )
-                `)
-                .eq('id', payload.new.id)
-                .single();
-
-              if (error) throw error;
+          try {
+            const newNotification = await BroadcastDbClient.fetchUserNotifications(user.id);
+            
+            if (newNotification && newNotification.length > 0) {
+              // Add only the latest notification to the existing list
+              const latest = newNotification[0];
+              setNotifications(prev => [latest, ...prev].slice(0, 20));
+              setUnreadCount(prev => prev + 1);
               
-              if (data) {
-                setNotifications(prev => [data, ...prev].slice(0, 20));
-                setUnreadCount(prev => prev + 1);
-                
-                // Show toast notification
-                toast({
-                  title: `New broadcast from ${data.broadcast.group.name}`,
-                  description: data.broadcast.message.substring(0, 60) + (data.broadcast.message.length > 60 ? '...' : '')
-                });
-              }
-            } catch (error) {
-              console.error('Error fetching new notification:', error);
+              // Show toast notification
+              toast({
+                title: `New broadcast from ${latest.broadcast?.group?.name}`,
+                description: latest.broadcast?.message.substring(0, 60) + 
+                  (latest.broadcast?.message.length > 60 ? '...' : '')
+              });
             }
-          };
-          
-          fetchNewNotification();
+          } catch (error) {
+            console.error('Error fetching new notification:', error);
+          }
         }
       )
       .subscribe();
@@ -271,12 +189,12 @@ export const BroadcastNotifications = () => {
                   <div className="flex justify-between items-start gap-2">
                     <div className="flex-1">
                       <div className="font-medium text-sm">
-                        {notification.broadcast.group.name}
+                        {notification.broadcast?.group?.name}
                       </div>
                       <div className="text-xs text-muted-foreground mb-1">
-                        From {notification.broadcast.sender.name} • {formatTime(notification.broadcast.created_at)}
+                        From {notification.broadcast?.sender?.name} • {formatTime(notification.broadcast?.created_at || '')}
                       </div>
-                      <p className="text-sm">{notification.broadcast.message}</p>
+                      <p className="text-sm">{notification.broadcast?.message}</p>
                     </div>
                     {!notification.read && (
                       <Button
