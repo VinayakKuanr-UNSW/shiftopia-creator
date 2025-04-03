@@ -26,16 +26,14 @@ import AvailabilitiesPage from "./pages/AvailabilitiesPage";
 import BroadcastPage from "./pages/BroadcastPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppSidebar from "./components/AppSidebar";
-import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();
 
-// Remove Navbar from AppLayout since it was being included twice
+// Removed NavBar from AppLayout since it's included in AppSidebar
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen w-full flex flex-col">
-        <Navbar />
         <div className="flex-1 flex">
           <AppSidebar />
           <main className="flex-1 overflow-auto">
@@ -80,7 +78,7 @@ const App = () => (
                 } />
                 
                 {/* My Roster route */}
-                <Route path="/myroster" element={
+                <Route path="/my-roster" element={
                   <ProtectedRoute>
                     <AppLayout>
                       <MyRosterPage />
@@ -98,7 +96,7 @@ const App = () => (
                 } />
                 
                 {/* Broadcast route - Admin only */}
-                <Route path="/broadcasts" element={
+                <Route path="/broadcast" element={
                   <ProtectedRoute requiredRole="admin">
                     <AppLayout>
                       <BroadcastPage />
@@ -107,28 +105,28 @@ const App = () => (
                 } />
                 
                 {/* Rostering routes */}
-                <Route path="/rostering/templates" element={
+                <Route path="/templates" element={
                   <ProtectedRoute>
                     <AppLayout>
                       <TemplatesPage />
                     </AppLayout>
                   </ProtectedRoute>
                 } />
-                <Route path="/rostering/rosters" element={
+                <Route path="/rosters" element={
                   <ProtectedRoute>
                     <AppLayout>
                       <RostersPage />
                     </AppLayout>
                   </ProtectedRoute>
                 } />
-                <Route path="/rostering/birds-view" element={
+                <Route path="/birds-view" element={
                   <ProtectedRoute>
                     <AppLayout>
                       <BirdsViewPage />
                     </AppLayout>
                   </ProtectedRoute>
                 } />
-                <Route path="/rostering/timesheets" element={
+                <Route path="/timesheet" element={
                   <ProtectedRoute>
                     <AppLayout>
                       <TimesheetPage />
@@ -146,7 +144,7 @@ const App = () => (
                 } />
                 
                 {/* Employee bids route */}
-                <Route path="/employee/bids" element={
+                <Route path="/bids" element={
                   <ProtectedRoute>
                     <AppLayout>
                       <EmployeeBidsPage />

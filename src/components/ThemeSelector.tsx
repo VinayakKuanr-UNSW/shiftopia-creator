@@ -14,14 +14,15 @@ export const ThemeSelector = () => {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   
-  const handleThemeChange = (newTheme: 'default' | 'glass' | 'light' | 'dark') => {
+  const handleThemeChange = (newTheme: 'dark' | 'light' | 'default' | 'glass' | 'system') => {
     setTheme(newTheme);
     
     const themeNames = {
       default: 'Default',
       glass: 'Glass',
       light: 'Light',
-      dark: 'Dark'
+      dark: 'Dark',
+      system: 'System'
     };
     
     toast({
@@ -39,6 +40,7 @@ export const ThemeSelector = () => {
           {theme === 'dark' && <Moon className="h-5 w-5" />}
           {theme === 'default' && <Monitor className="h-5 w-5" />}
           {theme === 'glass' && <Sparkles className="h-5 w-5" />}
+          {theme === 'system' && <Monitor className="h-5 w-5" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40 bg-popover border border-border">
@@ -69,6 +71,13 @@ export const ThemeSelector = () => {
         >
           <Moon className="h-4 w-4" />
           <span>Dark</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          className={`flex items-center gap-2 cursor-pointer ${theme === 'system' ? 'bg-accent/50' : ''}`}
+          onClick={() => handleThemeChange('system')}
+        >
+          <Monitor className="h-4 w-4" />
+          <span>System</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
