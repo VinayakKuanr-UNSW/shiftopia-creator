@@ -81,44 +81,44 @@
   }
 
   .theme-glass {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 10%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 252 56% 55%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 100%;
-    --input: 240 3.7% 15.9%;
-    --ring: 252 56% 55%;
+    --background: 210 20% 10%; /* Darker background with a bluish-pinkish hue */
+    --foreground: 0 0% 98%; /* Light foreground */
+    --card: 210 20% 25%; /* Slightly darker card background */
+    --card-foreground: 0 0% 98%; /* Light text on card */
+    --popover: 210 20% 30%; /* Popover with a bluish-pinkish tint */
+    --popover-foreground: 0 0% 98%; /* Light text in popover */
+    --primary: 320 60% 55%; /* Pinkish-blue primary color */
+    --primary-foreground: 0 0% 98%; /* Light text on primary elements */
+    --secondary: 220 30% 25%; /* Cool secondary color */
+    --secondary-foreground: 0 0% 98%; /* Light secondary text */
+    --muted: 220 30% 25%; /* Muted color with a blue tint */
+    --muted-foreground: 240 5% 64.9%; /* Muted foreground text */
+    --accent: 320 60% 65%; /* Accent color (light pinkish-blue) */
+    --accent-foreground: 0 0% 98%; /* Accent text */
+    --destructive: 0 62.8% 30.6%; /* Red for destructive actions */
+    --destructive-foreground: 0 0% 98%; /* Light text for destructive elements */
+    --border: 0 0% 100%; /* Light border */
+    --input: 220 25% 40%; /* Input background */
+    --ring: 320 60% 55%; /* Ring around elements in pinkish-blue */
     
     /* Sidebar specific colors */
-    --sidebar-background: 240 10% 10%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 252 56% 55%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 100%;
-    --sidebar-ring: 252 56% 55%;
+    --sidebar-background: 210 20% 15%; /* Darker background for sidebar */
+    --sidebar-foreground: 0 0% 98%; /* Light text in sidebar */
+    --sidebar-primary: 320 60% 55%; /* Pinkish-blue sidebar primary color */
+    --sidebar-primary-foreground: 0 0% 98%; /* Light text for primary elements in sidebar */
+    --sidebar-accent: 220 30% 25%; /* Sidebar accent color */
+    --sidebar-accent-foreground: 0 0% 98%; /* Light text for sidebar accents */
+    --sidebar-border: 0 0% 100%; /* Light sidebar border */
+    --sidebar-ring: 320 60% 55%; /* Sidebar ring in pinkish-blue */
     
     /* Department colors */
-    --convention-color: 210 100% 50%;
-    --exhibition-color: 142 76% 47%;
-    --theatre-color: 0 100% 50%;
+    --convention-color: 210 100% 50%; /* Convention department color */
+    --exhibition-color: 142 76% 47%; /* Exhibition department color */
+    --theatre-color: 0 100% 50%; /* Theatre department color */
     
-    --radius: 0.75rem;
-  }
+    --radius: 0.75rem; /* Rounded corners */
 }
+
 
 @layer utilities {
   .hover-scale {
@@ -337,4 +337,5 @@
   background-color: rgba(10, 10, 15, 0.7);
   backdrop-filter: blur(12px);
   border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
 }
