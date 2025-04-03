@@ -17,6 +17,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 import { 
   Sidebar,
   SidebarContent,
@@ -32,7 +33,6 @@ import {
   SidebarMenuSubItem,
   useSidebar
 } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 
 const AppSidebar = () => {
@@ -59,7 +59,7 @@ const AppSidebar = () => {
                 "text-lg font-semibold transition-opacity",
                 state === "collapsed" && "opacity-0"
               )}>
-                Roster App
+                ShiftoPia
               </span>
             </div>
           </SidebarGroupLabel>
@@ -72,7 +72,7 @@ const AppSidebar = () => {
                   tooltip="Dashboard"
                   asChild
                 >
-                  <NavLink to="/dashboard">
+                  <NavLink to="/dashboard" className="transition-colors hover:bg-muted/50">
                     <LayoutDashboard className="h-5 w-5" />
                     <span>Dashboard</span>
                   </NavLink>
@@ -85,7 +85,7 @@ const AppSidebar = () => {
                   tooltip="My Roster"
                   asChild
                 >
-                  <NavLink to="/my-roster">
+                  <NavLink to="/my-roster" className="transition-colors hover:bg-muted/50">
                     <Calendar className="h-5 w-5" />
                     <span>My Roster</span>
                   </NavLink>
@@ -98,7 +98,7 @@ const AppSidebar = () => {
                   tooltip="Availabilities"
                   asChild
                 >
-                  <NavLink to="/availabilities">
+                  <NavLink to="/availabilities" className="transition-colors hover:bg-muted/50">
                     <CalendarDays className="h-5 w-5" />
                     <span>Availabilities</span>
                   </NavLink>
@@ -111,7 +111,7 @@ const AppSidebar = () => {
                   tooltip="My Bids"
                   asChild
                 >
-                  <NavLink to="/bids">
+                  <NavLink to="/bids" className="transition-colors hover:bg-muted/50">
                     <BadgeCheck className="h-5 w-5" />
                     <span>My Bids</span>
                   </NavLink>
@@ -139,7 +139,7 @@ const AppSidebar = () => {
                           isActive={isRouteActive('/templates')}
                           asChild
                         >
-                          <NavLink to="/templates">
+                          <NavLink to="/templates" className="transition-colors hover:bg-muted/50">
                             <Workflow className="h-4 w-4" />
                             <span>Templates</span>
                           </NavLink>
@@ -150,7 +150,7 @@ const AppSidebar = () => {
                           isActive={isRouteActive('/rosters')}
                           asChild
                         >
-                          <NavLink to="/rosters">
+                          <NavLink to="/rosters" className="transition-colors hover:bg-muted/50">
                             <FileSpreadsheet className="h-4 w-4" />
                             <span>Rosters</span>
                           </NavLink>
@@ -161,7 +161,7 @@ const AppSidebar = () => {
                           isActive={isRouteActive('/birds-view')}
                           asChild
                         >
-                          <NavLink to="/birds-view">
+                          <NavLink to="/birds-view" className="transition-colors hover:bg-muted/50">
                             <PanelLeft className="h-4 w-4" />
                             <span>Birds View</span>
                           </NavLink>
@@ -172,7 +172,7 @@ const AppSidebar = () => {
                           isActive={isRouteActive('/timesheet')}
                           asChild
                         >
-                          <NavLink to="/timesheet">
+                          <NavLink to="/timesheet" className="transition-colors hover:bg-muted/50">
                             <Clock className="h-4 w-4" />
                             <span>Timesheet</span>
                           </NavLink>
@@ -199,7 +199,7 @@ const AppSidebar = () => {
                           isActive={isRouteActive('/management/bids')}
                           asChild
                         >
-                          <NavLink to="/management/bids">
+                          <NavLink to="/management/bids" className="transition-colors hover:bg-muted/50">
                             <BadgeCheck className="h-4 w-4" />
                             <span>Open Bids</span>
                           </NavLink>
@@ -210,7 +210,7 @@ const AppSidebar = () => {
                           isActive={isRouteActive('/management/swaps')}
                           asChild
                         >
-                          <NavLink to="/management/swaps">
+                          <NavLink to="/management/swaps" className="transition-colors hover:bg-muted/50">
                             <RefreshCw className="h-4 w-4" />
                             <span>Swap Requests</span>
                           </NavLink>
@@ -222,7 +222,7 @@ const AppSidebar = () => {
                             isActive={isRouteActive('/broadcast')}
                             asChild
                           >
-                            <NavLink to="/broadcast">
+                            <NavLink to="/broadcast" className="transition-colors hover:bg-muted/50">
                               <BellRing className="h-4 w-4" />
                               <span>Broadcast</span>
                             </NavLink>
