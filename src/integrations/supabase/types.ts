@@ -54,6 +54,141 @@ export type Database = {
           },
         ]
       }
+      broadcast_group_members: {
+        Row: {
+          created_at: string | null
+          group_id: string
+          id: string
+          is_admin: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          group_id: string
+          id?: string
+          is_admin?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          group_id?: string
+          id?: string
+          is_admin?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "broadcast_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "auth_users_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broadcast_groups: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      broadcast_notifications: {
+        Row: {
+          broadcast_id: string
+          created_at: string | null
+          id: string
+          read: boolean
+          user_id: string
+        }
+        Insert: {
+          broadcast_id: string
+          created_at?: string | null
+          id?: string
+          read?: boolean
+          user_id: string
+        }
+        Update: {
+          broadcast_id?: string
+          created_at?: string | null
+          id?: string
+          read?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_notifications_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "broadcasts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "auth_users_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broadcasts: {
+        Row: {
+          created_at: string | null
+          group_id: string
+          id: string
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          group_id: string
+          id?: string
+          message: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string | null
+          group_id?: string
+          id?: string
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcasts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "broadcast_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcasts_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "auth_users_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           department: string | null
@@ -1296,7 +1431,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      auth_users_view: {
+        Row: {
+          department: string | null
+          email: string | null
+          id: string | null
+          name: string | null
+          role: string | null
+        }
+        Insert: {
+          department?: never
+          email?: string | null
+          id?: string | null
+          name?: never
+          role?: never
+        }
+        Update: {
+          department?: never
+          email?: string | null
+          id?: string | null
+          name?: never
+          role?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

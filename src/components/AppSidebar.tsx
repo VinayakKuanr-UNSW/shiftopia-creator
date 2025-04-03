@@ -1,243 +1,100 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
   Calendar, 
-  Clock,
+  LayoutDashboard, 
+  Clock, 
+  PanelLeft, 
   Users,
-  FileText,
-  TrendingUp,
-  MessageSquare,
-  BarChart2,
-  ChevronDown,
-  ChevronRight,
-  Eye,
-  Megaphone
+  Workflow,
+  CalendarDays,
+  FileSpreadsheet,
+  BellRing,
+  BadgeCheck
 } from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 
-export function AppSidebar() {
+// Define sidebar items with their routes, icons, and access roles
+const sidebarItems = [
+  { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+  { to: '/my-roster', label: 'My Roster', icon: <Calendar size={18} /> },
+  { to: '/timesheet', label: 'Timesheet', icon: <Clock size={18} /> },
+  { to: '/availabilities', label: 'Availabilities', icon: <CalendarDays size={18} /> },
+  { to: '/bids', label: 'My Bids', icon: <BadgeCheck size={18} /> },
+  { 
+    to: '/rosters', 
+    label: 'Rosters', 
+    icon: <FileSpreadsheet size={18} />,
+    roles: ['admin', 'manager'],
+  },
+  { 
+    to: '/birds-view', 
+    label: 'Birds View', 
+    icon: <PanelLeft size={18} />,
+    roles: ['admin', 'manager'],
+  },
+  { 
+    to: '/templates', 
+    label: 'Templates', 
+    icon: <Workflow size={18} />,
+    roles: ['admin'],
+  },
+  { 
+    to: '/management', 
+    label: 'Management', 
+    icon: <Users size={18} />,
+    roles: ['admin', 'manager'],
+  },
+  {
+    to: '/broadcast',
+    label: 'Broadcast',
+    icon: <BellRing size={18} />,
+    roles: ['admin'],
+  }
+];
+
+const AppSidebar: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
-  const currentPath = location.pathname;
-  const [rosteringOpen, setRosteringOpen] = React.useState(currentPath.includes('/rostering'));
-  const [managementOpen, setManagementOpen] = React.useState(currentPath.includes('/management'));
+  const userRole = user?.role || 'user';
 
-  // Check if user is admin
-  const isAdmin = user?.role === 'admin';
+  // Filter sidebar items based on user role
+  const filteredItems = sidebarItems.filter(item => {
+    if (!item.roles) return true;
+    return item.roles.includes(userRole);
+  });
 
   return (
-    <Sidebar variant="sidebar" collapsible="offcanvas">
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  tooltip="Dashboard" 
-                  isActive={currentPath === '/dashboard'}
-                  asChild
-                >
-                  <Link to="/dashboard">
-                    <LayoutDashboard className="h-5 w-5" />
-                    <span>Dashboard</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  tooltip="My Roster" 
-                  isActive={currentPath === '/myroster'}
-                  asChild
-                >
-                  <Link to="/myroster">
-                    <Calendar className="h-5 w-5" />
-                    <span>My Roster</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  tooltip="My Availabilities" 
-                  isActive={currentPath === '/availabilities'}
-                  asChild
-                >
-                  <Link to="/availabilities">
-                    <Clock className="h-5 w-5" />
-                    <span>My Availabilities</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              {/* Rostering Dropdown - Not a link */}
-              <SidebarMenuItem>
-                <Collapsible open={rosteringOpen} onOpenChange={setRosteringOpen}>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton 
-                      tooltip="Rostering" 
-                      isActive={currentPath.includes('/rostering')}
-                    >
-                      <Users className="h-5 w-5" />
-                      <span>Rostering</span>
-                      {rosteringOpen ? (
-                        <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-                      ) : (
-                        <ChevronRight className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-                      )}
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton
-                          isActive={currentPath === '/rostering/templates'}
-                          asChild
-                        >
-                          <Link to="/rostering/templates">
-                            <FileText className="h-4 w-4" />
-                            <span>Templates</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton
-                          isActive={currentPath === '/rostering/rosters'}
-                          asChild
-                        >
-                          <Link to="/rostering/rosters">
-                            <Calendar className="h-4 w-4" />
-                            <span>Rosters</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton
-                          isActive={currentPath === '/rostering/birds-view'}
-                          asChild
-                        >
-                          <Link to="/rostering/birds-view">
-                            <Eye className="h-4 w-4" />
-                            <span>Birds-view</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton
-                          isActive={currentPath === '/rostering/timesheets'}
-                          asChild
-                        >
-                          <Link to="/rostering/timesheets">
-                            <Clock className="h-4 w-4" />
-                            <span>Timesheets</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </Collapsible>
-              </SidebarMenuItem>
-
-              {/* Management Dropdown - Not a link */}
-              <SidebarMenuItem>
-                <Collapsible open={managementOpen} onOpenChange={setManagementOpen}>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton 
-                      tooltip="Management" 
-                      isActive={currentPath.includes('/management')}
-                    >
-                      <BarChart2 className="h-5 w-5" />
-                      <span>Management</span>
-                      {managementOpen ? (
-                        <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-                      ) : (
-                        <ChevronRight className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-                      )}
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton
-                          isActive={currentPath === '/management/bids'}
-                          asChild
-                        >
-                          <Link to="/management/bids">
-                            <MessageSquare className="h-4 w-4" />
-                            <span>Open Bids</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton
-                          isActive={currentPath === '/management/swaps'}
-                          asChild
-                        >
-                          <Link to="/management/swaps">
-                            <Users className="h-4 w-4" />
-                            <span>Swap Requests</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </Collapsible>
-              </SidebarMenuItem>
-
-              {/* Broadcast Menu Item - Admin only */}
-              {isAdmin && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    tooltip="Broadcasts" 
-                    isActive={currentPath === '/broadcasts'}
-                    asChild
-                  >
-                    <Link to="/broadcasts">
-                      <Megaphone className="h-5 w-5" />
-                      <span>Broadcasts</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-
-              {/* Insights */}
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  tooltip="Insights" 
-                  isActive={currentPath === '/insights'}
-                  asChild
-                >
-                  <Link to="/insights">
-                    <TrendingUp className="h-5 w-5" />
-                    <span>Insights</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+    <div className="h-full py-4 flex flex-col border-r">
+      <div className="px-4 py-2">
+        <h2 className="text-lg font-bold">Menu</h2>
+      </div>
+      <Separator />
+      <nav className="flex-1 overflow-auto">
+        <ul className="mt-2 space-y-1 px-2">
+          {filteredItems.map((item) => (
+            <li key={item.to}>
+              <NavLink
+                to={item.to}
+                className={({ isActive }) => 
+                  `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+                    isActive 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'hover:bg-muted'
+                  }`
+                }
+              >
+                {item.icon}
+                {item.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
   );
-}
+};
+
+export default AppSidebar;
