@@ -50,6 +50,9 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
     ? availabilityPresets.find((p) => p.id === selectedPreset)?.name || 'Select Preset'
     : 'Select Preset';
 
+  // Ensure we have a valid array of presets
+  const presets = availabilityPresets || [];
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -77,6 +80,7 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
                   }
                 }}
                 numberOfMonths={1}
+                className="pointer-events-auto"
               />
             </div>
           </div>
@@ -87,7 +91,7 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
                 <Button
                   variant="outline"
                   role="combobox"
-                  aria-expanded={open}
+                  aria-expanded={presetOpen}
                   className="w-full justify-between"
                 >
                   {selectedPresetName}
@@ -95,25 +99,29 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search presets..." />
-                  <CommandEmpty>No presets found.</CommandEmpty>
-                  <CommandGroup>
-                    {availabilityPresets.map((preset) => (
-                      <CommandItem
-                        key={preset.id}
-                        value={preset.id}
-                        onSelect={(value) => {
-                          setSelectedPreset(value);
-                          setPresetOpen(false);
-                        }}
-                      >
-                        {preset.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                  <CommandSeparator />
-                </Command>
+                {presets.length > 0 && (
+                  <Command>
+                    <CommandInput placeholder="Search presets..." />
+                    <CommandEmpty>No presets found.</CommandEmpty>
+                    <CommandList>
+                      <CommandGroup>
+                        {presets.map((preset) => (
+                          <CommandItem
+                            key={preset.id}
+                            value={preset.id}
+                            onSelect={(value) => {
+                              setSelectedPreset(value);
+                              setPresetOpen(false);
+                            }}
+                          >
+                            {preset.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                      <CommandSeparator />
+                    </CommandList>
+                  </Command>
+                )}
               </PopoverContent>
             </Popover>
           </div>
