@@ -146,9 +146,15 @@ export type AvailabilityStatus =
   | 'Available' 
   | 'Unavailable' 
   | 'Partial'
+  | 'partial'
   | 'Limited'
+  | 'limited'
   | 'Tentative'
+  | 'tentative'
   | 'On Leave'
+  | 'on leave'
+  | 'On-Leave'
+  | 'on-leave'
   | 'Not Specified';
 
 export interface AvailabilityPreset {

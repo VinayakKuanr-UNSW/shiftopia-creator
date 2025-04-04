@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { 
   startOfMonth, 
@@ -53,6 +52,8 @@ const getStatusColor = (status: AvailabilityStatus): string => {
     case 'tentative':
       return 'bg-blue-500';
     case 'On Leave':
+    case 'on leave':
+    case 'On-Leave':
     case 'on-leave':
       return 'bg-purple-500';
     case 'Not Specified':
@@ -180,6 +181,29 @@ export function useAvailabilities() {
   // Get color based on availability status
   const getDayStatusColor = useCallback((status: AvailabilityStatus) => {
     return getStatusColor(status);
+  }, []);
+
+  // Helper functions to quickly set entire day's availability
+  const setFullDayAvailable = useCallback((date: Date) => {
+    return setAvailability({
+      startDate: date,
+      endDate: date,
+      timeSlots: [
+        { startTime: '09:00', endTime: '17:00', status: 'Available' }
+      ],
+      status: 'Available'
+    });
+  }, []);
+
+  const setFullDayUnavailable = useCallback((date: Date) => {
+    return setAvailability({
+      startDate: date,
+      endDate: date,
+      timeSlots: [
+        { startTime: '00:00', endTime: '23:59', status: 'Unavailable' }
+      ],
+      status: 'Unavailable'
+    });
   }, []);
 
   // Set or update availability
@@ -324,6 +348,8 @@ export function useAvailabilities() {
     getDayAvailability,
     getDayStatusColor,
     setAvailability,
+    setFullDayAvailable,
+    setFullDayUnavailable,
     applyPreset,
     availabilityPresets,
     // For compatibility with existing components
