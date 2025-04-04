@@ -12,7 +12,6 @@ style.textContent = `
     width: 100vw;
     margin: 0;
     padding: 0;
-    overflow: hidden;
   }
   
   #root {
@@ -68,6 +67,19 @@ style.textContent = `
   .theme-glass .bg-background {
     background-color: rgba(30, 30, 40, 0.6);
     backdrop-filter: blur(8px);
+  }
+  
+  /* Glassmorphism effects */
+  .glass-panel {
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+  
+  /* Fix the Index page scrolling */
+  body {
+    overflow: auto;
   }
 `
 document.head.appendChild(style)

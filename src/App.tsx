@@ -41,9 +41,9 @@ const queryClient = new QueryClient({
 // Layout component that includes the Navbar and Sidebar
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden">
+    <div className="flex flex-col h-screen w-full">
       <Navbar />
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         <AppSidebar />
         <main className="flex-1 overflow-auto w-full">
           {children}

@@ -11,10 +11,10 @@ const BroadcastPage = () => {
   const { user, hasPermission } = useAuth();
   const [activeTab, setActiveTab] = useState('compose');
 
-  // Check if the user has admin permissions
-  const isAdmin = user?.role === 'admin';
+  // Check if the user has broadcast permission
+  const hasBroadcastAccess = hasPermission('broadcast');
 
-  if (!isAdmin) {
+  if (!hasBroadcastAccess) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
