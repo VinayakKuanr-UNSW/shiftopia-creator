@@ -6,13 +6,15 @@ import { useAuth } from '@/hooks/useAuth';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: 'admin' | 'manager' | 'teamlead';
+  requiredFeature?: string;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  requiredRole 
+  requiredRole,
+  requiredFeature
 }) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, hasPermission } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -32,6 +34,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // If a specific role is required, check if the user has that role
   if (requiredRole && user?.role !== requiredRole && user?.role !== 'admin') {
     // Redirect to unauthorized page or dashboard
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  // If a specific feature permission is required, check if user has permission
+  if (requiredFeature && !hasPermission(requiredFeature)) {
+    // Redirect to unauthorized page
     return <Navigate to="/unauthorized" replace />;
   }
 

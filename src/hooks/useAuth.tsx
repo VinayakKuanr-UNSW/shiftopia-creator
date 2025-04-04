@@ -5,7 +5,7 @@ import { AuthContext } from '@/contexts/AuthContext';
 export const useAuth = () => {
   const context = useContext(AuthContext);
   
-  // Check if the user is eligible to bid for a specific shift
+  // Check if the user is eligible for a specific shift
   const isEligibleForShift = (shiftDepartment: string, shiftRole: string) => {
     if (!context.user) return false;
     
@@ -43,10 +43,54 @@ export const useAuth = () => {
       monthlyLimit: 152
     };
   };
+
+  // Check if the user has permission to access a specific feature
+  const hasPermission = (feature: string): boolean => {
+    if (!context.user) return false;
+    
+    const role = context.user.role;
+    
+    switch (feature) {
+      case 'dashboard':
+        return true; // All roles can access dashboard
+        
+      case 'my-roster':
+      case 'availabilities':
+      case 'bids':
+        return true; // All roles can access these features
+        
+      case 'templates':
+      case 'rosters':
+      case 'birds-view':
+        return role === 'admin' || role === 'manager'; // Only admin and manager
+        
+      case 'timesheet-edit':
+        return role === 'admin' || role === 'manager'; // Only admin and manager can edit
+        
+      case 'timesheet-view':
+        return role === 'admin' || role === 'manager' || role === 'teamlead'; // Admin, manager, teamlead can view
+        
+      case 'management':
+        return role === 'admin' || role === 'manager'; // Only admin and manager
+        
+      case 'broadcast':
+        return role === 'admin' || role === 'manager' || role === 'teamlead'; // Admin, manager, teamlead
+        
+      case 'insights':
+        return role === 'admin' || role === 'manager'; // Only admin and manager
+        
+      case 'configurations':
+        return role === 'admin'; // Only admin
+        
+      default:
+        return context.hasPermission('read'); // Fall back to basic permission check
+    }
+  };
   
   return { 
     ...context, 
     isEligibleForShift,
-    checkWorkHourCompliance
+    checkWorkHourCompliance,
+    hasPermission
   };
 };

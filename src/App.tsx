@@ -26,6 +26,7 @@ import ProfilePage from "./pages/ProfilePage";
 import MyRosterPage from "./pages/MyRosterPage";
 import AvailabilitiesPage from "./pages/AvailabilitiesPage";
 import BroadcastPage from "./pages/BroadcastPage";
+import ConfigurationsPage from "./pages/ConfigurationsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient({
@@ -104,9 +105,9 @@ const App = () => (
                       </ProtectedRoute>
                     } />
                     
-                    {/* Broadcast route - Admin only */}
+                    {/* Broadcast route - Admin, Manager, or Team Lead only */}
                     <Route path="/broadcast" element={
-                      <ProtectedRoute requiredRole="admin">
+                      <ProtectedRoute requiredFeature="broadcast">
                         <AppLayout>
                           <BroadcastPage />
                         </AppLayout>
@@ -115,28 +116,28 @@ const App = () => (
                     
                     {/* Rostering routes */}
                     <Route path="/templates" element={
-                      <ProtectedRoute>
+                      <ProtectedRoute requiredFeature="templates">
                         <AppLayout>
                           <TemplatesPage />
                         </AppLayout>
                       </ProtectedRoute>
                     } />
                     <Route path="/rosters" element={
-                      <ProtectedRoute>
+                      <ProtectedRoute requiredFeature="rosters">
                         <AppLayout>
                           <RostersPage />
                         </AppLayout>
                       </ProtectedRoute>
                     } />
                     <Route path="/birds-view" element={
-                      <ProtectedRoute>
+                      <ProtectedRoute requiredFeature="birds-view">
                         <AppLayout>
                           <BirdsViewPage />
                         </AppLayout>
                       </ProtectedRoute>
                     } />
                     <Route path="/timesheet" element={
-                      <ProtectedRoute>
+                      <ProtectedRoute requiredFeature="timesheet-view">
                         <AppLayout>
                           <TimesheetPage />
                         </AppLayout>
@@ -145,7 +146,7 @@ const App = () => (
                     
                     {/* Management routes */}
                     <Route path="/management/:type" element={
-                      <ProtectedRoute requiredRole="manager">
+                      <ProtectedRoute requiredFeature="management">
                         <AppLayout>
                           <ManagementPage />
                         </AppLayout>
@@ -163,9 +164,18 @@ const App = () => (
                     
                     {/* Insights route */}
                     <Route path="/insights" element={
-                      <ProtectedRoute>
+                      <ProtectedRoute requiredFeature="insights">
                         <AppLayout>
                           <InsightsPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Configurations route - Admin only */}
+                    <Route path="/configurations" element={
+                      <ProtectedRoute requiredFeature="configurations">
+                        <AppLayout>
+                          <ConfigurationsPage />
                         </AppLayout>
                       </ProtectedRoute>
                     } />

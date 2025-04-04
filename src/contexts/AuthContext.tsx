@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useEffect } from 'react';
 
-type Role = 'admin' | 'manager' | 'teamlead';
+type Role = 'admin' | 'manager' | 'teamlead' | 'member';
 type Department = 'convention' | 'exhibition' | 'theatre' | 'it';
 
 export interface User {
@@ -59,6 +59,15 @@ const MOCK_USERS = [
     role: 'teamlead' as Role,
     department: 'exhibition' as Department,
     avatar: 'https://api.dicebear.com/7.x/personas/svg?seed=teamlead'
+  },
+  {
+    id: '4',
+    name: 'Team Member',
+    email: 'member@example.com',
+    password: 'member123',
+    role: 'member' as Role,
+    department: 'theatre' as Department,
+    avatar: 'https://api.dicebear.com/7.x/personas/svg?seed=member'
   }
 ];
 
@@ -105,11 +114,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     switch (user.role) {
       case 'admin':
-        return true;
+        return true; // Admin can do everything
       case 'manager':
         return true; // Managers can do all CRUD operations
       case 'teamlead':
-        return action === 'read'; // Team leads can only read
+        return action === 'read' || action === 'update'; // Team leads can read and update
+      case 'member':
+        return action === 'read'; // Members can only read
       default:
         return false;
     }

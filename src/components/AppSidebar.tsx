@@ -14,7 +14,8 @@ import {
   BadgeCheck,
   RefreshCw,
   ChevronDown,
-  HelpCircle
+  HelpCircle,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -37,9 +38,9 @@ import { Button } from './ui/button';
 
 const AppSidebar = () => {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const { state } = useSidebar();
-  const userRole = user?.role || 'user';
+  const userRole = user?.role || 'member';
 
   // Helper function to check if a route is active
   const isRouteActive = (path: string) => {
@@ -118,22 +119,22 @@ const AppSidebar = () => {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {(userRole === 'admin' || userRole === 'manager') && (
-                <>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={
-                        isRouteActive('/templates') ||
-                        isRouteActive('/rosters') ||
-                        isRouteActive('/birds-view') ||
-                        isRouteActive('/timesheet')
-                      }
-                    >
-                      <FileSpreadsheet className="h-5 w-5" />
-                      <span>Rostering</span>
-                      <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform ui-open:rotate-180" />
-                    </SidebarMenuButton>
-                    <SidebarMenuSub>
+              {(hasPermission('templates') || hasPermission('rosters') || hasPermission('birds-view') || hasPermission('timesheet-view')) && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={
+                      isRouteActive('/templates') ||
+                      isRouteActive('/rosters') ||
+                      isRouteActive('/birds-view') ||
+                      isRouteActive('/timesheet')
+                    }
+                  >
+                    <FileSpreadsheet className="h-5 w-5" />
+                    <span>Rostering</span>
+                    <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform ui-open:rotate-180" />
+                  </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    {hasPermission('templates') && (
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton 
                           isActive={isRouteActive('/templates')}
@@ -145,6 +146,8 @@ const AppSidebar = () => {
                           </NavLink>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
+                    )}
+                    {hasPermission('rosters') && (
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton 
                           isActive={isRouteActive('/rosters')}
@@ -156,6 +159,8 @@ const AppSidebar = () => {
                           </NavLink>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
+                    )}
+                    {hasPermission('birds-view') && (
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton 
                           isActive={isRouteActive('/birds-view')}
@@ -167,6 +172,8 @@ const AppSidebar = () => {
                           </NavLink>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
+                    )}
+                    {hasPermission('timesheet-view') && (
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton 
                           isActive={isRouteActive('/timesheet')}
@@ -178,60 +185,93 @@ const AppSidebar = () => {
                           </NavLink>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </SidebarMenuItem>
+                    )}
+                  </SidebarMenuSub>
+                </SidebarMenuItem>
+              )}
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={
-                        isRouteActive('/management/bids') ||
-                        isRouteActive('/management/swaps') ||
-                        isRouteActive('/broadcast')
-                      }
-                    >
-                      <Users className="h-5 w-5" />
-                      <span>Management</span>
-                      <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform ui-open:rotate-180" />
-                    </SidebarMenuButton>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton 
-                          isActive={isRouteActive('/management/bids')}
-                          asChild
-                        >
-                          <NavLink to="/management/bids" className="transition-colors hover:bg-muted/50">
-                            <BadgeCheck className="h-4 w-4" />
-                            <span>Open Bids</span>
-                          </NavLink>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton 
-                          isActive={isRouteActive('/management/swaps')}
-                          asChild
-                        >
-                          <NavLink to="/management/swaps" className="transition-colors hover:bg-muted/50">
-                            <RefreshCw className="h-4 w-4" />
-                            <span>Swap Requests</span>
-                          </NavLink>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      {userRole === 'admin' && (
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton 
-                            isActive={isRouteActive('/broadcast')}
-                            asChild
-                          >
-                            <NavLink to="/broadcast" className="transition-colors hover:bg-muted/50">
-                              <BellRing className="h-4 w-4" />
-                              <span>Broadcast</span>
-                            </NavLink>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      )}
-                    </SidebarMenuSub>
-                  </SidebarMenuItem>
-                </>
+              {hasPermission('management') && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={
+                      isRouteActive('/management/bids') ||
+                      isRouteActive('/management/swaps')
+                    }
+                  >
+                    <Users className="h-5 w-5" />
+                    <span>Management</span>
+                    <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform ui-open:rotate-180" />
+                  </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton 
+                        isActive={isRouteActive('/management/bids')}
+                        asChild
+                      >
+                        <NavLink to="/management/bids" className="transition-colors hover:bg-muted/50">
+                          <BadgeCheck className="h-4 w-4" />
+                          <span>Open Bids</span>
+                        </NavLink>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton 
+                        isActive={isRouteActive('/management/swaps')}
+                        asChild
+                      >
+                        <NavLink to="/management/swaps" className="transition-colors hover:bg-muted/50">
+                          <RefreshCw className="h-4 w-4" />
+                          <span>Swap Requests</span>
+                        </NavLink>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </SidebarMenuItem>
+              )}
+              
+              {hasPermission('broadcast') && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    isActive={isRouteActive('/broadcast')}
+                    tooltip="Broadcast"
+                    asChild
+                  >
+                    <NavLink to="/broadcast" className="transition-colors hover:bg-muted/50">
+                      <BellRing className="h-5 w-5" />
+                      <span>Broadcast</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+              
+              {hasPermission('insights') && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    isActive={isRouteActive('/insights')}
+                    tooltip="Insights"
+                    asChild
+                  >
+                    <NavLink to="/insights" className="transition-colors hover:bg-muted/50">
+                      <TrendingUp className="h-5 w-5" />
+                      <span>Insights</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+              
+              {hasPermission('configurations') && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    isActive={isRouteActive('/configurations')}
+                    tooltip="Configurations"
+                    asChild
+                  >
+                    <NavLink to="/configurations" className="transition-colors hover:bg-muted/50">
+                      <Settings className="h-5 w-5" />
+                      <span>Configurations</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               )}
             </SidebarMenu>
           </SidebarGroupContent>
