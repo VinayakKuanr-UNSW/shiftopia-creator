@@ -2,7 +2,8 @@
 export interface BroadcastGroup {
   id: string;
   name: string;
-  created_at: string;
+  created_at?: string;
+  is_admin?: boolean;
 }
 
 export interface GroupMember {

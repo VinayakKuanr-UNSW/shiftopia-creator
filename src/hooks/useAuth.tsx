@@ -74,8 +74,9 @@ export const useAuth = () => {
         return role === 'admin' || role === 'manager'; // Only admin and manager
         
       case 'broadcast':
-        // Fixed: Allowing admin, manager, and teamlead to access broadcast
-        return role === 'admin' || role === 'manager' || role === 'teamlead';
+        // Making sure admin, manager, teamlead AND member can access broadcast
+        // Members will have limited functionality, handled in the component
+        return true;
         
       case 'insights':
         return role === 'admin' || role === 'manager'; // Only admin and manager

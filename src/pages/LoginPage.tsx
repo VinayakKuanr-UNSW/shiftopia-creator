@@ -52,6 +52,10 @@ const LoginPage: React.FC = () => {
         setEmail('teamlead@example.com');
         setPassword('teamlead123');
         break;
+      case 'member':
+        setEmail('member@example.com');
+        setPassword('member123');
+        break;
     }
   };
 
@@ -133,7 +137,7 @@ const LoginPage: React.FC = () => {
             <div className="text-sm text-center text-white/60">
               Demo accounts:
             </div>
-            <div className="grid grid-cols-3 gap-2 w-full">
+            <div className="grid grid-cols-4 gap-2 w-full">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -157,6 +161,14 @@ const LoginPage: React.FC = () => {
                 className="bg-white/5 hover:bg-white/10 border-white/10"
               >
                 Team Lead
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handleDemoLogin('member')}
+                className="bg-white/5 hover:bg-white/10 border-white/10"
+              >
+                Team Member
               </Button>
             </div>
           </CardFooter>

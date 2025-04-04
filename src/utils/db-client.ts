@@ -131,6 +131,28 @@ export class BroadcastDbClient {
     return data[0] as Broadcast;
   }
 
+  // New method to fetch broadcasts for a specific group
+  static async fetchGroupBroadcasts(groupId: string) {
+    const { data, error } = await supabase
+      .from('broadcasts')
+      .select(`
+        *,
+        sender:sender_id (
+          id,
+          name
+        ),
+        group:group_id (
+          id,
+          name
+        )
+      `)
+      .eq('group_id', groupId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as Broadcast[];
+  }
+
   // Notifications methods
   static async fetchUserNotifications(userId: string) {
     const { data, error } = await supabase
