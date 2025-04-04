@@ -108,3 +108,30 @@ body {
 .theme-glass .react-calendar__month-view__weekdays {
   color: white;
 }
+
+/* Fix for command component in glass theme */
+.theme-glass .command {
+  background-color: rgba(30, 30, 40, 0.8);
+}
+
+.theme-glass .command-input {
+  background-color: transparent;
+  color: white;
+}
+
+.theme-glass .command-list {
+  background-color: transparent;
+}
+
+.theme-glass .command-item {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.theme-glass .command-item[data-selected="true"] {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Fix for popover component in glass theme */
+.theme-glass [data-radix-popper-content-wrapper] {
+  backdrop-filter: blur(8px);
+}

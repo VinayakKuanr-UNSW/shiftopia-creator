@@ -1,4 +1,3 @@
-
 // Template interfaces
 export interface Template {
   id: number;
@@ -138,7 +137,17 @@ export interface TimeSlot {
   status: AvailabilityStatus;
 }
 
-export type AvailabilityStatus = 'available' | 'unavailable' | 'preferred' | 'Available' | 'Unavailable' | 'Partial';
+export type AvailabilityStatus = 
+  | 'available' 
+  | 'unavailable' 
+  | 'preferred' 
+  | 'Available' 
+  | 'Unavailable' 
+  | 'Partial'
+  | 'Limited'
+  | 'Tentative'
+  | 'On Leave'
+  | 'Not Specified';
 
 export interface AvailabilityPreset {
   id: string;

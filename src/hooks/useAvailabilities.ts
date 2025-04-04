@@ -12,14 +12,16 @@ import {
 } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { availabilityService } from '@/api/services/availabilityService';
-import { AvailabilityStatus } from '@/api/models/types';
+import { AvailabilityStatus, TimeSlot } from '@/api/models/types';
 
 interface Availability {
   date: string;
   status: AvailabilityStatus;
   timeSlots: Array<{
+    id?: string;
     startTime: string;
     endTime: string;
+    status?: AvailabilityStatus;
   }>;
   notes?: string;
 }
@@ -34,7 +36,6 @@ interface AvailabilityPreset {
 }
 
 // Properly defining status colors based on availability status
-// These must match the AvailabilityStatus enum in the types file
 const getStatusColor = (status: AvailabilityStatus): string => {
   switch (status) {
     case 'Available':
@@ -110,14 +111,14 @@ export function useAvailabilities() {
             date: format(new Date(), 'yyyy-MM-dd'),
             status: 'Available',
             timeSlots: [
-              { startTime: '09:00', endTime: '17:00' }
+              { id: '1', startTime: '09:00', endTime: '17:00', status: 'Available' }
             ]
           },
           {
             date: format(addMonths(new Date(), 0), 'yyyy-MM-dd'),
             status: 'Limited',
             timeSlots: [
-              { startTime: '10:00', endTime: '14:00' }
+              { id: '2', startTime: '10:00', endTime: '14:00', status: 'Limited' }
             ],
             notes: 'Only available for morning shift'
           }
@@ -159,6 +160,30 @@ export function useAvailabilities() {
     return getStatusColor(status);
   }, []);
 
+  // Set full day available
+  const setFullDayAvailable = useCallback((date: Date) => {
+    return setAvailability({
+      startDate: date,
+      endDate: date,
+      timeSlots: [
+        { startTime: '09:00', endTime: '17:00', status: 'Available' }
+      ],
+      status: 'Available'
+    });
+  }, []);
+
+  // Set full day unavailable
+  const setFullDayUnavailable = useCallback((date: Date) => {
+    return setAvailability({
+      startDate: date,
+      endDate: date,
+      timeSlots: [
+        { startTime: '00:00', endTime: '23:59', status: 'Unavailable' }
+      ],
+      status: 'Unavailable'
+    });
+  }, []);
+
   // Set or update availability
   const setAvailability = async (data: {
     startDate: Date;
@@ -166,6 +191,7 @@ export function useAvailabilities() {
     timeSlots: Array<{
       startTime: string;
       endTime: string;
+      status?: AvailabilityStatus;
     }>;
     notes?: string;
     status?: AvailabilityStatus;
@@ -185,11 +211,19 @@ export function useAvailabilities() {
       //   status
       // });
       
+      // Ensure all timeSlots have IDs and status
+      const timeSlotsWithIds = data.timeSlots.map((slot, index) => ({
+        id: `new-${Date.now()}-${index}`,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        status: slot.status || status
+      }));
+      
       // Update local state with new availability
       const newAvailability: Availability = {
         date: format(data.startDate, 'yyyy-MM-dd'),
         status: status,
-        timeSlots: data.timeSlots,
+        timeSlots: timeSlotsWithIds,
         notes: data.notes
       };
       
@@ -265,7 +299,10 @@ export function useAvailabilities() {
     getDayAvailability,
     getDayStatusColor,
     setAvailability,
+    setFullDayAvailable,
+    setFullDayUnavailable,
     applyPreset,
-    availabilityPresets
+    availabilityPresets,
+    presets: availabilityPresets // Alias for compatibility with PresetSelector
   };
 }

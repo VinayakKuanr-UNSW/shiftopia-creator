@@ -37,7 +37,7 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
     to: addDays(new Date(), 1),
   });
 
-  const { presets } = useAvailabilities();
+  const { availabilityPresets } = useAvailabilities();
   
   const handleApply = async () => {
     if (selectedPreset && dateRange.from && dateRange.to) {
@@ -47,7 +47,7 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
   };
 
   const selectedPresetName = selectedPreset 
-    ? presets.find((p) => p.id === selectedPreset)?.name || 'Select Preset'
+    ? availabilityPresets.find((p) => p.id === selectedPreset)?.name || 'Select Preset'
     : 'Select Preset';
 
   return (
@@ -99,7 +99,7 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
                   <CommandInput placeholder="Search presets..." />
                   <CommandEmpty>No presets found.</CommandEmpty>
                   <CommandGroup>
-                    {presets.map((preset) => (
+                    {availabilityPresets.map((preset) => (
                       <CommandItem
                         key={preset.id}
                         value={preset.id}

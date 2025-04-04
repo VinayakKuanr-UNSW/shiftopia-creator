@@ -5,7 +5,7 @@ import { Clock, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAvailabilities } from '@/hooks/useAvailabilities';
-import { DayAvailability, AvailabilityStatus } from '@/api/models/types';
+import { AvailabilityStatus, TimeSlot } from '@/api/models/types';
 import { cn } from '@/lib/utils';
 
 interface DayAvailabilityViewProps {
@@ -17,7 +17,7 @@ export function DayAvailabilityView({ date, onEdit }: DayAvailabilityViewProps) 
   const { getDayAvailability, getDayStatusColor, setFullDayAvailable, setFullDayUnavailable } = useAvailabilities();
   const availability = getDayAvailability(date);
 
-  const renderTimeSlots = (availability: DayAvailability) => {
+  const renderTimeSlots = (availability: any) => {
     if (!availability.timeSlots || availability.timeSlots.length === 0) {
       return (
         <div className="py-3 px-4 text-muted-foreground text-sm">
@@ -28,8 +28,8 @@ export function DayAvailabilityView({ date, onEdit }: DayAvailabilityViewProps) 
 
     return (
       <div className="space-y-2">
-        {availability.timeSlots.map((slot) => (
-          <div key={slot.id} className="flex items-center py-2 px-4 bg-muted/30 rounded-md">
+        {availability.timeSlots.map((slot: any, index: number) => (
+          <div key={slot.id || index} className="flex items-center py-2 px-4 bg-muted/30 rounded-md">
             <div 
               className={cn(
                 "w-3 h-3 rounded-full mr-2",
