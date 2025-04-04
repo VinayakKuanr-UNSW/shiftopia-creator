@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, addDays, subDays, startOfWeek, endOfWeek } from 'date-fns';
@@ -9,12 +10,14 @@ interface CalendarViewProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   view?: 'day' | 'week' | 'month';
+  monthName?: string;
 }
 
 const CalendarView: React.FC<CalendarViewProps> = ({
   selectedDate,
   onDateChange,
-  view = 'day'
+  view = 'day',
+  monthName
 }) => {
   const handlePrevious = () => {
     switch (view) {
@@ -49,6 +52,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   };
 
   const getDateDisplay = () => {
+    if (monthName) {
+      return monthName;
+    }
+    
     switch (view) {
       case 'day':
         return format(selectedDate, 'EEEE, MMMM d, yyyy');

@@ -1,59 +1,20 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  /* Global Color Variables */
-  :root,
-  .light {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card-background: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover-background: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 252 56% 55%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 252 56% 55%;
-    
-    /* Sidebar specific variables */
-    --sidebar-background: 252 56% 55%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 252 56% 55%;
-    --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 252 56% 55%;
-    --sidebar-border: 252 46% 45%;
-    --sidebar-ring: 0 0% 100%;
-    
-    /* Department colors */
-    --convention-color: 210 100% 50%;
-    --exhibition-color: 142 76% 47%;
-    --theatre-color: 0 100% 50%;
-    
-    /* Border radius */
-    --radius: 0.5rem;
-  }
+/* Existing styles */
 
-  .dark {
+@layer base {
+  :root {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-    --card-background: 240 10% 3.9%;
+    --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
-    --popover-background: 240 10% 3.9%;
+    --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 252 56% 55%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
@@ -64,206 +25,30 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 255 47% 60%;
-    
-    /* Sidebar-specific colors for dark theme */
-    --sidebar-background: 240 0% 3.9%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 252 56% 55%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 255 47% 60%;
-    
-    /* Department colors */
-    --convention-color: 210 100% 50%;
-    --exhibition-color: 142 76% 47%;
-    --theatre-color: 0 100% 50%;
-  }
-
-  .theme-glass {
-    --background: 210 20% 10%; 
-    --foreground: 0 0% 98%;
-    --card-background: 210 20% 25%;
-    --card-foreground: 0 0% 98%;
-    --popover-background: 210 20% 30%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 320 60% 55%; 
-    --primary-foreground: 0 0% 98%;
-    --secondary: 220 30% 25%; 
-    --secondary-foreground: 0 0% 98%;
-    --muted: 220 30% 25%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 320 60% 65%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 100%;
-    --input: 220 25% 40%;
-    --ring: 320 60% 55%;
-    
-    /* Sidebar specific colors */
-    --sidebar-background: 210 20% 15%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 320 60% 55%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 220 30% 25%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 100%;
-    --sidebar-ring: 320 60% 55%;
-    
-    /* Department colors */
-    --convention-color: 210 100% 50%;
-    --exhibition-color: 142 76% 47%;
-    --theatre-color: 0 100% 50%;
-    
+    --ring: 240 4.9% 83.9%;
     --radius: 0.75rem;
   }
 }
 
-@layer utilities {
-  .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
+@layer components {
+  .calendar-container {
+    @apply overflow-x-auto;
   }
-
-  .glass-panel {
-    backdrop-filter: blur(12px);
-    background-color: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  .calendar-container > div {
+    min-height: 600px;
   }
-
-  .glass-card {
-    backdrop-filter: blur(16px);
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
+  /* Department color classes */
+  .dept-convention {
+    @apply bg-blue-500/90 hover:bg-blue-500;
   }
-
-  .glass-button {
-    backdrop-filter: blur(8px);
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.2s ease;
+  
+  .dept-exhibition {
+    @apply bg-green-500/90 hover:bg-green-500;
   }
-
-  .glass-button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+  
+  .dept-theatre {
+    @apply bg-red-500/90 hover:bg-red-500;
   }
-
-  .animate-shimmer {
-    animation: shimmer 2s linear infinite;
-    background: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.3) 50%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    background-size: 200% 100%;
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -100% 0;
-    }
-    100% {
-      background-position: 100% 0;
-    }
-  }
-
-  .reveal-on-scroll {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s, transform 0.6s;
-  }
-
-  .reveal-on-scroll.revealed {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Department group card styles */
-.group-card-blue {
-  background-color: rgba(30, 64, 175, 0.2);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  transition: all 0.3s ease;
-}
-
-.group-card-blue:hover {
-  background-color: rgba(30, 64, 175, 0.3);
-  border-color: rgba(59, 130, 246, 0.5);
-}
-
-.group-card-green {
-  background-color: rgba(22, 163, 74, 0.2);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  transition: all 0.3s ease;
-}
-
-.group-card-green:hover {
-  background-color: rgba(22, 163, 74, 0.3);
-  border-color: rgba(34, 197, 94, 0.5);
-}
-
-.group-card-red {
-  background-color: rgba(185, 28, 28, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  transition: all 0.3s ease;
-}
-
-.group-card-red:hover {
-  background-color: rgba(185, 28, 28, 0.3);
-  border-color: rgba(239, 68, 68, 0.5);
-}
-
-.group-card-purple {
-  background-color: rgba(126, 34, 206, 0.2);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  transition: all 0.3s ease;
-}
-
-.group-card-purple:hover {
-  background-color: rgba(126, 34, 206, 0.3);
-  border-color: rgba(168, 85, 247, 0.5);
-}
-
-.group-card-sky {
-  background-color: rgba(14, 165, 233, 0.2);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  transition: all 0.3s ease;
-}
-
-.group-card-sky:hover {
-  background-color: rgba(14, 165, 233, 0.3);
-  border-color: rgba(56, 189, 248, 0.5);
-}
-
-/* Theme-specific body styles */
-.light body {
-  background-color: #f5f5f7;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.03) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.03) 0%, transparent 40%);
-  color: #0a0a0f;
-  min-height: 100vh;
-}
-
-.dark body {
-  background-color: #050507;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.05) 0%, transparent 40%);
-  color: white;
-  min-height: 100vh;
-}
-
-.theme-glass body {
-  background-color: #0a0a0f;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.15) 0%, transparent 50%);
-  color: white;
-  min-height: 100vh;
-  backdrop-filter: blur(20px);
 }

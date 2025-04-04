@@ -6,6 +6,7 @@ import { useAuth } from './useAuth';
 import { rosterService } from '@/api/services/rosterService';
 import { CalendarView } from './useRosterView';
 import { Shift } from '@/api/models/types';
+import { getDepartmentColor } from '@/lib/utils';
 
 interface ShiftWithDetails {
   shift: Shift;
@@ -74,7 +75,8 @@ export const useMyRoster = (view: CalendarView, selectedDate: Date) => {
             myShifts.push({
               shift,
               groupName: group.name,
-              groupColor: group.color,
+              // Use department-based coloring
+              groupColor: group.color || getDepartmentColor(group.name),
               subGroupName: subGroup.name
             });
           }
