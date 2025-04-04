@@ -15,7 +15,8 @@ import {
   RefreshCw,
   ChevronDown,
   HelpCircle,
-  Settings
+  Settings,
+  TrendingUp  // Added the missing import
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
