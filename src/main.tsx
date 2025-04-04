@@ -62,6 +62,13 @@ style.textContent = `
   .theme-glass textarea::placeholder {
     color: rgba(255, 255, 255, 0.5);
   }
+  
+  /* Fix for components in glass theme */
+  .theme-glass .bg-card,
+  .theme-glass .bg-background {
+    background-color: rgba(30, 30, 40, 0.6);
+    backdrop-filter: blur(8px);
+  }
 `
 document.head.appendChild(style)
 

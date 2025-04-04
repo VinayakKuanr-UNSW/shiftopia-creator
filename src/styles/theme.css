@@ -38,7 +38,7 @@ body {
 .theme-glass .dropdown-menu-content,
 .theme-glass .dialog-content,
 .theme-glass .sheet-content {
-  background-color: rgba(30, 30, 40, 0.6) !important;
+  background-color: rgba(30, 30, 40, 0.7) !important;
   backdrop-filter: blur(8px);
   border: 1px solid var(--border-contrast);
 }
@@ -67,6 +67,7 @@ body {
 .theme-glass select {
   background-color: rgba(40, 40, 50, 0.6);
   border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Ensure calendar visibility in glass theme */
@@ -91,4 +92,19 @@ body {
 
 .theme-glass .text-muted-foreground {
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* Fix for calendar elements */
+.theme-glass .react-calendar__tile {
+  color: white;
+}
+
+/* Fix for calendar navigation */
+.theme-glass .react-calendar__navigation button {
+  color: white;
+}
+
+/* Make sure calendar headers are visible */
+.theme-glass .react-calendar__month-view__weekdays {
+  color: white;
 }

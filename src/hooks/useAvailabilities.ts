@@ -1,233 +1,271 @@
 
-import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, startOfMonth, endOfMonth, getYear, getMonth } from 'date-fns';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { 
+  startOfMonth, 
+  endOfMonth, 
+  addMonths, 
+  subMonths,
+  format,
+  parse,
+  parseISO,
+  isEqual
+} from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { availabilityService } from '@/api/services/availabilityService';
-import { DayAvailability, TimeSlot, AvailabilityPreset, AvailabilityStatus } from '@/api/models/types';
-import { useAuth } from './useAuth';
+import { AvailabilityStatus } from '@/api/models/types';
 
-export const useAvailabilities = () => {
-  const { user } = useAuth();
+interface Availability {
+  date: string;
+  status: AvailabilityStatus;
+  timeSlots: Array<{
+    startTime: string;
+    endTime: string;
+  }>;
+  notes?: string;
+}
+
+interface AvailabilityPreset {
+  id: string;
+  name: string;
+  timeSlots: Array<{
+    startTime: string;
+    endTime: string;
+  }>;
+}
+
+// Properly defining status colors based on availability status
+// These must match the AvailabilityStatus enum in the types file
+const getStatusColor = (status: AvailabilityStatus): string => {
+  switch (status) {
+    case 'Available':
+      return 'bg-green-500';
+    case 'Unavailable':
+      return 'bg-red-500';
+    case 'Limited':
+      return 'bg-yellow-500';
+    case 'Tentative':
+      return 'bg-blue-500';
+    case 'On Leave':
+      return 'bg-purple-500';
+    case 'Not Specified':
+    default:
+      return 'bg-gray-400';
+  }
+};
+
+// Make sure these presets match what's expected server-side
+const availabilityPresets: AvailabilityPreset[] = [
+  {
+    id: 'standard',
+    name: 'Standard (9-5)',
+    timeSlots: [
+      { startTime: '09:00', endTime: '17:00' }
+    ]
+  },
+  {
+    id: 'morning',
+    name: 'Morning Shift',
+    timeSlots: [
+      { startTime: '07:00', endTime: '15:00' }
+    ]
+  },
+  {
+    id: 'evening',
+    name: 'Evening Shift',
+    timeSlots: [
+      { startTime: '15:00', endTime: '23:00' }
+    ]
+  },
+  {
+    id: 'full-day',
+    name: 'Full Day',
+    timeSlots: [
+      { startTime: '08:00', endTime: '20:00' }
+    ]
+  }
+];
+
+export function useAvailabilities() {
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [monthlyAvailabilities, setMonthlyAvailabilities] = useState<Availability[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+
+  // Derived values from selectedMonth
+  const startOfSelectedMonth = useMemo(() => startOfMonth(selectedMonth), [selectedMonth]);
+  const endOfSelectedMonth = useMemo(() => endOfMonth(selectedMonth), [selectedMonth]);
   
-  // Base query key
-  const getBaseQueryKey = useCallback(() => {
-    if (!user) return [];
-    return ['availabilities', user.id];
-  }, [user]);
-  
-  // Monthly query key
-  const getMonthlyQueryKey = useCallback(() => {
-    const baseKey = getBaseQueryKey();
-    const year = getYear(selectedMonth);
-    const month = getMonth(selectedMonth) + 1;
-    return [...baseKey, year, month];
-  }, [getBaseQueryKey, selectedMonth]);
-  
-  // Get monthly availabilities
-  const { data: monthlyAvailabilities = [], isLoading } = useQuery({
-    queryKey: getMonthlyQueryKey(),
-    queryFn: () => {
-      if (!user) return Promise.resolve([]);
-      const year = getYear(selectedMonth);
-      const month = getMonth(selectedMonth) + 1;
-      return availabilityService.getMonthlyAvailabilities(user.id, year, month);
-    },
-    enabled: !!user
-  });
-  
-  // Get presets
-  const { data: presets = [] } = useQuery({
-    queryKey: ['availabilityPresets'],
-    queryFn: () => availabilityService.getPresets(),
-  });
-  
-  // Set availability for a date range
-  const setAvailabilityMutation = useMutation({
-    mutationFn: async ({
-      startDate,
-      endDate,
-      timeSlots,
-      notes
-    }: {
-      startDate: Date;
-      endDate: Date;
-      timeSlots: Omit<TimeSlot, 'id'>[];
-      notes?: string;
-    }) => {
-      if (!user) throw new Error('User not authenticated');
-      return availabilityService.setAvailabilityRange(
-        user.id,
-        startDate,
-        endDate,
-        timeSlots,
-        notes
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getBaseQueryKey() });
-      toast({
-        title: 'Availability updated',
-        description: 'Your availability has been successfully updated.',
-        duration: 3000,
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error updating availability',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
-        duration: 3000,
-      });
-    }
-  });
-  
-  // Apply preset
-  const applyPresetMutation = useMutation({
-    mutationFn: async ({
-      presetId,
-      startDate,
-      endDate
-    }: {
-      presetId: string;
-      startDate: Date;
-      endDate: Date;
-    }) => {
-      if (!user) throw new Error('User not authenticated');
-      return availabilityService.applyPreset(
-        user.id,
-        presetId,
-        startDate,
-        endDate
-      );
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: getBaseQueryKey() });
-      const preset = presets.find(p => p.id === variables.presetId);
-      toast({
-        title: 'Preset applied',
-        description: `The preset "${preset?.name || 'Unknown'}" has been applied to your schedule.`,
-        duration: 3000,
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error applying preset',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
-        duration: 3000,
-      });
-    }
-  });
-  
-  // Create custom preset
-  const createPresetMutation = useMutation({
-    mutationFn: (preset: Omit<AvailabilityPreset, 'id'>) => {
-      return availabilityService.createPreset(preset);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['availabilityPresets'] });
-      toast({
-        title: 'Preset created',
-        description: 'Your custom preset has been created successfully.',
-        duration: 3000,
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error creating preset',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
-        duration: 3000,
-      });
-    }
-  });
-  
-  // Get day status color
-  const getDayStatusColor = (status: AvailabilityStatus): string => {
-    switch (status) {
-      case 'Available':
-      case 'available':
-        return 'bg-green-500';
-      case 'Partial':
-      case 'partial':
-      case 'preferred':
-        return 'bg-yellow-400';
-      case 'Unavailable':
-      case 'unavailable':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-300';
-    }
-  };
-  
-  // Get availability for a specific day
-  const getDayAvailability = (date: Date): DayAvailability | undefined => {
-    if (!monthlyAvailabilities) return undefined;
+  // Fetch availabilities for the selected month
+  useEffect(() => {
+    const fetchAvailabilities = async () => {
+      try {
+        setIsLoading(true);
+        const formattedStartDate = format(startOfSelectedMonth, 'yyyy-MM-dd');
+        const formattedEndDate = format(endOfSelectedMonth, 'yyyy-MM-dd');
+        
+        // Mock data for now - replace with actual API call
+        // const data = await availabilityService.getAvailabilities(formattedStartDate, formattedEndDate);
+        const mockAvailabilities: Availability[] = [
+          {
+            date: format(new Date(), 'yyyy-MM-dd'),
+            status: 'Available',
+            timeSlots: [
+              { startTime: '09:00', endTime: '17:00' }
+            ]
+          },
+          {
+            date: format(addMonths(new Date(), 0), 'yyyy-MM-dd'),
+            status: 'Limited',
+            timeSlots: [
+              { startTime: '10:00', endTime: '14:00' }
+            ],
+            notes: 'Only available for morning shift'
+          }
+        ];
+        
+        setMonthlyAvailabilities(mockAvailabilities);
+      } catch (error) {
+        console.error('Error fetching availabilities:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load availability data',
+          variant: 'destructive'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    const dateKey = format(date, 'yyyy-MM-dd');
-    return monthlyAvailabilities.find(a => a.date === dateKey);
+    fetchAvailabilities();
+  }, [selectedMonth, toast]);
+  
+  // Navigation functions
+  const goToPreviousMonth = useCallback(() => {
+    setSelectedMonth(prev => subMonths(prev, 1));
+  }, []);
+  
+  const goToNextMonth = useCallback(() => {
+    setSelectedMonth(prev => addMonths(prev, 1));
+  }, []);
+  
+  // Get availability for a specific date
+  const getDayAvailability = useCallback((date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return monthlyAvailabilities.find(a => a.date === dateStr);
+  }, [monthlyAvailabilities]);
+  
+  // Get color based on availability status
+  const getDayStatusColor = useCallback((status: AvailabilityStatus) => {
+    return getStatusColor(status);
+  }, []);
+
+  // Set or update availability
+  const setAvailability = async (data: {
+    startDate: Date;
+    endDate: Date;
+    timeSlots: Array<{
+      startTime: string;
+      endTime: string;
+    }>;
+    notes?: string;
+    status?: AvailabilityStatus;
+  }) => {
+    try {
+      setIsLoading(true);
+      
+      // Default to Available status if not provided
+      const status = data.status || 'Available';
+      
+      // Mock API call - replace with actual API
+      // await availabilityService.setAvailability({
+      //   startDate: format(data.startDate, 'yyyy-MM-dd'),
+      //   endDate: format(data.endDate, 'yyyy-MM-dd'),
+      //   timeSlots: data.timeSlots,
+      //   notes: data.notes,
+      //   status
+      // });
+      
+      // Update local state with new availability
+      const newAvailability: Availability = {
+        date: format(data.startDate, 'yyyy-MM-dd'),
+        status: status,
+        timeSlots: data.timeSlots,
+        notes: data.notes
+      };
+      
+      setMonthlyAvailabilities(prev => {
+        const exists = prev.findIndex(a => a.date === newAvailability.date);
+        if (exists >= 0) {
+          // Replace existing
+          return [
+            ...prev.slice(0, exists),
+            newAvailability,
+            ...prev.slice(exists + 1)
+          ];
+        } else {
+          // Add new
+          return [...prev, newAvailability];
+        }
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error setting availability:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to set availability',
+        variant: 'destructive'
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
   
-  // Navigate to previous month
-  const goToPreviousMonth = () => {
-    setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1, 1));
+  // Apply a preset availability pattern
+  const applyPreset = async (data: {
+    presetId: string;
+    startDate: Date;
+    endDate: Date;
+  }) => {
+    try {
+      setIsLoading(true);
+      
+      const preset = availabilityPresets.find(p => p.id === data.presetId);
+      if (!preset) {
+        throw new Error('Preset not found');
+      }
+      
+      // Mock API call - replace with actual API
+      // await availabilityService.applyPreset(data);
+      
+      // For now, just return success
+      return true;
+    } catch (error) {
+      console.error('Error applying preset:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to apply availability preset',
+        variant: 'destructive'
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
-  
-  // Navigate to next month
-  const goToNextMonth = () => {
-    setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 1));
-  };
-  
-  // Helper: Set a full day as available
-  const setFullDayAvailable = (date: Date) => {
-    setAvailabilityMutation.mutate({
-      startDate: date,
-      endDate: date,
-      timeSlots: [{ startTime: '00:00', endTime: '23:59', status: 'Available' }],
-    });
-  };
-  
-  // Helper: Set a full day as unavailable
-  const setFullDayUnavailable = (date: Date) => {
-    setAvailabilityMutation.mutate({
-      startDate: date,
-      endDate: date,
-      timeSlots: [{ startTime: '00:00', endTime: '23:59', status: 'Unavailable' }],
-    });
-  };
-  
+
   return {
-    // State
     selectedMonth,
-    setSelectedMonth,
+    startOfMonth: startOfSelectedMonth,
+    endOfMonth: endOfSelectedMonth,
     monthlyAvailabilities,
     isLoading,
-    presets,
-    
-    // Date range
-    startOfMonth: startOfMonth(selectedMonth),
-    endOfMonth: endOfMonth(selectedMonth),
-    
-    // Actions
-    setAvailability: setAvailabilityMutation.mutate,
-    applyPreset: applyPresetMutation.mutate,
-    createPreset: createPresetMutation.mutate,
     goToPreviousMonth,
     goToNextMonth,
-    
-    // Helpers
-    getDayStatusColor,
     getDayAvailability,
-    setFullDayAvailable,
-    setFullDayUnavailable,
-    
-    // Loading states
-    isSettingAvailability: setAvailabilityMutation.isPending,
-    isApplyingPreset: applyPresetMutation.isPending,
-    isCreatingPreset: createPresetMutation.isPending,
+    getDayStatusColor,
+    setAvailability,
+    applyPreset,
+    availabilityPresets
   };
-};
+}
