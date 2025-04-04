@@ -18,6 +18,7 @@ style.textContent = `
   #root {
     display: flex;
     flex-direction: column;
+    height: 100vh;
   }
   
   * {
@@ -49,6 +50,17 @@ style.textContent = `
 
   .theme-glass ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.4);
+  }
+  
+  /* Ensure full height layouts */
+  .h-full, .h-screen {
+    height: 100% !important;
+  }
+  
+  /* Fix for transparent components in glass theme */
+  .theme-glass input::placeholder,
+  .theme-glass textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
   }
 `
 document.head.appendChild(style)

@@ -1,305 +1,157 @@
-import { useState } from 'react';
+
+import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon, Plus, Trash2 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
-import { TimeSlot, AvailabilityStatus } from '@/api/models/types';
-import { useAvailabilities } from '@/hooks/useAvailabilities';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PlusCircle, Trash2 } from 'lucide-react';
+import { TimeSlot } from '@/api/models/types';
+import { DayAvailability } from '@/api/models/types';
 
 interface AvailabilityFormProps {
-  onClose?: () => void;
+  selectedDate: Date;
+  onSubmit: (data: { timeSlots: Omit<TimeSlot, 'id'>[]; notes?: string }) => Promise<void>;
+  onCancel: () => void;
+  existingAvailability?: DayAvailability;
 }
 
-const schema = z.object({
-  startDate: z.date({ required_error: 'Start date is required' }),
-  endDate: z.date({ required_error: 'End date is required' }),
-  notes: z.string().optional(),
-  timeSlots: z.array(
-    z.object({
-      startTime: z.string(),
-      endTime: z.string(),
-      status: z.enum(['Available', 'Unavailable', 'Partial']),
-    })
-  ).nonempty({ message: 'At least one time slot is required' }),
-});
-
-type FormValues = z.infer<typeof schema>;
-type TimeSlotNoId = Omit<TimeSlot, 'id'>;
-
-export function AvailabilityForm({ onClose }: AvailabilityFormProps) {
-  const { setAvailability, isSettingAvailability } = useAvailabilities();
-  const [timeSlots, setTimeSlots] = useState<TimeSlotNoId[]>([
-    { startTime: '09:00', endTime: '17:00', status: 'Available' },
-  ]);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      startDate: new Date(),
-      endDate: new Date(),
-      timeSlots: [
-        { startTime: '09:00', endTime: '17:00', status: 'Available' },
-      ],
-      notes: '',
-    },
-  });
-
-  const onSubmit = (data: FormValues) => {
-    setAvailability({
-      startDate: data.startDate,
-      endDate: data.endDate,
-      timeSlots: data.timeSlots as TimeSlotNoId[],
-      notes: data.notes,
-    }, {
-      onSuccess: () => {
-        if (onClose) onClose();
-      }
-    });
-  };
+export function AvailabilityForm({ selectedDate, onSubmit, onCancel, existingAvailability }: AvailabilityFormProps) {
+  const [timeSlots, setTimeSlots] = useState<Omit<TimeSlot, 'id'>[]>(
+    existingAvailability?.timeSlots 
+      ? existingAvailability.timeSlots.map(({ startTime, endTime, status }) => ({ startTime, endTime, status }))
+      : [{ startTime: '09:00', endTime: '17:00', status: 'Available' }]
+  );
+  
+  const [notes, setNotes] = useState(existingAvailability?.notes || '');
 
   const addTimeSlot = () => {
-    const newTimeSlots = [
-      ...timeSlots,
-      { startTime: '09:00', endTime: '17:00', status: 'Available' as AvailabilityStatus },
-    ];
-    setTimeSlots(newTimeSlots);
-    form.setValue('timeSlots', newTimeSlots as any);
+    setTimeSlots([...timeSlots, { startTime: '09:00', endTime: '17:00', status: 'Available' }]);
   };
 
   const removeTimeSlot = (index: number) => {
-    if (timeSlots.length <= 1) return; // Keep at least one time slot
-    
-    const newTimeSlots = timeSlots.filter((_, i) => i !== index);
-    setTimeSlots(newTimeSlots);
-    form.setValue('timeSlots', newTimeSlots as any);
+    setTimeSlots(timeSlots.filter((_, i) => i !== index));
   };
 
-  const updateTimeSlot = (index: number, field: keyof TimeSlotNoId, value: string) => {
+  const updateTimeSlot = (index: number, field: keyof Omit<TimeSlot, 'id'>, value: string) => {
     const newTimeSlots = [...timeSlots];
-    if (field === 'status') {
-      newTimeSlots[index][field] = value as AvailabilityStatus;
-    } else {
-      newTimeSlots[index][field] = value;
-    }
+    newTimeSlots[index] = { ...newTimeSlots[index], [field]: value };
     setTimeSlots(newTimeSlots);
-    form.setValue('timeSlots', newTimeSlots as any);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSubmit({ timeSlots, notes });
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="startDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Start Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
+    <Dialog open={true} onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Set Availability</DialogTitle>
+          <DialogDescription>
+            Set your availability for {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+          </DialogDescription>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium">Time Slots</h3>
+            
+            {timeSlots.map((slot, index) => (
+              <div key={index} className="flex flex-col gap-2">
+                <div className="grid grid-cols-5 gap-2">
+                  <div className="col-span-2">
+                    <Input
+                      type="time"
+                      value={slot.startTime}
+                      onChange={(e) => updateTimeSlot(index, 'startTime', e.target.value)}
+                      className="w-full"
                     />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="endDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>End Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                      disabled={(date) => date < form.getValues().startDate}
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <span className="text-sm text-muted-foreground">to</span>
+                  </div>
+                  <div className="col-span-2">
+                    <Input
+                      type="time"
+                      value={slot.endTime}
+                      onChange={(e) => updateTimeSlot(index, 'endTime', e.target.value)}
+                      className="w-full"
                     />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Time Slots</h3>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Select
+                    value={slot.status}
+                    onValueChange={(value) => updateTimeSlot(index, 'status', value)}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Available">Available</SelectItem>
+                      <SelectItem value="Unavailable">Unavailable</SelectItem>
+                      <SelectItem value="Partial">Partial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {timeSlots.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => removeTimeSlot(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+            
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
               onClick={addTimeSlot}
+              className="w-full"
             >
-              <Plus className="h-4 w-4 mr-1" /> Add Time Slot
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Add Time Slot
             </Button>
           </div>
-
-          {timeSlots.map((slot, index) => (
-            <div 
-              key={index} 
-              className="grid grid-cols-12 gap-3 items-end p-3 border border-border rounded-md bg-card/50"
-            >
-              <div className="col-span-3">
-                <FormLabel className="text-xs">Start Time</FormLabel>
-                <Input
-                  type="time"
-                  value={slot.startTime}
-                  onChange={(e) => updateTimeSlot(index, 'startTime', e.target.value)}
-                />
-              </div>
-              
-              <div className="col-span-3">
-                <FormLabel className="text-xs">End Time</FormLabel>
-                <Input
-                  type="time"
-                  value={slot.endTime}
-                  onChange={(e) => updateTimeSlot(index, 'endTime', e.target.value)}
-                />
-              </div>
-              
-              <div className="col-span-5">
-                <FormLabel className="text-xs">Status</FormLabel>
-                <Select
-                  value={slot.status}
-                  onValueChange={(value) => updateTimeSlot(index, 'status', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Available">Available</SelectItem>
-                    <SelectItem value="Unavailable">Unavailable</SelectItem>
-                    <SelectItem value="Partial">Partial</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="col-span-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-10 w-10 p-0"
-                  onClick={() => removeTimeSlot(index)}
-                  disabled={timeSlots.length <= 1}
-                >
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </div>
-            </div>
-          ))}
-          {form.formState.errors.timeSlots && (
-            <p className="text-sm font-medium text-destructive">{form.formState.errors.timeSlots.message}</p>
-          )}
-        </div>
-
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Add any additional notes about your availability..."
-                  className="resize-none"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Optional notes about your availability.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex justify-end space-x-2">
-          {onClose && (
-            <Button variant="outline" onClick={onClose}>
+          
+          <div className="space-y-2">
+            <label htmlFor="notes" className="text-sm font-medium">
+              Notes (optional)
+            </label>
+            <Textarea
+              id="notes"
+              placeholder="Add any notes about your availability"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
+          
+          <DialogFooter className="sm:justify-end">
+            <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-          )}
-          <Button type="submit" disabled={isSettingAvailability}>
-            {isSettingAvailability ? 'Saving...' : 'Save Availability'}
-          </Button>
-        </div>
-      </form>
-    </Form>
+            <Button type="submit">Save Changes</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

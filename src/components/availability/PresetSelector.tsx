@@ -1,247 +1,149 @@
 
-import { useState } from 'react';
-import { format } from 'date-fns';
-import { CalendarIcon, CheckCircle2 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { CalendarIcon, ChevronDown } from 'lucide-react';
+import { format, addDays } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { AvailabilityPreset } from '@/api/models/types';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from '@/components/ui/command';
 import { useAvailabilities } from '@/hooks/useAvailabilities';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface PresetSelectorProps {
-  onClose?: () => void;
+  onApplyPreset: (presetId: string, startDate: Date, endDate: Date) => Promise<void>;
 }
 
-const schema = z.object({
-  presetId: z.string({ required_error: 'Please select a preset' }),
-  startDate: z.date({ required_error: 'Start date is required' }),
-  endDate: z.date({ required_error: 'End date is required' }),
-});
-
-type FormValues = z.infer<typeof schema>;
-
-export function PresetSelector({ onClose }: PresetSelectorProps) {
-  const { presets, applyPreset, isApplyingPreset } = useAvailabilities();
-  const [selectedPreset, setSelectedPreset] = useState<AvailabilityPreset | null>(null);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      startDate: new Date(),
-      endDate: new Date(),
-    },
+export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
+  const [open, setOpen] = useState(false);
+  const [presetOpen, setPresetOpen] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<{
+    from: Date;
+    to?: Date;
+  }>({
+    from: new Date(),
+    to: addDays(new Date(), 1),
   });
 
-  const onSubmit = (data: FormValues) => {
-    applyPreset({
-      presetId: data.presetId,
-      startDate: data.startDate,
-      endDate: data.endDate,
-    }, {
-      onSuccess: () => {
-        if (onClose) onClose();
-      }
-    });
+  const { presets } = useAvailabilities();
+  
+  const handleApply = async () => {
+    if (selectedPreset && dateRange.from && dateRange.to) {
+      await onApplyPreset(selectedPreset, dateRange.from, dateRange.to);
+      setOpen(false);
+    }
   };
 
-  const handlePresetSelect = (id: string) => {
-    const preset = presets.find(p => p.id === id);
-    setSelectedPreset(preset || null);
-    form.setValue('presetId', id);
-  };
+  const selectedPresetName = selectedPreset 
+    ? presets.find((p) => p.id === selectedPreset)?.name || 'Select Preset'
+    : 'Select Preset';
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 gap-6">
-          <FormField
-            control={form.control}
-            name="presetId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Select Preset</FormLabel>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
-                  {presets.map((preset) => (
-                    <Card 
-                      key={preset.id}
-                      className={cn(
-                        "cursor-pointer transition-all border-2",
-                        preset.id === field.value 
-                          ? "border-primary" 
-                          : "border-border hover:border-primary/50"
-                      )}
-                      onClick={() => handlePresetSelect(preset.id)}
-                    >
-                      <CardHeader className="p-4 pb-2">
-                        <div className="flex justify-between items-start">
-                          <CardTitle className="text-base">{preset.name}</CardTitle>
-                          {preset.id === field.value && (
-                            <CheckCircle2 className="h-5 w-5 text-primary" />
-                          )}
-                        </div>
-                        <CardDescription className="text-xs">
-                          {preset.type === 'weekdays' 
-                            ? 'Monday to Friday' 
-                            : preset.type === 'weekends'
-                              ? 'Saturday & Sunday'
-                              : 'Custom schedule'}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <div className="text-xs text-muted-foreground">
-                          {preset.timeSlots.map((slot, idx) => (
-                            <div key={idx} className="flex items-center mt-1">
-                              <div 
-                                className={cn(
-                                  "w-2 h-2 rounded-full mr-1",
-                                  slot.status === 'Available' 
-                                    ? "bg-green-500" 
-                                    : slot.status === 'Partial'
-                                      ? "bg-yellow-400"
-                                      : "bg-red-500"
-                                )}
-                              />
-                              <span>
-                                {slot.startTime} - {slot.endTime}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="startDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Start Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="flex items-center gap-2">
+          <CalendarIcon className="h-4 w-4" />
+          Apply Preset
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80" align="end">
+        <div className="grid gap-4">
+          <div className="space-y-2">
+            <h4 className="font-medium leading-none">Date Range</h4>
+            <div className="flex items-center pt-2">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange.from}
+                selected={dateRange}
+                onSelect={(range) => {
+                  if (range && range.from) {
+                    setDateRange({
+                      from: range.from,
+                      to: range.to || range.from,
+                    });
+                  }
+                }}
+                numberOfMonths={2}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h4 className="font-medium leading-none">Select Preset</h4>
+            <Popover open={presetOpen} onOpenChange={setPresetOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between"
+                >
+                  {selectedPresetName}
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search presets..." />
+                  <CommandEmpty>No presets found.</CommandEmpty>
+                  <CommandGroup>
+                    {presets.map((preset) => (
+                      <CommandItem
+                        key={preset.id}
+                        value={preset.id}
+                        onSelect={(value) => {
+                          setSelectedPreset(value);
+                          setPresetOpen(false);
+                        }}
+                      >
+                        {preset.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="flex flex-col space-y-2">
+            <div className="text-sm text-muted-foreground">
+              {dateRange.from && dateRange.to ? (
+                <>
+                  Apply <span className="font-medium">{selectedPresetName}</span> from{' '}
+                  <span className="font-medium">{format(dateRange.from, 'PP')}</span> to{' '}
+                  <span className="font-medium">{format(dateRange.to, 'PP')}</span>
+                </>
+              ) : (
+                'Please select a date range'
               )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="endDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>End Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                        disabled={(date) => date < form.getValues().startDate}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                size="sm" 
+                onClick={handleApply}
+                disabled={!selectedPreset || !dateRange.from || !dateRange.to}
+              >
+                Apply
+              </Button>
+            </div>
           </div>
         </div>
-
-        <div className="flex justify-end space-x-2">
-          {onClose && (
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-          )}
-          <Button 
-            type="submit" 
-            disabled={isApplyingPreset || !form.getValues().presetId}
-          >
-            {isApplyingPreset ? 'Applying...' : 'Apply Preset'}
-          </Button>
-        </div>
-      </form>
-    </Form>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -28,7 +28,7 @@ export const useAvailabilities = () => {
   }, [getBaseQueryKey, selectedMonth]);
   
   // Get monthly availabilities
-  const { data: monthlyAvailabilities, isLoading } = useQuery({
+  const { data: monthlyAvailabilities = [], isLoading } = useQuery({
     queryKey: getMonthlyQueryKey(),
     queryFn: () => {
       if (!user) return Promise.resolve([]);
@@ -150,10 +150,14 @@ export const useAvailabilities = () => {
   const getDayStatusColor = (status: AvailabilityStatus): string => {
     switch (status) {
       case 'Available':
+      case 'available':
         return 'bg-green-500';
       case 'Partial':
+      case 'partial':
+      case 'preferred':
         return 'bg-yellow-400';
       case 'Unavailable':
+      case 'unavailable':
         return 'bg-red-500';
       default:
         return 'bg-gray-300';
@@ -200,7 +204,7 @@ export const useAvailabilities = () => {
     // State
     selectedMonth,
     setSelectedMonth,
-    monthlyAvailabilities: monthlyAvailabilities || [],
+    monthlyAvailabilities,
     isLoading,
     presets,
     

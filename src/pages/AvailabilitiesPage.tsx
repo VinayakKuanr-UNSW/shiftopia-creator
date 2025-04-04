@@ -19,17 +19,15 @@ const AvailabilitiesPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
-  const { useMonthlyAvailabilities, useSaveAvailability, useApplyPreset } = useAvailabilities();
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const userId = user?.id || '';
-  const year = selectedMonth.getFullYear();
-  const month = selectedMonth.getMonth() + 1;
-
-  const { data: availabilities, isLoading, refetch } = useMonthlyAvailabilities(userId, year, month);
-  const { mutateAsync: saveAvailability } = useSaveAvailability();
-  const { mutateAsync: applyPreset } = useApplyPreset();
+  const {
+    monthlyAvailabilities,
+    isLoading,
+    setAvailability,
+    applyPreset,
+  } = useAvailabilities();
 
   const handleNextMonth = () => {
     setSelectedMonth(addMonths(selectedMonth, 1));
@@ -42,8 +40,7 @@ const AvailabilitiesPage = () => {
   const handleSaveAvailability = async (data: any) => {
     if (!selectedDate) return;
 
-    await saveAvailability({
-      employeeId: userId,
+    await setAvailability({
       startDate: selectedDate,
       endDate: selectedDate,
       timeSlots: data.timeSlots,
@@ -57,12 +54,10 @@ const AvailabilitiesPage = () => {
 
     setIsFormOpen(false);
     setSelectedDate(null);
-    refetch();
   };
 
   const handleApplyPreset = async (presetId: string, startDate: Date, endDate: Date) => {
     await applyPreset({
-      employeeId: userId,
       presetId,
       startDate,
       endDate
@@ -72,8 +67,6 @@ const AvailabilitiesPage = () => {
       title: "Preset Applied",
       description: `Availability preset has been applied from ${format(startDate, 'dd MMM')} to ${format(endDate, 'dd MMM yyyy')}.`,
     });
-
-    refetch();
   };
 
   const handleDateClick = (date: Date) => {
@@ -134,7 +127,7 @@ const AvailabilitiesPage = () => {
               </Button>
             </div>
             
-            <PresetSelector onApply={handleApplyPreset} />
+            <PresetSelector onApplyPreset={handleApplyPreset} />
           </div>
         </div>
       </div>
@@ -151,32 +144,23 @@ const AvailabilitiesPage = () => {
                 <CardTitle>My Availability</CardTitle>
               </CardHeader>
               <CardContent className="flex-1 p-0 overflow-auto">
-                <AvailabilityCalendar 
-                  month={selectedMonth} 
-                  availabilities={availabilities || []} 
-                  onDateClick={handleDateClick} 
-                />
+                <AvailabilityCalendar onSelectDate={handleDateClick} />
               </CardContent>
             </Card>
           ) : (
-            <MonthListView
-              month={selectedMonth}
-              availabilities={availabilities || []}
-              onEditDay={(date) => handleDateClick(new Date(date))}
-            />
+            <MonthListView onSelectDate={handleDateClick} />
           )}
         </div>
       )}
       
       {isFormOpen && selectedDate && (
         <AvailabilityForm
-          date={selectedDate}
+          selectedDate={selectedDate}
           onSubmit={handleSaveAvailability}
           onCancel={() => {
             setIsFormOpen(false);
             setSelectedDate(null);
           }}
-          existingAvailability={availabilities?.find(a => a.date === format(selectedDate, 'yyyy-MM-dd'))}
         />
       )}
     </div>

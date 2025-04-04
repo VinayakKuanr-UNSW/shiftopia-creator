@@ -1,284 +1,94 @@
 
-/* Base theme variables */
-:root {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 3.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
-  --primary: 252 56% 55%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 252 56% 55%;
-  --sidebar-background: 0 0% 100%;
-  --sidebar-foreground: 240 10% 3.9%;
-  --sidebar-primary: 252 56% 55%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 4.8% 95.9%;
-  --sidebar-accent-foreground: 240 5.9% 10%;
-  --sidebar-border: 240 5.9% 90%;
-  --sidebar-ring: 252 56% 55%;
-  --radius: 0.5rem;
+/* Light theme - Default */
+.light {
+  --background-image: radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.03) 0%, transparent 40%),
+                      radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.03) 0%, transparent 40%);
+  --background-color: #f5f5f7;
 }
 
-/* Dark theme variables */
+/* Dark theme */
 .dark {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 252 56% 55%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --ring: 252 56% 55%;
-  --sidebar-background: 240 10% 3.9%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-primary: 252 56% 55%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 3.7% 15.9%;
-  --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-border: 240 3.7% 15.9%;
-  --sidebar-ring: 252 56% 55%;
+  --background-image: radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.05) 0%, transparent 40%),
+                      radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.05) 0%, transparent 40%);
+  --background-color: #050507;
 }
 
 /* Glass theme */
 .theme-glass {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --card-opacity: 0.3;
-  --popover: 0 0% 0%;
-  --popover-opacity: 0.8;
-  --popover-foreground: 0 0% 98%;
-  --primary: 252 56% 55%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 100%;
-  --border-opacity: 0.15;
-  --input: 240 3.7% 15.9%;
-  --ring: 252 56% 55%;
-  --sidebar-background: 240 10% 3.9%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-primary: 252 56% 55%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 3.7% 15.9%;
-  --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-border: 0 0% 100%;
-  --sidebar-border-opacity: 0.15;
-  --sidebar-ring: 252 56% 55%;
+  --background-image: radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.15) 0%, transparent 50%),
+                      radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.15) 0%, transparent 50%);
+  --background-color: #0a0a0f;
 }
 
-/* Light theme (explicitly named) */
-.light {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 3.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
-  --primary: 252 56% 55%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 252 56% 55%;
-  --sidebar-background: 252 56% 55%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-primary: 0 0% 100%;
-  --sidebar-primary-foreground: 252 56% 55%;
-  --sidebar-accent: 0 0% 100%;
-  --sidebar-accent-foreground: 252 56% 55%;
-  --sidebar-border: 252 46% 45%;
-  --sidebar-ring: 0 0% 100%;
+body {
+  background-color: var(--background-color);
+  background-image: var(--background-image);
+  min-height: 100vh;
 }
 
 /* Glass theme specific styles */
-.theme-glass .glass-effect {
-  background-color: rgba(255, 255, 255, var(--background-opacity, 0.1));
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, var(--border-opacity, 0.15));
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+.theme-glass {
+  /* Improved contrast for glass theme text */
+  --text-contrast: rgba(255, 255, 255, 0.95);
+  --border-contrast: rgba(255, 255, 255, 0.3);
 }
 
 .theme-glass .card,
-.theme-glass .bg-card {
-  background-color: rgba(30, 30, 40, var(--card-opacity, 0.3));
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, var(--border-opacity, 0.15));
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.theme-glass .popover-content,
+.theme-glass .dropdown-menu-content,
+.theme-glass .dialog-content,
+.theme-glass .sheet-content {
+  background-color: rgba(30, 30, 40, 0.6) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-contrast);
 }
 
-.theme-glass .popover,
-.theme-glass .dropdown-content {
-  background-color: rgba(20, 20, 25, var(--popover-opacity, 0.8));
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, var(--border-opacity, 0.15));
+.theme-glass .card *,
+.theme-glass .popover-content *,
+.theme-glass .dropdown-menu-content *,
+.theme-glass .dialog-content *,
+.theme-glass .sheet-content * {
+  color: var(--text-contrast);
 }
 
-.theme-glass .bg-popover {
-  background-color: rgba(20, 20, 25, var(--popover-opacity, 0.8));
-  backdrop-filter: blur(12px);
+/* Fix for buttons in glass theme */
+.theme-glass button:not(.bg-primary):not(.bg-destructive):not(.bg-secondary) {
+  background-color: rgba(60, 60, 70, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.theme-glass .bg-background {
-  background-color: rgba(10, 10, 15, 0.5);
+.theme-glass button:hover:not(.bg-primary):not(.bg-destructive):not(.bg-secondary) {
+  background-color: rgba(80, 80, 90, 0.8);
+}
+
+/* Fix for inputs in glass theme */
+.theme-glass input,
+.theme-glass textarea,
+.theme-glass select {
+  background-color: rgba(40, 40, 50, 0.6);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Ensure calendar visibility in glass theme */
+.theme-glass .react-calendar {
+  background-color: rgba(30, 30, 40, 0.8);
+}
+
+.theme-glass .calendar-day {
+  color: white;
+}
+
+/* Ensure dropdown menus are visible in glass theme */
+.theme-glass .command-dialog {
+  background-color: rgba(30, 30, 40, 0.8);
   backdrop-filter: blur(8px);
 }
 
-.theme-glass .border {
-  border-color: rgba(255, 255, 255, var(--border-opacity, 0.15));
+/* Fix for text in glass theme */
+.theme-glass .text-foreground {
+  color: rgba(255, 255, 255, 0.95);
 }
 
-/* Apply consistent theme styles to all components */
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  transition: background-color 0.3s, color 0.3s;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-.card,
-.popover,
-.dropdown-content {
-  background-color: hsl(var(--card));
-  color: hsl(var(--card-foreground));
-}
-
-.button-primary {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-}
-
-.button-secondary {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
-}
-
-.border-color {
-  border-color: hsl(var(--border));
-}
-
-.input-background {
-  background-color: hsl(var(--input));
-}
-
-/* Sidebar specific styles */
-[data-sidebar="sidebar"] {
-  background-color: hsl(var(--sidebar-background));
-  color: hsl(var(--sidebar-foreground));
-}
-
-.theme-glass [data-sidebar="sidebar"] {
-  background-color: rgba(10, 10, 15, 0.7);
-  backdrop-filter: blur(12px);
-  border-right: 1px solid rgba(255, 255, 255, var(--sidebar-border-opacity, 0.15));
-}
-
-/* New responsive styles for Navbar and Sidebar */
-@media (max-width: 768px) {
-  .container {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-  }
-  
-  /* Smaller padding on mobile */
-  [data-sidebar="content"] {
-    padding: 0.5rem;
-  }
-  
-  /* Ensure navbar items are spaced properly on mobile */
-  .navbar-content {
-    gap: 0.25rem;
-  }
-}
-
-/* Animations for sidebar and dropdowns */
-@keyframes slideIn {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.animate-slide-in {
-  animation: slideIn 0.3s ease forwards;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease forwards;
-}
-
-/* Theme-specific body styles */
-.light body {
-  background-color: #f5f5f7;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.03) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.03) 0%, transparent 40%);
-  color: #0a0a0f;
-}
-
-.dark body {
-  background-color: #050507;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.05) 0%, transparent 40%);
-  color: white;
-}
-
-.theme-glass body {
-  background-color: #0a0a0f;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(101, 0, 255, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(0, 102, 255, 0.15) 0%, transparent 50%);
-  color: white;
+.theme-glass .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.7);
 }

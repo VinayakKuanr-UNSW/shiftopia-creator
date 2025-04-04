@@ -28,7 +28,14 @@ import AvailabilitiesPage from "./pages/AvailabilitiesPage";
 import BroadcastPage from "./pages/BroadcastPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  }
+});
 
 // Layout component that includes the Navbar and Sidebar
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
@@ -37,7 +44,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       <Navbar />
       <div className="flex-1 flex overflow-hidden">
         <AppSidebar />
-        <main className="flex-1 overflow-auto w-full h-full">
+        <main className="flex-1 overflow-auto w-full">
           {children}
         </main>
       </div>
@@ -52,120 +59,122 @@ const App = () => (
         <AuthProvider>
           <SearchProvider>
             <SidebarProvider defaultOpen={true}>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/" element={<Index />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/unauthorized" element={<UnauthorizedPage />} />
-                  
-                  {/* Protected routes with layout */}
-                  <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <DashboardPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/profile" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <ProfilePage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* My Roster route */}
-                  <Route path="/my-roster" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <MyRosterPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* Availabilities route */}
-                  <Route path="/availabilities" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <AvailabilitiesPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* Broadcast route - Admin only */}
-                  <Route path="/broadcast" element={
-                    <ProtectedRoute requiredRole="admin">
-                      <AppLayout>
-                        <BroadcastPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* Rostering routes */}
-                  <Route path="/templates" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <TemplatesPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/rosters" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <RostersPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/birds-view" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <BirdsViewPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/timesheet" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <TimesheetPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* Management routes */}
-                  <Route path="/management/:type" element={
-                    <ProtectedRoute requiredRole="manager">
-                      <AppLayout>
-                        <ManagementPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* Employee bids route */}
-                  <Route path="/bids" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <EmployeeBidsPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* Insights route */}
-                  <Route path="/insights" element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <InsightsPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* Catch-all route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
+              <div className="h-screen w-screen overflow-hidden">
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                    
+                    {/* Protected routes with layout */}
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <DashboardPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/profile" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <ProfilePage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* My Roster route */}
+                    <Route path="/my-roster" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <MyRosterPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Availabilities route */}
+                    <Route path="/availabilities" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <AvailabilitiesPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Broadcast route - Admin only */}
+                    <Route path="/broadcast" element={
+                      <ProtectedRoute requiredRole="admin">
+                        <AppLayout>
+                          <BroadcastPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Rostering routes */}
+                    <Route path="/templates" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <TemplatesPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/rosters" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <RostersPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/birds-view" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <BirdsViewPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/timesheet" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <TimesheetPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Management routes */}
+                    <Route path="/management/:type" element={
+                      <ProtectedRoute requiredRole="manager">
+                        <AppLayout>
+                          <ManagementPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Employee bids route */}
+                    <Route path="/bids" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <EmployeeBidsPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Insights route */}
+                    <Route path="/insights" element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <InsightsPage />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Catch-all route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </div>
             </SidebarProvider>
           </SearchProvider>
         </AuthProvider>
