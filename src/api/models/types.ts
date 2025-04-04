@@ -1,3 +1,4 @@
+
 // Template interfaces
 export interface Template {
   id: number;
@@ -124,10 +125,10 @@ export interface Bid {
 export interface DayAvailability {
   date: string;
   timeSlots: TimeSlot[];
-  status?: string; // Added for compatibility
+  status?: AvailabilityStatus; // Updated to use AvailabilityStatus
   notes?: string;  // Added for compatibility
   id?: string;     // Added for compatibility
-  employeeId?: string; // Added for compatability
+  employeeId?: string; // Added for compatibility
 }
 
 export interface TimeSlot {
@@ -135,6 +136,7 @@ export interface TimeSlot {
   startTime: string;
   endTime: string;
   status: AvailabilityStatus;
+  daysOfWeek?: number[]; // Optional for preset patterns
 }
 
 export type AvailabilityStatus = 

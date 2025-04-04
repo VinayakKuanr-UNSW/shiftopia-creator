@@ -39,16 +39,24 @@ interface AvailabilityPreset {
 const getStatusColor = (status: AvailabilityStatus): string => {
   switch (status) {
     case 'Available':
+    case 'available':
       return 'bg-green-500';
     case 'Unavailable':
+    case 'unavailable':
       return 'bg-red-500';
+    case 'Partial':
+    case 'partial':
     case 'Limited':
+    case 'limited':
       return 'bg-yellow-500';
     case 'Tentative':
+    case 'tentative':
       return 'bg-blue-500';
     case 'On Leave':
+    case 'on-leave':
       return 'bg-purple-500';
     case 'Not Specified':
+    case 'preferred':
     default:
       return 'bg-gray-400';
   }
@@ -82,6 +90,20 @@ const availabilityPresets: AvailabilityPreset[] = [
     name: 'Full Day',
     timeSlots: [
       { startTime: '08:00', endTime: '20:00' }
+    ]
+  },
+  {
+    id: 'weekdays',
+    name: 'Weekdays Only',
+    timeSlots: [
+      { startTime: '09:00', endTime: '17:00' }
+    ]
+  },
+  {
+    id: 'weekends',
+    name: 'Weekends Only',
+    timeSlots: [
+      { startTime: '10:00', endTime: '18:00' }
     ]
   }
 ];
@@ -160,30 +182,6 @@ export function useAvailabilities() {
     return getStatusColor(status);
   }, []);
 
-  // Set full day available
-  const setFullDayAvailable = useCallback((date: Date) => {
-    return setAvailability({
-      startDate: date,
-      endDate: date,
-      timeSlots: [
-        { startTime: '09:00', endTime: '17:00', status: 'Available' }
-      ],
-      status: 'Available'
-    });
-  }, []);
-
-  // Set full day unavailable
-  const setFullDayUnavailable = useCallback((date: Date) => {
-    return setAvailability({
-      startDate: date,
-      endDate: date,
-      timeSlots: [
-        { startTime: '00:00', endTime: '23:59', status: 'Unavailable' }
-      ],
-      status: 'Unavailable'
-    });
-  }, []);
-
   // Set or update availability
   const setAvailability = async (data: {
     startDate: Date;
@@ -242,6 +240,11 @@ export function useAvailabilities() {
         }
       });
       
+      toast({
+        title: "Availability Updated",
+        description: "Your availability has been saved successfully.",
+      });
+      
       return true;
     } catch (error) {
       console.error('Error setting availability:', error);
@@ -273,7 +276,29 @@ export function useAvailabilities() {
       // Mock API call - replace with actual API
       // await availabilityService.applyPreset(data);
       
-      // For now, just return success
+      // Add mock implementation - add the preset to the mock data
+      const mockTimeslot = preset.timeSlots[0];
+      
+      if (mockTimeslot) {
+        await setAvailability({
+          startDate: data.startDate,
+          endDate: data.endDate,
+          timeSlots: [
+            { 
+              startTime: mockTimeslot.startTime, 
+              endTime: mockTimeslot.endTime,
+              status: 'Available' 
+            }
+          ],
+          notes: `Applied preset: ${preset.name}`
+        });
+        
+        toast({
+          title: "Preset Applied",
+          description: `Applied "${preset.name}" from ${format(data.startDate, 'MMM dd')} to ${format(data.endDate, 'MMM dd')}`,
+        });
+      }
+      
       return true;
     } catch (error) {
       console.error('Error applying preset:', error);
@@ -299,10 +324,9 @@ export function useAvailabilities() {
     getDayAvailability,
     getDayStatusColor,
     setAvailability,
-    setFullDayAvailable,
-    setFullDayUnavailable,
     applyPreset,
     availabilityPresets,
-    presets: availabilityPresets // Alias for compatibility with PresetSelector
+    // For compatibility with existing components
+    presets: availabilityPresets
   };
 }

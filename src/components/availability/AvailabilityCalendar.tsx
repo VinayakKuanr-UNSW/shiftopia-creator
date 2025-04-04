@@ -55,32 +55,8 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className="w-full space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">
-          {format(selectedMonth, 'MMMM yyyy')}
-        </h2>
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToPreviousMonth}
-            aria-label="Previous month"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToNextMonth}
-            aria-label="Next month"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
+    <div className="h-full flex flex-col overflow-auto p-4 md:p-6">
+      <div className="bg-card border border-border rounded-lg overflow-hidden h-full">
         <div className="grid grid-cols-7 bg-muted">
           {weekdays.map((day) => (
             <div
@@ -92,7 +68,7 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
           ))}
         </div>
 
-        <div className="grid grid-cols-7 divide-x divide-y divide-border">
+        <div className="grid grid-cols-7 divide-x divide-y divide-border h-full">
           {calendarWeeks.map((week, weekIndex) => (
             <React.Fragment key={weekIndex}>
               {week.map((day) => {
@@ -104,7 +80,7 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
                   <div
                     key={day.toString()}
                     className={cn(
-                      "h-24 p-1 hover:bg-muted/50 cursor-pointer transition-colors",
+                      "h-24 md:h-32 p-1 hover:bg-muted/50 cursor-pointer transition-colors",
                       !isCurrentMonth && "opacity-40"
                     )}
                     onClick={() => onSelectDate(day)}
@@ -128,6 +104,26 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
                           )}
                         >
                           {availability.status}
+                          {availability.timeSlots && availability.timeSlots.length > 0 && (
+                            <span className="hidden md:inline ml-1">
+                              ({availability.timeSlots.length})
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
+                      {availability?.timeSlots && availability.timeSlots.length > 0 && (
+                        <div className="mt-1 overflow-hidden text-xs hidden md:block">
+                          {availability.timeSlots.slice(0, 1).map((slot, i) => (
+                            <div key={i} className="truncate text-muted-foreground">
+                              {slot.startTime} - {slot.endTime}
+                            </div>
+                          ))}
+                          {availability.timeSlots.length > 1 && (
+                            <div className="text-muted-foreground">
+                              +{availability.timeSlots.length - 1} more
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

@@ -135,3 +135,38 @@ body {
 .theme-glass [data-radix-popper-content-wrapper] {
   backdrop-filter: blur(8px);
 }
+
+/* Fix for availability calendar cells */
+.theme-glass .grid-cols-7 > div {
+  min-height: 80px;
+}
+
+/* Improve text visibility in various components */
+.theme-glass .dialog-content .text-muted-foreground,
+.theme-glass .popover-content .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Ensure availability cells have good contrast */
+.theme-glass .bg-green-500 {
+  background-color: rgba(52, 211, 153, 0.9);
+}
+
+.theme-glass .bg-red-500 {
+  background-color: rgba(239, 68, 68, 0.9);
+}
+
+.theme-glass .bg-yellow-500 {
+  background-color: rgba(245, 158, 11, 0.9);
+}
+
+/* Make the availability page fill the whole screen */
+.theme-glass #root,
+#root {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}

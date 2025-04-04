@@ -62,11 +62,6 @@ const AvailabilitiesPage = () => {
       startDate,
       endDate
     });
-
-    toast({
-      title: "Preset Applied",
-      description: `Availability preset has been applied from ${format(startDate, 'dd MMM')} to ${format(endDate, 'dd MMM yyyy')}.`,
-    });
   };
 
   const handleDateClick = (date: Date) => {
@@ -74,11 +69,9 @@ const AvailabilitiesPage = () => {
     setIsFormOpen(true);
   };
 
-  const currentMonthLabel = format(selectedMonth, 'MMMM yyyy');
-
   return (
-    <div className="h-full flex flex-col p-4 md:p-6 gap-4 overflow-auto">
-      <div className="flex flex-col gap-4">
+    <div className="flex flex-col h-screen w-full overflow-hidden">
+      <div className="flex-shrink-0 p-4 md:p-6 space-y-4 border-b">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h1 className="text-2xl font-bold tracking-tight">Availability Management</h1>
           
@@ -113,42 +106,37 @@ const AvailabilitiesPage = () => {
           </div>
         </div>
         
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Button variant="outline" size="icon" onClick={handlePrevMonth}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="w-36 text-center font-medium">
-                {currentMonthLabel}
-              </div>
-              <Button variant="outline" size="icon" onClick={handleNextMonth}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Button variant="outline" size="icon" onClick={handlePrevMonth}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="w-36 text-center font-medium">
+              {format(selectedMonth, 'MMMM yyyy')}
             </div>
-            
-            <PresetSelector onApplyPreset={handleApplyPreset} />
+            <Button variant="outline" size="icon" onClick={handleNextMonth}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
+          
+          <PresetSelector onApplyPreset={handleApplyPreset} />
         </div>
       </div>
       
       {isLoading ? (
-        <div className="grid gap-4 mt-4">
+        <div className="flex-grow p-4 grid place-items-center">
           <Skeleton className="h-96 w-full" />
         </div>
       ) : (
-        <div className="grid flex-1 h-full">
+        <div className="flex-grow overflow-auto">
           {viewMode === 'calendar' ? (
-            <Card className="h-full overflow-hidden flex flex-col">
-              <CardHeader className="pb-2">
-                <CardTitle>My Availability</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 p-0 overflow-auto">
-                <AvailabilityCalendar onSelectDate={handleDateClick} />
-              </CardContent>
-            </Card>
+            <div className="h-full overflow-hidden">
+              <AvailabilityCalendar onSelectDate={handleDateClick} />
+            </div>
           ) : (
-            <MonthListView onSelectDate={handleDateClick} />
+            <div className="p-4 md:p-6">
+              <MonthListView onSelectDate={handleDateClick} />
+            </div>
           )}
         </div>
       )}

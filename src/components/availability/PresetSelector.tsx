@@ -58,11 +58,11 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
           Apply Preset
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="end">
+      <PopoverContent className="w-80 max-h-[80vh] overflow-auto" align="end">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none">Date Range</h4>
-            <div className="flex items-center pt-2">
+            <div className="flex items-center justify-center pt-2">
               <Calendar
                 initialFocus
                 mode="range"
@@ -76,7 +76,7 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
                     });
                   }
                 }}
-                numberOfMonths={2}
+                numberOfMonths={1}
               />
             </div>
           </div>

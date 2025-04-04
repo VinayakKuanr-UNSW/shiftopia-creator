@@ -14,8 +14,31 @@ interface DayAvailabilityViewProps {
 }
 
 export function DayAvailabilityView({ date, onEdit }: DayAvailabilityViewProps) {
-  const { getDayAvailability, getDayStatusColor, setFullDayAvailable, setFullDayUnavailable } = useAvailabilities();
+  const { getDayAvailability, getDayStatusColor, setAvailability } = useAvailabilities();
   const availability = getDayAvailability(date);
+
+  // Add these functions since they don't exist in the hook anymore
+  const setFullDayAvailable = () => {
+    setAvailability({
+      startDate: date,
+      endDate: date,
+      timeSlots: [
+        { startTime: '09:00', endTime: '17:00', status: 'Available' }
+      ],
+      status: 'Available'
+    });
+  };
+
+  const setFullDayUnavailable = () => {
+    setAvailability({
+      startDate: date,
+      endDate: date,
+      timeSlots: [
+        { startTime: '00:00', endTime: '23:59', status: 'Unavailable' }
+      ],
+      status: 'Unavailable'
+    });
+  };
 
   const renderTimeSlots = (availability: any) => {
     if (!availability.timeSlots || availability.timeSlots.length === 0) {
@@ -54,10 +77,10 @@ export function DayAvailabilityView({ date, onEdit }: DayAvailabilityViewProps) 
         You haven't set your availability for this date yet.
       </p>
       <div className="flex gap-2">
-        <Button size="sm" variant="outline" onClick={() => setFullDayAvailable(date)}>
+        <Button size="sm" variant="outline" onClick={setFullDayAvailable}>
           Set Available
         </Button>
-        <Button size="sm" variant="outline" onClick={() => setFullDayUnavailable(date)}>
+        <Button size="sm" variant="outline" onClick={setFullDayUnavailable}>
           Set Unavailable
         </Button>
       </div>
