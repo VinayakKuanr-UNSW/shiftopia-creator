@@ -115,8 +115,8 @@ const MonthView: React.FC<MonthViewProps> = ({ date, getShiftsForDate }) => {
                         groupColor={shiftData.groupColor}
                         subGroupName={shiftData.subGroupName}
                         compact={true}
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onClick={() => {
+                          // Modified this line to remove the event parameter
                           setSelectedShift(shiftData);
                         }}
                       />

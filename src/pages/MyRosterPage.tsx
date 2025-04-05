@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import MyRosterCalendar from '@/components/myroster/MyRosterCalendar';
-import { useRosterView } from '@/hooks/useRosterView';
+import { useRosterView, CalendarView } from '@/hooks/useRosterView'; // Added CalendarView import
 import { CalendarDays, Info } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
