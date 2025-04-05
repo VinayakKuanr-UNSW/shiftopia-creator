@@ -31,6 +31,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ isCollapsed, theme, handleThe
         </TooltipTrigger>
         <TooltipContent side={isCollapsed ? "right" : "top"}>Theme Settings</TooltipContent>
       </Tooltip>
+      
       <DropdownMenuContent align={isCollapsed ? "end" : "center"} className="w-40">
         <DropdownMenuItem 
           className={`flex items-center gap-2 cursor-pointer ${theme === 'light' ? 'bg-accent/50' : ''}`}
