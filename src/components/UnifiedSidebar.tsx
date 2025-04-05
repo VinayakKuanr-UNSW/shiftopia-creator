@@ -482,9 +482,10 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, path, active, indent }) 
         {isCollapsed && (
           <TooltipContent side="right">{label}</TooltipContent>
         )}
-      </TooltipProvider>
-    );
-  };
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 interface NavSectionProps {
   title: string;
