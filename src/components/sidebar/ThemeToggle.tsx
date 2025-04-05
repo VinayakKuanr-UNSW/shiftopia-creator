@@ -22,8 +22,8 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ isCollapsed, theme, handleThe
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <DropdownMenu>
+        <DropdownMenu>
+          <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="ghost" 
@@ -43,41 +43,41 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ isCollapsed, theme, handleThe
                 </motion.div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align={isCollapsed ? "end" : "center"} className="w-40">
-              <DropdownMenuItem 
-                className={cn(
-                  "flex items-center gap-2 cursor-pointer transition-all",
-                  theme === 'light' ? 'bg-accent/50' : 'hover:bg-accent/30'
-                )}
-                onClick={() => handleThemeChange('light')}
-              >
-                <Sun className="h-4 w-4" />
-                <span>Light</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                className={cn(
-                  "flex items-center gap-2 cursor-pointer transition-all",
-                  theme === 'dark' ? 'bg-accent/50' : 'hover:bg-accent/30'
-                )}
-                onClick={() => handleThemeChange('dark')}
-              >
-                <Moon className="h-4 w-4" />
-                <span>Dark</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                className={cn(
-                  "flex items-center gap-2 cursor-pointer transition-all",
-                  theme === 'glass' ? 'bg-accent/50' : 'hover:bg-accent/30'
-                )}
-                onClick={() => handleThemeChange('glass')}
-              >
-                <Sparkles className="h-4 w-4" />
-                <span>Glass</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TooltipTrigger>
-        <TooltipContent side={isCollapsed ? "right" : "top"}>Theme Settings</TooltipContent>
+          </TooltipTrigger>
+          <TooltipContent side={isCollapsed ? "right" : "top"}>Theme Settings</TooltipContent>
+          <DropdownMenuContent align={isCollapsed ? "end" : "center"} className="w-40">
+            <DropdownMenuItem 
+              className={cn(
+                "flex items-center gap-2 cursor-pointer transition-all",
+                theme === 'light' ? 'bg-accent/50' : 'hover:bg-accent/30'
+              )}
+              onClick={() => handleThemeChange('light')}
+            >
+              <Sun className="h-4 w-4" />
+              <span>Light</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              className={cn(
+                "flex items-center gap-2 cursor-pointer transition-all",
+                theme === 'dark' ? 'bg-accent/50' : 'hover:bg-accent/30'
+              )}
+              onClick={() => handleThemeChange('dark')}
+            >
+              <Moon className="h-4 w-4" />
+              <span>Dark</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              className={cn(
+                "flex items-center gap-2 cursor-pointer transition-all",
+                theme === 'glass' ? 'bg-accent/50' : 'hover:bg-accent/30'
+              )}
+              onClick={() => handleThemeChange('glass')}
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>Glass</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </Tooltip>
     </TooltipProvider>
   );

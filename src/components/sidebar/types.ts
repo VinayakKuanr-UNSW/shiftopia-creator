@@ -32,3 +32,7 @@ export interface UserProfileProps {
   isCollapsed: boolean;
   handleLogout: () => void;
 }
+
+export interface NotificationProps {
+  isCollapsed?: boolean;
+}

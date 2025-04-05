@@ -70,7 +70,8 @@ const UserSection: React.FC<UserSectionProps> = ({
         />
       </div>
       
-      <div className="flex items-center justify-between">
+      {/* Vertically aligned action buttons */}
+      <div className="flex flex-col gap-3 items-center">
         {isCollapsed ? (
           <TooltipProvider>
             <Tooltip>
@@ -100,7 +101,7 @@ const UserSection: React.FC<UserSectionProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="transition-transform duration-200 hover:scale-105">
-                <BroadcastNotifications />
+                <BroadcastNotifications isCollapsed={isCollapsed} />
               </div>
             </TooltipTrigger>
             <TooltipContent side={isCollapsed ? "right" : "top"}>

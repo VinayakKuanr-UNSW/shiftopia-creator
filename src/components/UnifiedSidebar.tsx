@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -26,16 +27,19 @@ const UnifiedSidebar = () => {
   
   const toggleMenu = (menu: string) => {
     if (isCollapsed) {
-      // If sidebar is collapsed, expand it first then open the menu
-      useSidebar().setOpen(true);
-      setTimeout(() => {
-        setOpenMenus(prev => ({
-          ...prev,
-          [menu]: !prev[menu]
-        }));
-      }, 300); // Delay to match animation timing
+      // In collapsed state, just toggle the current menu and close others
+      setOpenMenus(prev => {
+        const newState = { ...prev };
+        // Close all other menus
+        Object.keys(newState).forEach(key => {
+          if (key !== menu) newState[key] = false;
+        });
+        // Toggle the current menu
+        newState[menu] = !prev[menu];
+        return newState;
+      });
     } else {
-      // Otherwise just toggle the menu
+      // In expanded state, just toggle the menu
       setOpenMenus(prev => ({
         ...prev,
         [menu]: !prev[menu]
