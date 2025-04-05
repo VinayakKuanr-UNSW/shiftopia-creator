@@ -56,12 +56,10 @@ const UnifiedSidebar = () => {
   const { state, toggleSidebar } = useSidebar();
   const { theme, setTheme } = useTheme();
   
-  // Track open dropdown menus
   const [openMenus, setOpenMenus] = useState<{[key: string]: boolean}>({});
   
   const isCollapsed = state === "collapsed";
   
-  // Toggle submenu open/closed
   const toggleMenu = (menu: string) => {
     setOpenMenus(prev => ({
       ...prev,
@@ -69,20 +67,17 @@ const UnifiedSidebar = () => {
     }));
   };
   
-  // Check if a route is active
   const isRouteActive = (path: string) => {
     if (path === location.pathname) return true;
     if (path !== '/dashboard' && location.pathname.startsWith(path)) return true;
     return false;
   };
   
-  // Handle logout
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
   
-  // Theme icon selection
   const getThemeIcon = () => {
     switch (theme) {
       case 'light': return <Sun className="h-5 w-5" />;
@@ -92,12 +87,10 @@ const UnifiedSidebar = () => {
     }
   };
   
-  // Handle theme change
   const handleThemeChange = (newTheme: 'dark' | 'light' | 'glass') => {
     setTheme(newTheme);
   };
   
-  // Logo/Brand section
   const LogoSection = () => (
     <div className="flex items-center justify-between p-4 border-b border-border">
       <div className="flex items-center gap-3">
@@ -118,10 +111,8 @@ const UnifiedSidebar = () => {
     </div>
   );
   
-  // Navigation links
   const NavigationLinks = () => (
     <div className="flex-1 overflow-y-auto py-4 px-3">
-      {/* Dashboard */}
       <NavItem
         icon={<LayoutDashboard className="h-5 w-5" />}
         label="Dashboard"
@@ -129,7 +120,6 @@ const UnifiedSidebar = () => {
         active={isRouteActive('/dashboard')}
       />
       
-      {/* My Workspace Section */}
       <NavSection
         title="My Workspace"
         isOpen={openMenus['workspace']}
@@ -159,7 +149,6 @@ const UnifiedSidebar = () => {
         />
       </NavSection>
       
-      {/* Rostering Section - shown based on permissions */}
       {(hasPermission('templates') || hasPermission('rosters') || hasPermission('birds-view') || hasPermission('timesheet-view')) && (
         <NavSection
           title="Rostering"
@@ -206,7 +195,6 @@ const UnifiedSidebar = () => {
         </NavSection>
       )}
       
-      {/* Management Section */}
       {hasPermission('management') && (
         <NavSection
           title="Management"
@@ -231,7 +219,6 @@ const UnifiedSidebar = () => {
         </NavSection>
       )}
       
-      {/* Other main links */}
       {hasPermission('broadcast') && (
         <NavItem
           icon={<BellRing className="h-5 w-5" />}
@@ -261,13 +248,11 @@ const UnifiedSidebar = () => {
     </div>
   );
   
-  // User profile and actions section
   const UserSection = () => {
     if (!user) return null;
     
     return (
       <div className="p-4 border-t border-border space-y-4">
-        {/* Search Bar */}
         <div className={cn("flex items-center bg-muted/30 rounded-lg", isCollapsed ? "hidden" : "")}>
           <Search className="h-4 w-4 ml-3 text-muted-foreground" />
           <Input 
@@ -277,7 +262,6 @@ const UnifiedSidebar = () => {
           />
         </div>
         
-        {/* Theme Toggle, Search Icon and Notifications */}
         <div className="flex items-center justify-between">
           {isCollapsed ? (
             <TooltipProvider>
@@ -292,10 +276,8 @@ const UnifiedSidebar = () => {
             </TooltipProvider>
           ) : null}
           
-          {/* Theme Toggle */}
           <ThemeToggle isCollapsed={isCollapsed} theme={theme} handleThemeChange={handleThemeChange} />
           
-          {/* Notifications */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -310,10 +292,8 @@ const UnifiedSidebar = () => {
           </TooltipProvider>
         </div>
         
-        {/* User Profile */}
         <UserProfile user={user} isCollapsed={isCollapsed} handleLogout={handleLogout} />
         
-        {/* Help & Support */}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -354,7 +334,6 @@ const UnifiedSidebar = () => {
   );
 };
 
-// ThemeToggle component
 interface ThemeToggleProps {
   isCollapsed: boolean;
   theme: 'dark' | 'light' | 'glass';
@@ -365,47 +344,44 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ isCollapsed, theme, handleThe
   return (
     <TooltipProvider>
       <Tooltip>
-        <DropdownMenu>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                {theme === 'light' ? <Sun className="h-5 w-5" /> : 
-                 theme === 'dark' ? <Moon className="h-5 w-5" /> : 
-                 <Sparkles className="h-5 w-5" />}
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent side={isCollapsed ? "right" : "top"}>Theme Settings</TooltipContent>
-          <DropdownMenuContent align={isCollapsed ? "end" : "center"} className="w-40">
-            <DropdownMenuItem 
-              className={`flex items-center gap-2 cursor-pointer ${theme === 'light' ? 'bg-accent/50' : ''}`}
-              onClick={() => handleThemeChange('light')}
-            >
-              <Sun className="h-4 w-4" />
-              <span>Light</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              className={`flex items-center gap-2 cursor-pointer ${theme === 'dark' ? 'bg-accent/50' : ''}`}
-              onClick={() => handleThemeChange('dark')}
-            >
-              <Moon className="h-4 w-4" />
-              <span>Dark</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              className={`flex items-center gap-2 cursor-pointer ${theme === 'glass' ? 'bg-accent/50' : ''}`}
-              onClick={() => handleThemeChange('glass')}
-            >
-              <Sparkles className="h-4 w-4" />
-              <span>Glass</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              {theme === 'light' ? <Sun className="h-5 w-5" /> : 
+               theme === 'dark' ? <Moon className="h-5 w-5" /> : 
+               <Sparkles className="h-5 w-5" />}
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent side={isCollapsed ? "right" : "top"}>Theme Settings</TooltipContent>
       </Tooltip>
-    </TooltipProvider>
+      <DropdownMenuContent align={isCollapsed ? "end" : "center"} className="w-40">
+        <DropdownMenuItem 
+          className={`flex items-center gap-2 cursor-pointer ${theme === 'light' ? 'bg-accent/50' : ''}`}
+          onClick={() => handleThemeChange('light')}
+        >
+          <Sun className="h-4 w-4" />
+          <span>Light</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          className={`flex items-center gap-2 cursor-pointer ${theme === 'dark' ? 'bg-accent/50' : ''}`}
+          onClick={() => handleThemeChange('dark')}
+        >
+          <Moon className="h-4 w-4" />
+          <span>Dark</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          className={`flex items-center gap-2 cursor-pointer ${theme === 'glass' ? 'bg-accent/50' : ''}`}
+          onClick={() => handleThemeChange('glass')}
+        >
+          <Sparkles className="h-4 w-4" />
+          <span>Glass</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
-// User Profile component
 interface UserProfileProps {
   user: any;
   isCollapsed: boolean;
@@ -472,7 +448,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, isCollapsed, handleLogo
   );
 };
 
-// Navigation Item Component
 interface NavItemProps {
   icon: React.ReactNode;
   label: string;
@@ -511,7 +486,6 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, path, active, indent }) 
     );
   };
 
-// Navigation Section Component (collapsible section with items)
 interface NavSectionProps {
   title: string;
   isOpen: boolean;
