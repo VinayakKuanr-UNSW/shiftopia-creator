@@ -8,8 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import Navbar from "./components/Navbar";
-import AppSidebar from "./components/AppSidebar";
+import UnifiedSidebar from "./components/UnifiedSidebar";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
@@ -38,17 +37,16 @@ const queryClient = new QueryClient({
   }
 });
 
-// Layout component that includes the Navbar and Sidebar
+// Layout component that includes the Unified Sidebar
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex flex-col h-screen w-full">
-      <Navbar />
-      <div className="flex flex-1 overflow-hidden">
-        <AppSidebar />
-        <main className="flex-1 overflow-auto w-full">
+    <div className="flex h-screen w-full">
+      <UnifiedSidebar />
+      <main className="flex-1 overflow-auto ml-[70px] md:ml-[70px] lg:ml-[70px] transition-all">
+        <div className="p-6 min-h-screen">
           {children}
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };
@@ -59,7 +57,7 @@ const App = () => (
       <ThemeProvider>
         <AuthProvider>
           <SearchProvider>
-            <SidebarProvider defaultOpen={true}>
+            <SidebarProvider defaultOpen={false}>
               <div className="h-screen w-screen overflow-hidden">
                 <Toaster />
                 <Sonner />
