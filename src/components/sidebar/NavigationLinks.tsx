@@ -19,6 +19,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import NavItem from './NavItem';
 import NavSection from './NavSection';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface NavigationLinksProps {
   openMenus: {[key: string]: boolean};
@@ -28,6 +29,8 @@ interface NavigationLinksProps {
 const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu }) => {
   const location = useLocation();
   const { hasPermission } = useAuth();
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   const isRouteActive = (path: string) => {
     if (path === location.pathname) return true;
@@ -42,13 +45,15 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
         label="Dashboard"
         path="/dashboard"
         active={isRouteActive('/dashboard')}
+        sectionColor="primary"
       />
       
       <NavSection
         title="My Workspace"
         isOpen={openMenus['workspace']}
         onToggle={() => toggleMenu('workspace')}
-        collapsed={false}
+        collapsed={isCollapsed}
+        sectionColor="purple"
       >
         <NavItem
           icon={<Calendar className="h-5 w-5" />}
@@ -56,6 +61,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
           path="/my-roster"
           active={isRouteActive('/my-roster')}
           indent
+          sectionColor="purple"
         />
         <NavItem
           icon={<CalendarDays className="h-5 w-5" />}
@@ -63,6 +69,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
           path="/availabilities"
           active={isRouteActive('/availabilities')}
           indent
+          sectionColor="purple"
         />
         <NavItem
           icon={<BadgeCheck className="h-5 w-5" />}
@@ -70,6 +77,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
           path="/bids"
           active={isRouteActive('/bids')}
           indent
+          sectionColor="purple"
         />
       </NavSection>
       
@@ -78,7 +86,8 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
           title="Rostering"
           isOpen={openMenus['rostering']}
           onToggle={() => toggleMenu('rostering')}
-          collapsed={false}
+          collapsed={isCollapsed}
+          sectionColor="blue"
         >
           {hasPermission('templates') && (
             <NavItem
@@ -87,6 +96,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
               path="/templates"
               active={isRouteActive('/templates')}
               indent
+              sectionColor="blue"
             />
           )}
           {hasPermission('rosters') && (
@@ -96,6 +106,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
               path="/rosters"
               active={isRouteActive('/rosters')}
               indent
+              sectionColor="blue"
             />
           )}
           {hasPermission('birds-view') && (
@@ -105,6 +116,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
               path="/birds-view"
               active={isRouteActive('/birds-view')}
               indent
+              sectionColor="blue"
             />
           )}
           {hasPermission('timesheet-view') && (
@@ -114,6 +126,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
               path="/timesheet"
               active={isRouteActive('/timesheet')}
               indent
+              sectionColor="blue"
             />
           )}
         </NavSection>
@@ -124,7 +137,8 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
           title="Management"
           isOpen={openMenus['management']}
           onToggle={() => toggleMenu('management')}
-          collapsed={false}
+          collapsed={isCollapsed}
+          sectionColor="green"
         >
           <NavItem
             icon={<BadgeCheck className="h-5 w-5" />}
@@ -132,6 +146,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
             path="/management/bids"
             active={isRouteActive('/management/bids')}
             indent
+            sectionColor="green"
           />
           <NavItem
             icon={<RefreshCw className="h-5 w-5" />}
@@ -139,6 +154,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
             path="/management/swaps"
             active={isRouteActive('/management/swaps')}
             indent
+            sectionColor="green"
           />
         </NavSection>
       )}
@@ -149,6 +165,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
           label="Broadcast"
           path="/broadcast"
           active={isRouteActive('/broadcast')}
+          sectionColor="amber"
         />
       )}
       
@@ -158,6 +175,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
           label="Insights"
           path="/insights"
           active={isRouteActive('/insights')}
+          sectionColor="amber"
         />
       )}
       
@@ -167,6 +185,7 @@ const NavigationLinks: React.FC<NavigationLinksProps> = ({ openMenus, toggleMenu
           label="Configurations"
           path="/configurations"
           active={isRouteActive('/configurations')}
+          sectionColor="amber"
         />
       )}
     </div>

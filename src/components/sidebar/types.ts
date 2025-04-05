@@ -1,12 +1,15 @@
 
 import { ReactNode } from 'react';
 
+export type SectionColor = "primary" | "purple" | "blue" | "green" | "amber";
+
 export interface NavItemProps {
   icon: React.ReactNode;
   label: string;
   path: string;
   active: boolean;
   indent?: boolean;
+  sectionColor?: SectionColor;
 }
 
 export interface NavSectionProps {
@@ -15,6 +18,7 @@ export interface NavSectionProps {
   onToggle: () => void;
   children: React.ReactNode;
   collapsed: boolean;
+  sectionColor?: SectionColor;
 }
 
 export interface ThemeToggleProps {
