@@ -101,9 +101,9 @@ const mapDbShiftToShiftDetails = (dbShift: any): ShiftDetails => {
   
   return {
     id: String(dbShift.id),
-    date: dbShift.shift_date,
-    startTime: dbShift.shift_time,
-    endTime: calculateEndTime(dbShift.shift_time, dbShift.net_length || '8'),
+    date: dbShift.shift_date || '',
+    startTime: dbShift.shift_time || '',
+    endTime: calculateEndTime(dbShift.shift_time || '', dbShift.net_length || '8'),
     netLength: String(dbShift.net_length || '0'),
     paidBreakDuration: dbShift.paid_break_duration || '0m',
     unpaidBreakDuration: dbShift.unpaid_break_duration || '0m',
@@ -112,7 +112,7 @@ const mapDbShiftToShiftDetails = (dbShift: any): ShiftDetails => {
     role: role,
     remunerationLevel: dbShift.remuneration_level || 'STANDARD',
     status: dbShift.status || 'Open',
-    isDraft: Boolean(dbShift.is_draft),
+    isDraft: Boolean(dbShift.is_draft || false),
     assignedEmployee: dbShift.employees?.name || null
   };
 };
@@ -173,7 +173,7 @@ export const shiftService = {
       const { data, error } = await supabase
         .from('shifts')
         .select('*, employees(name)')
-        .eq('id', id)
+        .eq('id', parseInt(id, 10)) // Convert string to number
         .single();
         
       if (error) {
@@ -281,7 +281,7 @@ export const shiftService = {
       const { data, error } = await supabase
         .from('shifts')
         .update(updateData)
-        .eq('id', id)
+        .eq('id', parseInt(id, 10)) // Convert string to number
         .select('*, employees(name)')
         .single();
         

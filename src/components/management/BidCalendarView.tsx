@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DayPicker } from 'react-day-picker';
 import { BidWithEmployee } from './types/bid-types';
+import { Badge } from "@/components/ui/badge";
 
 interface BidCalendarViewProps {
   bids: BidWithEmployee[];
@@ -82,8 +83,8 @@ const BidCalendarView: React.FC<BidCalendarViewProps> = ({
     setCurrentMonth(prevMonth);
   };
   
-  // Custom day cell renderer
-  const renderDay = (day: Date) => {
+  // Custom day cell renderer as a component
+  const customDayContent = (day: Date) => {
     // Format date to match the API date format
     const dateKey = format(day, 'yyyy-MM-dd');
     const dayBids = bidsByDate[dateKey] || [];
@@ -154,9 +155,17 @@ const BidCalendarView: React.FC<BidCalendarViewProps> = ({
           selected={selectedDate}
           onSelect={onDateSelect}
           className="mx-auto"
-          renderDay={renderDay}
-          fromDate={dateRange.fromDate}
-          toDate={dateRange.toDate}
+          // Use the components prop to customize day rendering
+          components={{
+            Day: ({ date, displayMonth }) => {
+              if (displayMonth.getMonth() !== date.getMonth()) {
+                return <div className="rdp-day_outside">{format(date, 'd')}</div>;
+              }
+              return <>{customDayContent(date)}</>;
+            }
+          }}
+          fromMonth={dateRange.fromDate}
+          toMonth={dateRange.toDate}
           modifiersStyles={{
             selected: {
               backgroundColor: 'var(--primary)',
@@ -242,8 +251,5 @@ const BidCalendarView: React.FC<BidCalendarViewProps> = ({
     </div>
   );
 };
-
-// Missing Badge component
-import { Badge } from "@/components/ui/badge";
 
 export default BidCalendarView;

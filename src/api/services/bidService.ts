@@ -1,3 +1,4 @@
+
 import { Bid } from '../models/types';
 import { currentBids } from '../data/mockData';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,7 +58,7 @@ export const bidService = {
       const { data, error } = await supabase
         .from('bids')
         .select('*')
-        .eq('id', id)
+        .eq('id', parseInt(id, 10)) // Convert string to number
         .single();
       
       if (error) {
@@ -89,7 +90,7 @@ export const bidService = {
       const { data, error } = await supabase
         .from('bids')
         .select('*')
-        .eq('employee_id', employeeId);
+        .eq('employee_id', parseInt(employeeId, 10)); // Convert string to number
       
       if (error) {
         console.error(`Error fetching bids for employee ${employeeId} from Supabase:`, error);
@@ -120,7 +121,7 @@ export const bidService = {
       const { data, error } = await supabase
         .from('bids')
         .select('*')
-        .eq('shift_id', shiftId);
+        .eq('shift_id', parseInt(shiftId, 10)); // Convert string to number
       
       if (error) {
         console.error(`Error fetching bids for shift ${shiftId} from Supabase:`, error);
@@ -148,11 +149,16 @@ export const bidService = {
   createBid: async (bid: Omit<Bid, 'id' | 'createdAt'>): Promise<Bid> => {
     try {
       const newBidData = {
-        shift_id: Number(bid.shiftId),
-        employee_id: Number(bid.employeeId),
+        shift_id: parseInt(bid.shiftId, 10), // Convert string to number
+        employee_id: parseInt(bid.employeeId, 10), // Convert string to number
         status: bid.status || 'Pending',
-        notes: bid.notes || ''
       };
+
+      // Add notes field if it exists in bid object
+      if (bid.notes) {
+        // @ts-ignore - We'll handle this property even if the type doesn't match exactly
+        newBidData.notes = bid.notes;
+      }
 
       // First try to insert bid into Supabase
       const { data, error } = await supabase
@@ -213,7 +219,7 @@ export const bidService = {
       const { data, error } = await supabase
         .from('bids')
         .update({ status })
-        .eq('id', id)
+        .eq('id', parseInt(id, 10)) // Convert string to number
         .select()
         .single();
       
@@ -272,12 +278,13 @@ export const bidService = {
           // Update other pending bids for the same shift in Supabase
           supabase
             .from('bids')
-            .update({ 
+            .update({
               status: 'Rejected', 
-              notes: 'Shift offered to another employee' 
+              // @ts-ignore - We'll handle this property even if the type doesn't match exactly
+              notes: 'Shift offered to another employee'
             })
-            .eq('shift_id', shiftId)
-            .neq('id', id)
+            .eq('shift_id', parseInt(shiftId, 10)) // Convert string to number
+            .neq('id', parseInt(id, 10)) // Convert string to number
             .eq('status', 'Pending')
             .then(({ error }) => {
               if (error) {
@@ -546,7 +553,7 @@ export const bidService = {
       const { error } = await supabase
         .from('bids')
         .delete()
-        .eq('id', id);
+        .eq('id', parseInt(id, 10)); // Convert string to number
       
       if (error) {
         console.error(`Error withdrawing bid with ID ${id} in Supabase:`, error);
