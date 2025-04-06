@@ -53,8 +53,8 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <ThemeProvider>
+    <ThemeProvider>
+      <TooltipProvider>
         <AuthProvider>
           <SearchProvider>
             <SidebarProvider defaultOpen={false}>
@@ -186,8 +186,8 @@ const App = () => (
             </SidebarProvider>
           </SearchProvider>
         </AuthProvider>
-      </ThemeProvider>
-    </TooltipProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
