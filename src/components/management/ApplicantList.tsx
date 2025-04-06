@@ -30,6 +30,14 @@ const ApplicantList: React.FC<ApplicantListProps> = ({
     }
   });
 
+  if (sortedApplicants.length === 0) {
+    return (
+      <div className="p-4 text-center text-white/70 italic">
+        No applicants found for this shift.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
       {sortedApplicants.map((applicant) => (

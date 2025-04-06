@@ -1,17 +1,11 @@
 
-import React from 'react';
-import { format } from 'date-fns';
-import { MessageSquare, Clock, Award, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card';
-import { BidWithEmployee } from './types/bid-types';
-import { generateApplicantTags } from './utils/displayUtils';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, Clock, Award, CheckCircle } from 'lucide-react';
+import { BidWithEmployee, ApplicantTag } from './types/bid-types';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { getApplicantTag, checkApplicantConflicts } from './utils/bidUtils';
 
 interface ApplicantItemProps {
   applicant: BidWithEmployee;
@@ -20,139 +14,147 @@ interface ApplicantItemProps {
   allBids: BidWithEmployee[];
 }
 
-const ApplicantItem: React.FC<ApplicantItemProps> = ({ 
-  applicant, 
-  handleOfferShift,
-  isShiftFilled,
-  allBids
-}) => {
-  const tags = generateApplicantTags(applicant, allBids);
-  const hasConflict = tags.some(tag => tag.text === 'Conflict');
-  const offeredElsewhere = tags.some(tag => tag.text === 'Offered Elsewhere');
+const ApplicantItem: React.FC<ApplicantItemProps> = ({ applicant, handleOfferShift, isShiftFilled, allBids }) => {
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
+  // Get applicant's tag
+  const tag: ApplicantTag | null = getApplicantTag(applicant, allBids);
+  
+  // Check for scheduling conflicts
+  const { hasConflict, conflictReason } = checkApplicantConflicts(applicant, allBids);
+  
+  // Format the created time for display
+  const formatBidTime = () => {
+    try {
+      const bidDate = new Date(applicant.createdAt);
+      return bidDate.toLocaleDateString(undefined, { 
+        month: 'short', day: 'numeric'
+      }) + ' at ' + bidDate.toLocaleTimeString(undefined, { 
+        hour: '2-digit', minute: '2-digit' 
+      });
+    } catch (error) {
+      return 'Unknown date';
+    }
+  };
+  
+  // Get initials from employee name
+  const getInitials = (): string => {
+    if (!applicant.employee) return '??';
+    
+    const name = applicant.employee.name || `${applicant.employee.firstName || ''} ${applicant.employee.lastName || ''}`;
+    
+    if (!name.trim()) return '??';
+    
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  };
+  
+  // Process offer action
+  const handleOfferConfirm = () => {
+    handleOfferShift(applicant);
+    setShowConfirmDialog(false);
+  };
+
   return (
-    <div className="flex items-center justify-between bg-white/5 rounded p-3">
-      <div className="flex items-center">
-        <HoverCard>
-          <HoverCardTrigger asChild>
-            <div className="flex items-center cursor-pointer">
-              <Avatar className="h-8 w-8 mr-3">
-                <AvatarImage src={`https://api.dicebear.com/7.x/personas/svg?seed=${applicant.employee?.name || 'unknown'}`} />
-                <AvatarFallback>{applicant.employee?.name?.[0] || '?'}</AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-medium">{applicant.employee?.name || 'Unknown Employee'}</div>
-                <div className="text-xs text-white/60">
-                  {applicant.employee?.role || 'No role'} • {format(new Date(applicant.createdAt), 'MMM d, h:mm a')}
-                </div>
-              </div>
+    <>
+      <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+        <div className="flex items-center space-x-3">
+          <Avatar>
+            <AvatarImage src={applicant.employee?.avatar} />
+            <AvatarFallback>{getInitials()}</AvatarFallback>
+          </Avatar>
+          
+          <div>
+            <h5 className="font-medium text-white">
+              {applicant.employee?.name || applicant.employee?.firstName || 'Unknown Employee'}
+            </h5>
+            <div className="flex items-center text-xs text-white/70">
+              <Clock className="mr-1 h-3.5 w-3.5" />
+              <span>Applied {formatBidTime()}</span>
             </div>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-80 bg-slate-900 border-white/10">
-            <div className="flex justify-between space-x-4">
-              <Avatar>
-                <AvatarImage src={`https://api.dicebear.com/7.x/personas/svg?seed=${applicant.employee?.name || 'unknown'}`} />
-                <AvatarFallback>{applicant.employee?.name?.[0] || '?'}</AvatarFallback>
-              </Avatar>
-              <div className="space-y-1">
-                <h4 className="text-sm font-semibold">{applicant.employee?.name || 'Unknown Employee'}</h4>
-                <p className="text-sm text-white/70">{applicant.employee?.role || 'No role'}</p>
-                <p className="text-sm text-white/70">{applicant.employee?.email || 'No email'}</p>
-                <div className="flex items-center pt-2">
-                  <Clock className="h-4 w-4 mr-2 text-green-400" />
-                  <span className="text-xs text-white/70">Acceptance Rate: 95%</span>
-                </div>
-              </div>
+            <div className="flex items-center text-xs text-white/70">
+              <Award className="mr-1 h-3.5 w-3.5" />
+              <span>{applicant.employee?.tier || 'N/A'} {applicant.employee?.role && `• ${applicant.employee.role}`}</span>
             </div>
-            <div className="mt-3">
-              <h5 className="text-sm font-medium mb-1">Recent Activity</h5>
-              <div className="text-xs text-white/60 space-y-1">
-                <p>Completed 12 shifts in the last 30 days</p>
-                <p>No-show rate: 0%</p>
-                <p>Average rating: 4.8/5</p>
-              </div>
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      </div>
-      
-      <div className="flex items-center gap-2">
-        {/* Tags */}
-        <div className="flex gap-1">
-          {tags.map((tag, index) => (
-            <div 
-              key={index} 
-              className={`px-2 py-0.5 rounded text-xs text-white ${tag.color}`}
-              title={tag.tooltip}
-            >
-              {tag.text}
-            </div>
-          ))}
+          </div>
         </div>
         
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="h-8 w-8 p-0"
-            >
-              <MessageSquare className="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80 bg-slate-900 border-white/10">
-            <div className="space-y-2">
-              <h4 className="font-medium">Notes</h4>
-              <textarea
-                className="w-full h-24 bg-white/5 border border-white/10 rounded p-2 text-sm"
-                placeholder="Add notes about this applicant..."
-                defaultValue={applicant.notes || ''}
-              />
-              <Button size="sm" className="w-full">Save Notes</Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-        
-        {applicant.status === 'Pending' && !isShiftFilled && (
-          <Button 
-            className={`${hasConflict ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'}`}
+        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+          {tag && (
+            <span className={`text-xs px-2 py-1 rounded-full text-white ${tag.color}`} title={tag.tooltip}>
+              {tag.text}
+            </span>
+          )}
+          
+          <Button
+            variant={hasConflict ? "outline" : "default"}
             size="sm"
-            onClick={() => handleOfferShift(applicant)}
-            disabled={offeredElsewhere}
+            className={hasConflict ? "border-red-500 text-red-500 hover:bg-red-900/20" : ""}
+            disabled={isShiftFilled || applicant.status === 'Approved' || applicant.status === 'Rejected'}
+            onClick={() => setShowConfirmDialog(true)}
           >
             {hasConflict ? (
               <>
-                <AlertTriangle className="mr-1 h-3 w-3" /> Offer With Warning
+                <AlertCircle className="mr-1 h-4 w-4" />
+                Conflict
+              </>
+            ) : applicant.status === 'Approved' ? (
+              <>
+                <CheckCircle className="mr-1 h-4 w-4" />
+                Offered
               </>
             ) : (
               'Offer Shift'
             )}
           </Button>
-        )}
-        
-        {applicant.status === 'Approved' && (
-          <Button 
-            variant="outline"
-            size="sm"
-            className="border-white/10"
-            disabled
-          >
-            Offered
-          </Button>
-        )}
-        
-        {applicant.status === 'Confirmed' && (
-          <Button 
-            variant="outline"
-            size="sm"
-            className="border-green-500/30 text-green-400"
-            disabled
-          >
-            Confirmed
-          </Button>
-        )}
+        </div>
       </div>
-    </div>
+      
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {hasConflict ? 'Schedule Conflict Detected' : 'Confirm Shift Offer'}
+            </DialogTitle>
+            <DialogDescription>
+              {hasConflict ? (
+                <div className="text-red-500 flex items-start mt-2 mb-1">
+                  <AlertCircle className="mr-2 h-5 w-5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Warning: Scheduling Conflict</p>
+                    <p>{conflictReason || 'This employee has a scheduling conflict with this shift.'}</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  Are you sure you want to offer this shift to{' '}
+                  <span className="font-medium">
+                    {applicant.employee?.name || applicant.employee?.firstName || 'this employee'}
+                  </span>?
+                </>
+              )}
+              
+              <p className="mt-2">
+                {hasConflict 
+                  ? 'You can still offer the shift, but the employee may not be able to fulfill it.' 
+                  : 'This will reject all other applications for this shift.'
+                }
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleOfferConfirm} variant={hasConflict ? "destructive" : "default"}>
+              {hasConflict ? 'Offer Anyway' : 'Confirm Offer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

@@ -1,127 +1,213 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Filter, X } from 'lucide-react';
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from '@/components/ui/popover';
-import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import { Slider } from '@/components/ui/slider';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { FilterX, CalendarDays, Filter } from 'lucide-react';
 import { departments, subDepartments, roles } from './types/bid-types';
+import { Switch } from '@/components/ui/switch';
 
-interface BidFilterPopoverProps {
-  departmentFilter: string;
-  setDepartmentFilter: (value: string) => void;
-  subDepartmentFilter: string;
-  setSubDepartmentFilter: (value: string) => void;
-  roleFilter: string;
-  setRoleFilter: (value: string) => void;
+interface FilterOptions {
+  startDate?: Date;
+  endDate?: Date;
+  department?: string;
+  subDepartment?: string;
+  role?: string;
+  status?: string;
+  isAssigned?: boolean;
+  isDraft?: boolean;
+  minHours?: number;
+  maxHours?: number;
+  remunerationLevel?: string;
 }
 
-const BidFilterPopover: React.FC<BidFilterPopoverProps> = ({
-  departmentFilter,
-  setDepartmentFilter,
-  subDepartmentFilter, 
-  setSubDepartmentFilter,
-  roleFilter,
-  setRoleFilter
-}) => {
-  const { toast } = useToast();
+interface BidFilterPopoverProps {
+  filters: FilterOptions;
+  onFilterChange: (filters: FilterOptions) => void;
+  activeFilterCount: number;
+}
 
-  const handleClearFilters = () => {
-    setDepartmentFilter('All Departments');
-    setSubDepartmentFilter('All Sub-departments');
-    setRoleFilter('All Roles');
+const BidFilterPopover: React.FC<BidFilterPopoverProps> = ({ filters, onFilterChange, activeFilterCount }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [localFilters, setLocalFilters] = useState<FilterOptions>(filters);
+  
+  // Status options
+  const statusOptions = ['All Statuses', 'Open', 'Offered', 'Filled', 'Draft'];
+  const remunerationLevels = ['All Levels', 'GOLD', 'SILVER', 'BRONZE'];
+  
+  const handleApplyFilters = () => {
+    onFilterChange(localFilters);
+    setIsOpen(false);
   };
-
-  const handleSavePreset = () => {
-    toast({
-      title: "Filter Preset Saved",
-      description: "Your filter configuration has been saved."
-    });
+  
+  const handleResetFilters = () => {
+    const resetFilters: FilterOptions = {};
+    setLocalFilters(resetFilters);
+    onFilterChange(resetFilters);
+    setIsOpen(false);
   };
-
+  
+  const updateLocalFilter = (key: keyof FilterOptions, value: any) => {
+    setLocalFilters(prev => ({ ...prev, [key]: value }));
+  };
+  
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="border-white/10"
-        >
+        <Button variant="outline" size="sm" className="h-8 border-dashed relative">
           <Filter className="mr-2 h-4 w-4" />
-          More Filters
+          Filters
+          {activeFilterCount > 0 && (
+            <Badge variant="secondary" className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center">
+              {activeFilterCount}
+            </Badge>
+          )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 bg-slate-900 border-white/10">
-        <div className="space-y-4">
-          <div>
-            <h4 className="mb-2 text-sm font-medium">Department</h4>
-            <div className="flex flex-wrap gap-2">
-              {departments.map(dept => (
-                <Button 
-                  key={dept}
-                  variant={departmentFilter === dept ? "outline" : "ghost"} 
-                  size="sm"
-                  className={departmentFilter === dept ? "bg-white/5 border-white/10" : ""}
-                  onClick={() => setDepartmentFilter(dept)}
-                >
-                  {dept}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className="mb-2 text-sm font-medium">Sub-Department</h4>
-            <div className="flex flex-wrap gap-2">
-              {subDepartments.map(subDept => (
-                <Button 
-                  key={subDept}
-                  variant={subDepartmentFilter === subDept ? "outline" : "ghost"} 
-                  size="sm"
-                  className={subDepartmentFilter === subDept ? "bg-white/5 border-white/10" : ""}
-                  onClick={() => setSubDepartmentFilter(subDept)}
-                >
-                  {subDept}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className="mb-2 text-sm font-medium">Role</h4>
-            <div className="flex flex-wrap gap-2">
-              {roles.map(role => (
-                <Button 
-                  key={role}
-                  variant={roleFilter === role ? "outline" : "ghost"} 
-                  size="sm"
-                  className={roleFilter === role ? "bg-white/5 border-white/10" : ""}
-                  onClick={() => setRoleFilter(role)}
-                >
-                  {role}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <div className="flex justify-between pt-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-white/10"
-              onClick={handleClearFilters}
-            >
-              <X className="mr-2 h-4 w-4" />
-              Clear Filters
-            </Button>
-            <Button 
-              size="sm" 
-              className="bg-gradient-to-r from-blue-600 to-purple-600"
-              onClick={handleSavePreset}
-            >
-              Save as Preset
+      <PopoverContent align="end" className="w-80">
+        <div className="grid gap-4">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium leading-none">Filter Shifts</h4>
+            <Button variant="ghost" size="sm" onClick={handleResetFilters} className="h-8 px-2 text-xs">
+              <FilterX className="mr-2 h-3 w-3" />
+              Reset Filters
             </Button>
           </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="date-range">Date Range</Label>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">From</Label>
+                <Calendar
+                  mode="single"
+                  selected={localFilters.startDate}
+                  onSelect={(date) => updateLocalFilter('startDate', date)}
+                  disabled={(date) => localFilters.endDate ? date > localFilters.endDate : false}
+                  initialFocus
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">To</Label>
+                <Calendar
+                  mode="single"
+                  selected={localFilters.endDate}
+                  onSelect={(date) => updateLocalFilter('endDate', date)}
+                  disabled={(date) => localFilters.startDate ? date < localFilters.startDate : false}
+                  initialFocus
+                />
+              </div>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label>Department</Label>
+              <select 
+                className="border p-2 rounded-md" 
+                value={localFilters.department || 'All Departments'}
+                onChange={(e) => updateLocalFilter('department', e.target.value !== 'All Departments' ? e.target.value : undefined)}
+              >
+                {departments.map(dept => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label>Sub-Department</Label>
+              <select 
+                className="border p-2 rounded-md" 
+                value={localFilters.subDepartment || 'All Sub-departments'}
+                onChange={(e) => updateLocalFilter('subDepartment', e.target.value !== 'All Sub-departments' ? e.target.value : undefined)}
+                disabled={!localFilters.department || localFilters.department === 'All Departments'}
+              >
+                {subDepartments.map(subDept => (
+                  <option key={subDept} value={subDept}>{subDept}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label>Role</Label>
+              <select 
+                className="border p-2 rounded-md" 
+                value={localFilters.role || 'All Roles'}
+                onChange={(e) => updateLocalFilter('role', e.target.value !== 'All Roles' ? e.target.value : undefined)}
+              >
+                {roles.map(role => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label>Status</Label>
+              <select 
+                className="border p-2 rounded-md" 
+                value={localFilters.status || 'All Statuses'}
+                onChange={(e) => updateLocalFilter('status', e.target.value !== 'All Statuses' ? e.target.value : undefined)}
+              >
+                {statusOptions.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label>Remuneration Level</Label>
+              <select 
+                className="border p-2 rounded-md" 
+                value={localFilters.remunerationLevel || 'All Levels'}
+                onChange={(e) => updateLocalFilter('remunerationLevel', e.target.value !== 'All Levels' ? e.target.value : undefined)}
+              >
+                {remunerationLevels.map(level => (
+                  <option key={level} value={level}>{level}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label>Net Hours Range (0-12h)</Label>
+              <div className="px-2">
+                <Slider 
+                  defaultValue={[localFilters.minHours || 0, localFilters.maxHours || 12]} 
+                  max={12} 
+                  step={0.5} 
+                  onValueChange={([min, max]) => {
+                    updateLocalFilter('minHours', min);
+                    updateLocalFilter('maxHours', max);
+                  }}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>{localFilters.minHours || 0}h</span>
+                  <span>{localFilters.maxHours || 12}h</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch 
+                checked={!!localFilters.isAssigned} 
+                onCheckedChange={(checked) => updateLocalFilter('isAssigned', checked)}
+                id="assigned-filter"
+              />
+              <Label htmlFor="assigned-filter">Show only assigned shifts</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch 
+                checked={!!localFilters.isDraft} 
+                onCheckedChange={(checked) => updateLocalFilter('isDraft', checked)}
+                id="draft-filter"
+              />
+              <Label htmlFor="draft-filter">Show only draft shifts</Label>
+            </div>
+            
+          </div>
+          
+          <Button onClick={handleApplyFilters}>Apply Filters</Button>
         </div>
       </PopoverContent>
     </Popover>

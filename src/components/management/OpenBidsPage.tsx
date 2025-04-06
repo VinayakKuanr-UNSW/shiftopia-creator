@@ -1,297 +1,373 @@
-
 import React, { useState, useEffect } from 'react';
-import { format, addDays, subDays } from 'date-fns';
-import { useBids } from '@/api/hooks/useBids';
 import { useEmployees } from '@/api/hooks/useEmployees';
-import { Button } from '@/components/ui/button';
-import { 
-  Download, 
-  Plus, 
-  Users,
-  CheckCircle,
-  Calendar as CalendarIcon,
-  List,
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { DateRange } from 'react-day-picker';
-import { BidWithEmployee } from './types/bid-types';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog';
-import CreateBidModal from '@/components/management/CreateBidModal';
-import { useShiftFiltering } from '@/hooks/useShiftFiltering';
+import { useBids } from '@/api/hooks/useBids';
+import { useShifts } from '@/api/hooks/useShifts';
 import { processBidsWithDetails } from './utils/bidUtils';
-import BidFilters from './BidFilters';
-import ShiftDateGroup from './ShiftDateGroup';
+import { BidWithEmployee } from './types/bid-types';
+import BidItem from './BidItem';
+import BidFilterPopover from './BidFilterPopover';
+import BidSortDropdown from './BidSortDropdown';
+import BidCalendarView from './BidCalendarView';
+import { Button } from '@/components/ui/button';
+import { Calendar, LayoutGrid, List } from 'lucide-react';
 
 const OpenBidsPage: React.FC = () => {
-  const { useAllBids, useUpdateBidStatus } = useBids();
-  const { useAllEmployees } = useEmployees();
-  const { data: allBids = [], isLoading, refetch } = useAllBids();
-  const { data: employees = [] } = useAllEmployees();
-  const { toast } = useToast();
-  const { mutate: updateBidStatus } = useUpdateBidStatus();
+  // State for all bids with employee data
+  const [processedBids, setProcessedBids] = useState<BidWithEmployee[]>([]);
   
-  const initialDateRange: DateRange = {
-    from: subDays(new Date(), 7),
-    to: addDays(new Date(), 30)
-  };
+  // State for expanded items
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   
-  const [bidToOffer, setBidToOffer] = useState<BidWithEmployee | null>(null);
-  const [offerDialogOpen, setOfferDialogOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [sortByScore, setSortByScore] = useState(false);
+  // State for selected items (not needed anymore but keeping for compatibility)
+  const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
+  
+  // State for sort option
+  const [sortOption, setSortOption] = useState({
+    id: 'date',
+    name: 'Date',
+    value: 'date' as keyof BidWithEmployee['shiftDetails'] | 'timestamp' | 'suitabilityScore',
+    direction: 'asc' as 'asc' | 'desc'
+  });
+  
+  // State for filter options
+  const [filterOptions, setFilterOptions] = useState<any>({});
+  
+  // State for view mode (list or calendar)
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   
-  const bidsWithDetails = processBidsWithDetails(allBids, employees);
+  // State for calendar selected date
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   
-  const {
-    searchQuery,
-    setSearchQuery,
-    statusFilter,
-    setStatusFilter,
-    departmentFilter,
-    setDepartmentFilter,
-    subDepartmentFilter,
-    setSubDepartmentFilter,
-    roleFilter,
-    setRoleFilter,
-    sortOption,
-    setSortOption,
-    dateRange,
-    setDateRange,
-    showDrafts,
-    setShowDrafts,
-    showUnassigned,
-    setShowUnassigned,
-    hoursRange,
-    setHoursRange,
-    remunerationLevelFilter,
-    setRemunerationLevelFilter,
-    filteredBids,
-    sortedBids,
-    groupedBids,
-    sortedDates,
-  } = useShiftFiltering(bidsWithDetails, initialDateRange);
+  // Get employees and bids from our hooks
+  const { useAllEmployees } = useEmployees();
+  const { data: employees = [] } = useAllEmployees();
   
-  const handleOfferShift = (bid: BidWithEmployee) => {
-    setBidToOffer(bid);
-    setOfferDialogOpen(true);
-  };
+  const { useAllBids, useUpdateBidStatus } = useBids();
+  const { data: bids = [], isLoading: bidsLoading } = useAllBids();
+  const { mutateAsync: updateBidStatus } = useUpdateBidStatus();
   
-  const confirmOfferShift = () => {
-    if (!bidToOffer) return;
-    
-    updateBidStatus(
-      { id: bidToOffer.id, status: 'Approved' },
-      {
-        onSuccess: () => {
-          toast({
-            title: "Shift Offered",
-            description: `Shift has been offered to ${bidToOffer.employee?.name || 'employee'}.`,
-          });
-          refetch();
-        },
-        onError: () => {
-          toast({
-            title: "Error",
-            description: "Failed to offer shift.",
-            variant: "destructive",
-          });
+  const { useUpdateShiftStatus } = useShifts();
+  const { mutateAsync: updateShiftStatus } = useUpdateShiftStatus();
+  
+  // Process bids on load
+  useEffect(() => {
+    const fetchAndProcessBids = async () => {
+      if (!bidsLoading && bids.length > 0 && employees.length > 0) {
+        try {
+          const processed = await processBidsWithDetails(bids, employees);
+          setProcessedBids(processed);
+        } catch (error) {
+          console.error('Error processing bids:', error);
         }
       }
-    );
+    };
     
-    setOfferDialogOpen(false);
-    setBidToOffer(null);
-  };
+    fetchAndProcessBids();
+  }, [bids, employees, bidsLoading]);
   
-  const handleExport = () => {
-    toast({
-      title: "Export Started",
-      description: "Your data is being exported to CSV.",
-    });
-    
-    setTimeout(() => {
-      toast({
-        title: "Export Complete",
-        description: "Your data has been exported successfully.",
-      });
-    }, 1500);
-  };
-  
-  return (
-    <div className="glass-panel p-6" style={{ animation: 'none' }}>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-1">Open Bids</h1>
-        <p className="text-white/60">Manage shift bidding process and assignments.</p>
-      </div>
-      
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div className="flex gap-2">
-          <Button 
-            variant={viewMode === 'list' ? "default" : "outline"} 
-            size="sm" 
-            className={viewMode === 'list' ? "bg-purple-600" : "border-white/10"}
-            onClick={() => setViewMode('list')}
-          >
-            <List className="mr-2 h-4 w-4" />
-            List View
-          </Button>
-          <Button 
-            variant={viewMode === 'calendar' ? "default" : "outline"} 
-            size="sm" 
-            className={viewMode === 'calendar' ? "bg-purple-600" : "border-white/10"}
-            onClick={() => setViewMode('calendar')}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            Calendar View
-          </Button>
-        </div>
+  // Load filter state from localStorage
+  useEffect(() => {
+    const savedFilters = localStorage.getItem('bidFilters');
+    if (savedFilters) {
+      try {
+        const parsedFilters = JSON.parse(savedFilters);
         
-        <div className="flex gap-2 ml-auto">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="border-white/10"
-            onClick={() => setSortByScore(!sortByScore)}
-          >
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Sort by: {sortByScore ? 'Suitability Score' : 'Timestamp'}
-          </Button>
+        // Convert date strings back to Date objects
+        if (parsedFilters.startDate) {
+          parsedFilters.startDate = new Date(parsedFilters.startDate);
+        }
+        if (parsedFilters.endDate) {
+          parsedFilters.endDate = new Date(parsedFilters.endDate);
+        }
+        
+        setFilterOptions(parsedFilters);
+      } catch (error) {
+        console.error('Error loading saved filters:', error);
+      }
+    }
+    
+    const savedSortOption = localStorage.getItem('bidSortOption');
+    if (savedSortOption) {
+      try {
+        setSortOption(JSON.parse(savedSortOption));
+      } catch (error) {
+        console.error('Error loading saved sort option:', error);
+      }
+    }
+    
+    const savedViewMode = localStorage.getItem('bidViewMode');
+    if (savedViewMode === 'list' || savedViewMode === 'calendar') {
+      setViewMode(savedViewMode);
+    }
+  }, []);
+  
+  // Save filter state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('bidFilters', JSON.stringify(filterOptions));
+  }, [filterOptions]);
+  
+  // Save sort option to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('bidSortOption', JSON.stringify(sortOption));
+  }, [sortOption]);
+  
+  // Save view mode to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('bidViewMode', viewMode);
+  }, [viewMode]);
+  
+  // Filter bids
+  const filteredBids = processedBids.filter(bid => {
+    const { 
+      startDate, endDate, department, subDepartment, role, 
+      status, isAssigned, isDraft, minHours, maxHours, remunerationLevel 
+    } = filterOptions;
+    
+    // Date filter
+    if (startDate && bid.shiftDetails?.date && new Date(bid.shiftDetails.date) < startDate) {
+      return false;
+    }
+    
+    if (endDate && bid.shiftDetails?.date && new Date(bid.shiftDetails.date) > endDate) {
+      return false;
+    }
+    
+    // Department filter
+    if (department && bid.shiftDetails?.department !== department) {
+      return false;
+    }
+    
+    // Sub-department filter
+    if (subDepartment && bid.shiftDetails?.subDepartment !== subDepartment) {
+      return false;
+    }
+    
+    // Role filter
+    if (role && bid.shiftDetails?.role !== role) {
+      return false;
+    }
+    
+    // Status filter
+    if (status && bid.shiftDetails?.status !== status) {
+      return false;
+    }
+    
+    // Assigned filter
+    if (isAssigned !== undefined) {
+      const hasAssignee = !!bid.shiftDetails?.assignedEmployee;
+      if (isAssigned !== hasAssignee) {
+        return false;
+      }
+    }
+    
+    // Draft filter
+    if (isDraft !== undefined && bid.shiftDetails?.isDraft !== isDraft) {
+      return false;
+    }
+    
+    // Hours filter
+    if (minHours !== undefined || maxHours !== undefined) {
+      const hours = Number(bid.shiftDetails?.netLength || 0);
+      if ((minHours !== undefined && hours < minHours) || 
+          (maxHours !== undefined && hours > maxHours)) {
+        return false;
+      }
+    }
+    
+    // Remuneration level filter
+    if (remunerationLevel && bid.shiftDetails?.remunerationLevel !== remunerationLevel) {
+      return false;
+    }
+    
+    // Calendar date filter
+    if (selectedDate && viewMode === 'calendar') {
+      const selectedDateStr = selectedDate.toISOString().split('T')[0];
+      if (bid.shiftDetails?.date !== selectedDateStr) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+  
+  // Sort bids
+  const sortedBids = [...filteredBids].sort((a, b) => {
+    const { value, direction } = sortOption;
+    const modifier = direction === 'asc' ? 1 : -1;
+    
+    if (value === 'timestamp') {
+      // Sort by timestamp
+      return modifier * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    } else if (value === 'suitabilityScore') {
+      // Sort by suitability score (using tier as a proxy)
+      const scoreA = Number(a.employee?.tier || 0);
+      const scoreB = Number(b.employee?.tier || 0);
+      return modifier * (scoreB - scoreA);
+    } else if (a.shiftDetails && b.shiftDetails) {
+      // Sort by shift details
+      const aValue = a.shiftDetails[value];
+      const bValue = b.shiftDetails[value];
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return modifier * aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return modifier * (aValue - bValue);
+      } else if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+        return modifier * (aValue === bValue ? 0 : aValue ? 1 : -1);
+      }
+    }
+    
+    return 0;
+  });
+  
+  // Count active filters
+  const activeFilterCount = Object.values(filterOptions).filter(value => 
+    value !== undefined && value !== null && value !== ''
+  ).length + (selectedDate ? 1 : 0);
+  
+  // Handle offer shift
+  const handleOfferShift = async (bid: BidWithEmployee) => {
+    try {
+      // Update bid status to Approved
+      await updateBidStatus(bid.id, 'Approved');
+      
+      // Also update shift status to Offered/Filled and assign employee
+      if (bid.shiftDetails) {
+        await updateShiftStatus({
+          id: bid.shiftDetails.id,
+          status: 'Filled',
+          assignedEmployee: bid.employeeId
+        });
+      }
+      
+      // Refresh the data
+      const processed = await processBidsWithDetails(bids, employees);
+      setProcessedBids(processed);
+    } catch (error) {
+      console.error('Error offering shift:', error);
+      // We would show an error toast here in a real app
+    }
+  };
+  
+  // Group bids by shift ID
+  const bidsByShift: Record<string, BidWithEmployee[]> = {};
+  sortedBids.forEach(bid => {
+    if (!bidsByShift[bid.shiftId]) {
+      bidsByShift[bid.shiftId] = [];
+    }
+    bidsByShift[bid.shiftId].push(bid);
+  });
+  
+  // Get unique shift IDs from processed bids
+  const shiftIds = [...new Set(sortedBids.map(bid => bid.shiftId))];
+  
+  // Get one representative bid for each shift
+  const shiftBids = shiftIds.map(shiftId => 
+    sortedBids.find(bid => bid.shiftId === shiftId)
+  ).filter(Boolean) as BidWithEmployee[];
+  
+  // Toggle expanded state for a bid
+  const toggleExpand = (id: string) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+  
+  // Toggle selected state for a bid
+  const toggleSelect = (id: string) => {
+    setSelectedItems(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+  
+  // Loading state
+  if (bidsLoading) {
+    return (
+      <div className="p-6">
+        <h2 className="text-2xl mb-4">Open Bids</h2>
+        <div className="flex justify-center p-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold mb-2 sm:mb-0">Open Bids</h2>
+        
+        <div className="flex items-center space-x-2">
+          <div className="flex border rounded-md overflow-hidden">
+            <Button
+              variant={viewMode === 'list' ? "default" : "ghost"}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4 mr-1" />
+              List
+            </Button>
+            <Button
+              variant={viewMode === 'calendar' ? "default" : "ghost"}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode('calendar')}
+            >
+              <Calendar className="h-4 w-4 mr-1" />
+              Calendar
+            </Button>
+          </div>
           
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="border-white/10"
-            onClick={handleExport}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          
-          <Button 
-            size="sm" 
-            className="bg-gradient-to-r from-blue-600 to-purple-600"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create New Bid
-          </Button>
+          <BidSortDropdown currentSort={sortOption} onSortChange={setSortOption} />
+          <BidFilterPopover 
+            filters={filterOptions} 
+            onFilterChange={setFilterOptions} 
+            activeFilterCount={activeFilterCount}
+          />
         </div>
       </div>
       
-      <BidFilters
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        departmentFilter={departmentFilter}
-        setDepartmentFilter={setDepartmentFilter}
-        subDepartmentFilter={subDepartmentFilter}
-        setSubDepartmentFilter={setSubDepartmentFilter}
-        roleFilter={roleFilter}
-        setRoleFilter={setRoleFilter}
-        sortOption={sortOption}
-        setSortOption={setSortOption}
-        dateRange={dateRange}
-        setDateRange={setDateRange}
-        showDrafts={showDrafts}
-        setShowDrafts={setShowDrafts}
-        showUnassigned={showUnassigned}
-        setShowUnassigned={setShowUnassigned}
-        hoursRange={hoursRange}
-        setHoursRange={setHoursRange}
-        remunerationLevelFilter={remunerationLevelFilter}
-        setRemunerationLevelFilter={setRemunerationLevelFilter}
-      />
-      
-      {sortedDates.length === 0 && !isLoading && (
-        <div className="text-center py-12">
-          <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium">No shifts found</h3>
-          <p className="text-white/60 mt-2">
-            No shifts match your search criteria. Try adjusting your filters.
+      {filteredBids.length === 0 ? (
+        <div className="bg-gray-800 rounded-lg p-10 text-center">
+          <h3 className="text-xl font-medium mb-2">No matching shifts found</h3>
+          <p className="text-white/70">
+            {processedBids.length === 0 
+              ? "No bids have been created yet." 
+              : "Try adjusting your filters to see more results."}
           </p>
         </div>
-      )}
-      
-      {isLoading && (
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-        </div>
-      )}
-      
-      {viewMode === 'list' && (
-        <div className="space-y-4">
-          {sortedDates.map(date => (
-            <ShiftDateGroup
-              key={date}
-              date={date}
-              bids={groupedBids[date]}
-              allBids={filteredBids}
-              handleOfferShift={handleOfferShift}
-              sortByScore={sortByScore}
-            />
-          ))}
-        </div>
-      )}
-      
-      {viewMode === 'calendar' && (
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4 h-[600px]">
-          <div className="text-center py-12">
-            <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium">Calendar View</h3>
-            <p className="text-white/60 mt-2">
-              Calendar view is coming soon. Please use List view for now.
-            </p>
+      ) : viewMode === 'list' ? (
+        <div>
+          <p className="mb-4 text-white/70">
+            Showing {filteredBids.length} of {processedBids.length} total shifts
+          </p>
+          
+          <div className="space-y-2">
+            {shiftBids.map((bid) => (
+              <BidItem
+                key={bid.shiftId}
+                bid={bid}
+                isExpanded={!!expandedItems[bid.shiftId]}
+                toggleExpand={() => toggleExpand(bid.shiftId)}
+                isSelected={!!selectedItems[bid.id]}
+                toggleSelect={() => toggleSelect(bid.id)}
+                applicants={bidsByShift[bid.shiftId] || []}
+                handleOfferShift={handleOfferShift}
+                sortByScore={sortOption.value === 'suitabilityScore'}
+              />
+            ))}
           </div>
         </div>
+      ) : (
+        <BidCalendarView 
+          bids={filteredBids}
+          onDateSelect={setSelectedDate}
+          selectedDate={selectedDate}
+        />
       )}
-      
-      <AlertDialog open={offerDialogOpen} onOpenChange={setOfferDialogOpen}>
-        <AlertDialogContent className="bg-slate-900 text-white border-white/10">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Shift Offer</AlertDialogTitle>
-            <AlertDialogDescription className="text-white/70">
-              Are you sure you want to offer this shift to {bidToOffer?.employee?.name || 'this employee'}?
-              {bidToOffer?.shiftDetails && (
-                <div className="mt-4 bg-white/5 p-3 rounded-md">
-                  <p className="mb-1"><strong>{bidToOffer.shiftDetails.role}</strong></p>
-                  <p className="mb-1">{bidToOffer.shiftDetails.department} - {bidToOffer.shiftDetails.subDepartment}</p>
-                  <p className="mb-1">{bidToOffer.shiftDetails.date}</p>
-                  <p>{bidToOffer.shiftDetails.startTime} - {bidToOffer.shiftDetails.endTime}</p>
-                </div>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/5 text-white hover:bg-white/10 border-white/10">Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-green-600 hover:bg-green-700" onClick={confirmOfferShift}>
-              Confirm Offer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      
-      <CreateBidModal 
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onBidCreated={() => {
-          refetch();
-          toast({
-            title: "Bid Created",
-            description: "The new bid has been successfully created."
-          });
-        }}
-      />
     </div>
   );
 };
