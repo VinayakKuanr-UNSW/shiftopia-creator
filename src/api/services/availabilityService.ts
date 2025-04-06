@@ -175,6 +175,27 @@ export const availabilityService = {
     return Promise.resolve(createdAvailabilities);
   },
   
+  // Delete availability for a specific date
+  deleteAvailability: async (
+    employeeId: string,
+    date: Date
+  ): Promise<boolean> => {
+    const dateKey = format(date, 'yyyy-MM-dd');
+    const monthKey = `${employeeId}-${date.getFullYear()}-${date.getMonth() + 1}`;
+    
+    if (!MOCK_AVAILABILITIES[monthKey]) {
+      return Promise.resolve(false);
+    }
+    
+    const initialLength = MOCK_AVAILABILITIES[monthKey].length;
+    MOCK_AVAILABILITIES[monthKey] = MOCK_AVAILABILITIES[monthKey].filter(
+      a => a.date !== dateKey
+    );
+    
+    const wasDeleted = MOCK_AVAILABILITIES[monthKey].length < initialLength;
+    return Promise.resolve(wasDeleted);
+  },
+  
   // Apply a preset to a date range
   applyPreset: async (
     employeeId: string,
@@ -228,5 +249,12 @@ export const availabilityService = {
     
     PRESETS.push(newPreset);
     return Promise.resolve(newPreset);
+  },
+  
+  // Set cutoff date (for manager use)
+  setCutoffDate: async (date: Date): Promise<boolean> => {
+    // In a real implementation, this would save to a database
+    // For the mock version, we just return success
+    return Promise.resolve(true);
   }
 };

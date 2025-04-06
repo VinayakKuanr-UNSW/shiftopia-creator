@@ -1,12 +1,18 @@
 
 import React from 'react';
-import { format, eachDayOfInterval, startOfMonth, endOfMonth, isSameDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { Trash2, AlertTriangle } from 'lucide-react';
 import { useAvailabilities } from '@/hooks/useAvailabilities';
-import { Separator } from '@/components/ui/separator';
-import { AvailabilityStatus } from '@/api/models/types';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from '@/lib/utils';
 
 interface MonthListViewProps {
   onSelectDate: (date: Date) => void;
@@ -15,116 +21,129 @@ interface MonthListViewProps {
 export function MonthListView({ onSelectDate }: MonthListViewProps) {
   const {
     selectedMonth,
-    goToPreviousMonth,
-    goToNextMonth,
+    monthlyAvailabilities,
     getDayStatusColor,
-    getDayAvailability,
+    deleteAvailability,
+    isDateLocked
   } = useAvailabilities();
-
-  const daysInMonth = React.useMemo(() => {
-    const start = startOfMonth(selectedMonth);
-    const end = endOfMonth(selectedMonth);
-    return eachDayOfInterval({ start, end });
-  }, [selectedMonth]);
-
-  return (
-    <div className="w-full space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold flex items-center">
-          <CalendarDays className="h-6 w-6 mr-2" />
-          {format(selectedMonth, 'MMMM yyyy')}
-        </h2>
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToPreviousMonth}
-            aria-label="Previous month"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToNextMonth}
-            aria-label="Next month"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+  
+  const { toast } = useToast();
+  
+  const sortedAvailabilities = React.useMemo(() => {
+    return [...monthlyAvailabilities].sort((a, b) => {
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+  }, [monthlyAvailabilities]);
+  
+  const handleDelete = async (dateStr: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    const date = new Date(dateStr);
+    
+    if (isDateLocked(date)) {
+      toast({
+        title: "Cannot Delete",
+        description: "This date is locked and cannot be modified.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const success = await deleteAvailability(date);
+    if (success) {
+      toast({
+        title: "Availability Deleted",
+        description: `Availability for ${format(date, 'MMMM dd, yyyy')} has been removed.`,
+      });
+    }
+  };
+  
+  if (sortedAvailabilities.length === 0) {
+    return (
+      <div className="p-8 text-center">
+        <h3 className="text-lg font-medium">No availabilities set for {format(selectedMonth, 'MMMM yyyy')}</h3>
+        <p className="text-muted-foreground mt-2">
+          Click the "Add Availability" button to set your availability.
+        </p>
       </div>
-
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="p-4">
-          <ul className="space-y-1">
-            {daysInMonth.map((day) => {
-              const availability = getDayAvailability(day);
-              const isToday = isSameDay(day, new Date());
-              
-              return (
-                <li key={day.toString()}>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start p-3 h-auto",
-                      isToday ? "bg-muted/50" : ""
-                    )}
-                    onClick={() => onSelectDate(day)}
-                  >
-                    <div className="flex items-center w-full">
-                      <div 
-                        className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center mr-4",
-                          isToday ? "bg-primary text-primary-foreground" : "bg-muted/30"
-                        )}
-                      >
-                        <span className={cn("text-lg", isToday ? "font-bold" : "")}>
-                          {format(day, 'd')}
-                        </span>
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center">
-                          <span className={cn("font-medium", isToday ? "text-primary" : "")}>
-                            {format(day, 'EEEE')}
-                          </span>
-                          <span className="text-xs text-muted-foreground ml-2">
-                            {format(day, 'MMMM d, yyyy')}
-                          </span>
-                        </div>
-                        
-                        {availability ? (
-                          <div className="flex items-center mt-1">
-                            <div
-                              className={cn(
-                                "h-3 w-3 rounded-full mr-2",
-                                getDayStatusColor(availability.status as AvailabilityStatus)
-                              )}
-                            />
-                            <span className="text-sm">
-                              {availability.status}
-                              {availability.timeSlots.length > 0 && (
-                                <span className="text-muted-foreground ml-2">
-                                  ({availability.timeSlots.length} time slot{availability.timeSlots.length !== 1 ? 's' : ''})
-                                </span>
-                              )}
-                            </span>
+    );
+  }
+  
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">
+        Availabilities for {format(selectedMonth, 'MMMM yyyy')}
+      </h2>
+      
+      <div className="space-y-2">
+        {sortedAvailabilities.map((availability) => {
+          const date = new Date(availability.date);
+          const locked = isDateLocked(date);
+          
+          return (
+            <div 
+              key={availability.date} 
+              className={cn(
+                "p-4 border rounded-lg bg-card flex justify-between items-center cursor-pointer hover:bg-muted/30 transition-colors group",
+                locked && "opacity-60"
+              )}
+              onClick={() => !locked && onSelectDate(date)}
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <h4 className="font-medium">{format(date, 'EEEE, MMMM d, yyyy')}</h4>
+                  
+                  {locked && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-amber-500">
+                            <AlertTriangle size={16} />
                           </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground mt-1 flex items-center">
-                            <div className="h-3 w-3 rounded-full bg-gray-300 mr-2" />
-                            Not set
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Button>
-                  <Separator className="mt-1" />
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Date locked - past cutoff</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+                
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Badge className={cn(
+                    "font-normal",
+                    getDayStatusColor(availability.status)
+                  )}>
+                    {availability.status}
+                  </Badge>
+                  
+                  {availability.timeSlots && availability.timeSlots.map((slot, i) => (
+                    <Badge key={i} variant="outline">
+                      {slot.startTime} - {slot.endTime}
+                    </Badge>
+                  ))}
+                </div>
+                
+                {availability.notes && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {availability.notes}
+                  </p>
+                )}
+              </div>
+              
+              {!locked && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => handleDelete(availability.date, e)}
+                >
+                  <Trash2 size={18} />
+                </Button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

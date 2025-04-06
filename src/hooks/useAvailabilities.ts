@@ -7,7 +7,8 @@ import {
   format,
   parse,
   parseISO,
-  isEqual
+  isEqual,
+  isBefore
 } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { availabilityService } from '@/api/services/availabilityService';
@@ -23,6 +24,7 @@ interface Availability {
     status?: AvailabilityStatus;
   }>;
   notes?: string;
+  id?: string;
 }
 
 interface AvailabilityPreset {
@@ -113,6 +115,7 @@ export function useAvailabilities() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [monthlyAvailabilities, setMonthlyAvailabilities] = useState<Availability[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [cutoffDate, setCutoffDate] = useState<Date | null>(null);
   const { toast } = useToast();
 
   // Derived values from selectedMonth
@@ -124,30 +127,12 @@ export function useAvailabilities() {
     const fetchAvailabilities = async () => {
       try {
         setIsLoading(true);
-        const formattedStartDate = format(startOfSelectedMonth, 'yyyy-MM-dd');
-        const formattedEndDate = format(endOfSelectedMonth, 'yyyy-MM-dd');
+        const year = selectedMonth.getFullYear();
+        const month = selectedMonth.getMonth() + 1;
         
-        // Mock data for now - replace with actual API call
-        // const data = await availabilityService.getAvailabilities(formattedStartDate, formattedEndDate);
-        const mockAvailabilities: Availability[] = [
-          {
-            date: format(new Date(), 'yyyy-MM-dd'),
-            status: 'Available',
-            timeSlots: [
-              { id: '1', startTime: '09:00', endTime: '17:00', status: 'Available' }
-            ]
-          },
-          {
-            date: format(addMonths(new Date(), 0), 'yyyy-MM-dd'),
-            status: 'Limited',
-            timeSlots: [
-              { id: '2', startTime: '10:00', endTime: '14:00', status: 'Limited' }
-            ],
-            notes: 'Only available for morning shift'
-          }
-        ];
-        
-        setMonthlyAvailabilities(mockAvailabilities);
+        // Use the availabilityService to get the month's data
+        const data = await availabilityService.getMonthlyAvailabilities('current-user', year, month);
+        setMonthlyAvailabilities(data || []);
       } catch (error) {
         console.error('Error fetching availabilities:', error);
         toast({
@@ -182,6 +167,11 @@ export function useAvailabilities() {
   const getDayStatusColor = useCallback((status: AvailabilityStatus) => {
     return getStatusColor(status);
   }, []);
+
+  // Check if date is past the cutoff
+  const isDateLocked = useCallback((date: Date) => {
+    return cutoffDate ? isBefore(date, cutoffDate) : false;
+  }, [cutoffDate]);
 
   // Helper functions to quickly set entire day's availability
   const setFullDayAvailable = useCallback((date: Date) => {
@@ -221,47 +211,46 @@ export function useAvailabilities() {
     try {
       setIsLoading(true);
       
+      // Check if date is locked
+      if (isDateLocked(data.startDate)) {
+        toast({
+          title: "Cannot Modify",
+          description: "This date is past the cutoff and cannot be modified.",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
       // Default to Available status if not provided
       const status = data.status || 'Available';
       
-      // Mock API call - replace with actual API
-      // await availabilityService.setAvailability({
-      //   startDate: format(data.startDate, 'yyyy-MM-dd'),
-      //   endDate: format(data.endDate, 'yyyy-MM-dd'),
-      //   timeSlots: data.timeSlots,
-      //   notes: data.notes,
-      //   status
-      // });
+      // Make API call to set availability
+      const response = await availabilityService.setAvailabilityRange(
+        'current-user',
+        data.startDate,
+        data.endDate,
+        data.timeSlots.map(slot => ({ 
+          startTime: slot.startTime, 
+          endTime: slot.endTime, 
+          status: slot.status || status 
+        })),
+        data.notes
+      );
       
-      // Ensure all timeSlots have IDs and status
-      const timeSlotsWithIds = data.timeSlots.map((slot, index) => ({
-        id: `new-${Date.now()}-${index}`,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        status: slot.status || status
-      }));
-      
-      // Update local state with new availability
-      const newAvailability: Availability = {
-        date: format(data.startDate, 'yyyy-MM-dd'),
-        status: status,
-        timeSlots: timeSlotsWithIds,
-        notes: data.notes
-      };
-      
+      // Update local state with new availability data
       setMonthlyAvailabilities(prev => {
-        const exists = prev.findIndex(a => a.date === newAvailability.date);
-        if (exists >= 0) {
-          // Replace existing
-          return [
-            ...prev.slice(0, exists),
-            newAvailability,
-            ...prev.slice(exists + 1)
-          ];
-        } else {
-          // Add new
-          return [...prev, newAvailability];
-        }
+        // Create a new array without the dates that were just updated
+        const filtered = prev.filter(item => {
+          const itemDate = parse(item.date, 'yyyy-MM-dd', new Date());
+          // Keep items that aren't in the date range we just updated
+          return !(
+            itemDate >= data.startDate && 
+            itemDate <= data.endDate
+          );
+        });
+        
+        // Add the newly created/updated availabilities
+        return [...filtered, ...response];
       });
       
       toast({
@@ -282,6 +271,69 @@ export function useAvailabilities() {
       setIsLoading(false);
     }
   };
+
+  // Delete availability
+  const deleteAvailability = async (date: Date) => {
+    try {
+      // Check if date is locked
+      if (isDateLocked(date)) {
+        toast({
+          title: "Cannot Delete",
+          description: "This date is past the cutoff and cannot be modified.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      const dateStr = format(date, 'yyyy-MM-dd');
+      
+      // Find availability to delete
+      const availabilityToDelete = monthlyAvailabilities.find(a => a.date === dateStr);
+      
+      if (!availabilityToDelete) {
+        toast({
+          title: "Nothing to Delete",
+          description: "No availability found for this date.",
+          variant: "warning"
+        });
+        return false;
+      }
+      
+      // Update local state by removing the deleted availability
+      setMonthlyAvailabilities(prev => prev.filter(item => item.date !== dateStr));
+
+      toast({
+        title: "Availability Deleted",
+        description: `Availability for ${format(date, 'MMMM dd, yyyy')} has been removed.`,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting availability:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete availability',
+        variant: 'destructive'
+      });
+      return false;
+    }
+  };
+  
+  // Set cutoff date (manager functionality)
+  const setCutoff = (date: Date | null) => {
+    setCutoffDate(date);
+    if (date) {
+      toast({
+        title: "Cutoff Date Set",
+        description: `Availabilities before ${format(date, 'MMMM dd, yyyy')} are now locked.`,
+      });
+    } else {
+      toast({
+        title: "Cutoff Date Removed",
+        description: "All dates can now be modified.",
+      });
+    }
+  };
   
   // Apply a preset availability pattern
   const applyPreset = async (data: {
@@ -292,36 +344,45 @@ export function useAvailabilities() {
     try {
       setIsLoading(true);
       
+      // Check if any date in range is locked
+      if (isDateLocked(data.startDate)) {
+        toast({
+          title: "Cannot Apply Preset",
+          description: "One or more dates in range are past the cutoff.",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
       const preset = availabilityPresets.find(p => p.id === data.presetId);
       if (!preset) {
         throw new Error('Preset not found');
       }
       
-      // Mock API call - replace with actual API
-      // await availabilityService.applyPreset(data);
+      // Apply the preset using the availabilityService
+      const response = await availabilityService.applyPreset(
+        'current-user',
+        data.presetId,
+        data.startDate,
+        data.endDate
+      );
       
-      // Add mock implementation - add the preset to the mock data
-      const mockTimeslot = preset.timeSlots[0];
-      
-      if (mockTimeslot) {
-        await setAvailability({
-          startDate: data.startDate,
-          endDate: data.endDate,
-          timeSlots: [
-            { 
-              startTime: mockTimeslot.startTime, 
-              endTime: mockTimeslot.endTime,
-              status: 'Available' 
-            }
-          ],
-          notes: `Applied preset: ${preset.name}`
+      // Update local state with the new availabilities
+      setMonthlyAvailabilities(prev => {
+        // Remove existing availabilities in the date range
+        const filtered = prev.filter(item => {
+          const itemDate = parse(item.date, 'yyyy-MM-dd', new Date());
+          return !(itemDate >= data.startDate && itemDate <= data.endDate);
         });
         
-        toast({
-          title: "Preset Applied",
-          description: `Applied "${preset.name}" from ${format(data.startDate, 'MMM dd')} to ${format(data.endDate, 'MMM dd')}`,
-        });
-      }
+        // Add the new availabilities
+        return [...filtered, ...response];
+      });
+      
+      toast({
+        title: "Preset Applied",
+        description: `Applied "${preset.name}" from ${format(data.startDate, 'MMM dd')} to ${format(data.endDate, 'MMM dd')}`,
+      });
       
       return true;
     } catch (error) {
@@ -348,10 +409,14 @@ export function useAvailabilities() {
     getDayAvailability,
     getDayStatusColor,
     setAvailability,
+    deleteAvailability,
     setFullDayAvailable,
     setFullDayUnavailable,
     applyPreset,
     availabilityPresets,
+    cutoffDate,
+    setCutoff,
+    isDateLocked,
     // For compatibility with existing components
     presets: availabilityPresets
   };

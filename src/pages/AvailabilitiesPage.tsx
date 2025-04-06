@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format, addMonths, subMonths } from 'date-fns';
+import { format, addMonths, subMonths, addDays } from 'date-fns';
 import { useAvailabilities } from '@/hooks/useAvailabilities';
 import { AvailabilityCalendar } from '@/components/availability/AvailabilityCalendar';
 import { AvailabilityForm } from '@/components/availability/AvailabilityForm';
@@ -11,22 +11,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MonthListView } from '@/components/availability/MonthListView';
 import { PresetSelector } from '@/components/availability/PresetSelector';
 import { useToast } from '@/hooks/use-toast';
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, List } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, List, Lock, Unlock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 const AvailabilitiesPage = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
-  const { user } = useAuth();
+  const [isCutoffPickerOpen, setCutoffPickerOpen] = useState(false);
+  
+  const { user, hasPermission } = useAuth();
   const { toast } = useToast();
+  const isManager = hasPermission?.('manage_availability') || false;
 
   const {
     monthlyAvailabilities,
     isLoading,
     setAvailability,
     applyPreset,
+    setCutoff,
+    cutoffDate
   } = useAvailabilities();
 
   const handleNextMonth = () => {
@@ -68,6 +79,15 @@ const AvailabilitiesPage = () => {
     setSelectedDate(date);
     setIsFormOpen(true);
   };
+  
+  const handleSetCutoffDate = (date: Date | undefined) => {
+    setCutoff(date || null);
+    setCutoffPickerOpen(false);
+  };
+  
+  const handleRemoveCutoff = () => {
+    setCutoff(null);
+  };
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden">
@@ -106,7 +126,7 @@ const AvailabilitiesPage = () => {
           </div>
         </div>
         
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center">
             <Button variant="outline" size="icon" onClick={handlePrevMonth}>
               <ChevronLeft className="h-4 w-4" />
@@ -119,16 +139,51 @@ const AvailabilitiesPage = () => {
             </Button>
           </div>
           
-          <PresetSelector onApplyPreset={handleApplyPreset} />
+          <div className="flex items-center gap-2">
+            {isManager && (
+              <>
+                <Popover open={isCutoffPickerOpen} onOpenChange={setCutoffPickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <Lock className="h-4 w-4" />
+                      {cutoffDate ? `Cutoff: ${format(cutoffDate, 'MMM dd')}` : 'Set Cutoff Date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={cutoffDate || undefined}
+                      onSelect={handleSetCutoffDate}
+                      initialFocus
+                    />
+                    {cutoffDate && (
+                      <div className="p-2 border-t border-border flex justify-end">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={handleRemoveCutoff}
+                        >
+                          <Unlock className="h-4 w-4 mr-2" />
+                          Remove Cutoff
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
+              </>
+            )}
+            
+            <PresetSelector onApplyPreset={handleApplyPreset} />
+          </div>
         </div>
       </div>
       
       {isLoading ? (
         <div className="flex-grow p-4 grid place-items-center">
-          <Skeleton className="h-96 w-full" />
+          <Skeleton className="h-[600px] w-full" />
         </div>
       ) : (
-        <div className="flex-grow overflow-auto">
+        <div className="flex-grow overflow-auto h-[calc(100vh-180px)]">
           {viewMode === 'calendar' ? (
             <div className="h-full overflow-hidden">
               <AvailabilityCalendar onSelectDate={handleDateClick} />
