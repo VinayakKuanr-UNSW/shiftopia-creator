@@ -1,9 +1,29 @@
 
 import { useContext } from 'react';
-import { AuthContext } from '@/contexts/AuthContext';
+import { AuthContext, ExtendedUser } from '@/contexts/AuthContext';
 
-export const useAuth = () => {
+export interface AuthHook {
+  user: ExtendedUser | null;
+  session: any;
+  loading: boolean;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (email: string, password: string, userData?: Record<string, any>) => Promise<{ success: boolean; error?: string }>;
+  signOut: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  isEligibleForShift: (shiftDepartment: string, shiftRole: string) => boolean;
+  checkWorkHourCompliance: (shiftDate?: string, shiftHours?: number) => any;
+  hasPermission: (feature: string) => boolean;
+}
+
+export const useAuth = (): AuthHook => {
   const context = useContext(AuthContext);
+  
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   
   // Check if the user is eligible for a specific shift
   const isEligibleForShift = (shiftDepartment: string, shiftRole: string) => {
@@ -11,8 +31,8 @@ export const useAuth = () => {
     
     // Simple eligibility check based on department and role
     // In a real app, this would be more sophisticated and check tier, availability, etc.
-    const userDepartment = context.user.department;
-    const userRole = context.user.role;
+    const userDepartment = context.user.department || '';
+    const userRole = context.user.role || '';
     
     // Admin can bid on any shift
     if (userRole === 'admin') return true;
@@ -30,7 +50,7 @@ export const useAuth = () => {
   };
   
   // Check compliance with maximum work hours
-  const checkWorkHourCompliance = (shiftDate: string, shiftHours: number) => {
+  const checkWorkHourCompliance = (shiftDate?: string, shiftHours: number = 0) => {
     // In a real app, this would check against the database for existing shifts
     // and calculate total hours to ensure compliance with daily and monthly limits
     return {
@@ -44,55 +64,5 @@ export const useAuth = () => {
     };
   };
 
-  // Check if the user has permission to access a specific feature
-  const hasPermission = (feature: string): boolean => {
-    if (!context.user) return false;
-    
-    const role = context.user.role;
-    
-    switch (feature) {
-      case 'dashboard':
-        return true; // All roles can access dashboard
-        
-      case 'my-roster':
-      case 'availabilities':
-      case 'bids':
-        return true; // All roles can access these features
-        
-      case 'templates':
-      case 'rosters':
-      case 'birds-view':
-        return role === 'admin' || role === 'manager'; // Only admin and manager
-        
-      case 'timesheet-edit':
-        return role === 'admin' || role === 'manager'; // Only admin and manager can edit
-        
-      case 'timesheet-view':
-        return role === 'admin' || role === 'manager' || role === 'teamlead'; // Admin, manager, teamlead can view
-        
-      case 'management':
-        return role === 'admin' || role === 'manager'; // Only admin and manager
-        
-      case 'broadcast':
-        // Making sure admin, manager, teamlead AND member can access broadcast
-        // Members will have limited functionality, handled in the component
-        return true;
-        
-      case 'insights':
-        return role === 'admin' || role === 'manager'; // Only admin and manager
-        
-      case 'configurations':
-        return role === 'admin'; // Only admin
-        
-      default:
-        return context.hasPermission('read'); // Fall back to basic permission check
-    }
-  };
-  
-  return { 
-    ...context, 
-    isEligibleForShift,
-    checkWorkHourCompliance,
-    hasPermission
-  };
+  return context;
 };
