@@ -122,8 +122,9 @@ export const getApplicantsForShift = (bids: BidWithEmployee[], shiftId: string, 
   if (sortByScore) {
     // Sort by employee tier or suitability score
     return shiftsApplicants.sort((a, b) => {
-      const scoreA = a.employee?.tier || 0;
-      const scoreB = b.employee?.tier || 0;
+      // Convert tier to number for comparison
+      const scoreA = Number(a.employee?.tier || 0);
+      const scoreB = Number(b.employee?.tier || 0);
       return scoreB - scoreA; // Higher score first
     });
   }

@@ -37,3 +37,35 @@ export interface SortOption {
   value: keyof ShiftDetails | 'timestamp' | 'suitabilityScore';
   direction: 'asc' | 'desc';
 }
+
+// Adding the missing exports
+export const departments = [
+  'All Departments',
+  'Convention Centre',
+  'Exhibition Centre',
+  'Theatre',
+  'IT',
+  'Darling Harbor Theatre'
+];
+
+export const subDepartments = [
+  'All Sub-departments',
+  'AM Base',
+  'AM Assist',
+  'AM Floaters',
+  'Bump-In',
+  'Tech Support'
+];
+
+export const roles = [
+  'All Roles',
+  'Manager',
+  'Supervisor',
+  'Team Leader',
+  'Staff',
+  'Casual',
+  'Contractor',
+  'TM2',
+  'TM3',
+  'Coordinator'
+];

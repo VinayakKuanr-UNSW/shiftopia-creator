@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Award, Clock, ChevronUp, ChevronDown, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -67,7 +66,7 @@ const BidItem: React.FC<BidItemProps> = ({
                   Level: {bid.shiftDetails?.remunerationLevel}
                 </div>
                 <div className="text-white/70">
-                  Break: {bid.shiftDetails?.breakDuration}
+                  Break: {bid.shiftDetails?.paidBreakDuration}
                 </div>
               </div>
             </div>

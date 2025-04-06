@@ -21,8 +21,9 @@ const ApplicantList: React.FC<ApplicantListProps> = ({
   // Sort applicants based on score or timestamp
   const sortedApplicants = [...applicants].sort((a, b) => {
     if (sortByScore) {
-      const scoreA = a.employee?.tier || 0;
-      const scoreB = b.employee?.tier || 0;
+      // Convert tier to number for comparison
+      const scoreA = Number(a.employee?.tier || 0);
+      const scoreB = Number(b.employee?.tier || 0);
       return scoreB - scoreA; // Higher score first
     } else {
       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(); // Earlier first
