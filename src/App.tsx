@@ -7,6 +7,18 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Toaster } from './components/ui/toaster';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from './hooks/useAuth';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 // A component to handle the root path redirect based on auth status
 const RootRedirect: React.FC = () => {
@@ -25,24 +37,26 @@ const RootRedirect: React.FC = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<RootRedirect />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route 
-            path="/bids" 
-            element={
-              <ProtectedRoute>
-                <EmployeeBidsPage />
-              </ProtectedRoute>
-            } 
-          />
-          {/* Add more routes as needed */}
-        </Routes>
-        <Toaster />
-      </Router>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<RootRedirect />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route 
+              path="/bids" 
+              element={
+                <ProtectedRoute>
+                  <EmployeeBidsPage />
+                </ProtectedRoute>
+              } 
+            />
+            {/* Add more routes as needed */}
+          </Routes>
+          <Toaster />
+        </Router>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
