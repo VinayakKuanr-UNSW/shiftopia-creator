@@ -4,19 +4,16 @@ import { format, addDays, subDays } from 'date-fns';
 import { useBids } from '@/api/hooks/useBids';
 import { useEmployees } from '@/api/hooks/useEmployees';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { 
   Download, 
   Plus, 
-  Search,
   Users,
-  X,
   CheckCircle,
-  Award
+  Calendar as CalendarIcon,
+  List,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { DateRange } from 'react-day-picker';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { BidWithEmployee } from './types/bid-types';
 import { 
   AlertDialog,
@@ -29,11 +26,10 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import CreateBidModal from '@/components/management/CreateBidModal';
-import { useBidFiltering } from '@/hooks/useBidFiltering';
-import { processBidsWithDetails, getApplicantsForShift } from './utils/bidUtils';
-import BidStatusFilter from './BidStatusFilter';
-import BidFilterPopover from './BidFilterPopover';
-import DateGroup from './DateGroup';
+import { useShiftFiltering } from '@/hooks/useShiftFiltering';
+import { processBidsWithDetails } from './utils/bidUtils';
+import BidFilters from './BidFilters';
+import ShiftDateGroup from './ShiftDateGroup';
 
 const OpenBidsPage: React.FC = () => {
   const { useAllBids, useUpdateBidStatus } = useBids();
@@ -43,17 +39,16 @@ const OpenBidsPage: React.FC = () => {
   const { toast } = useToast();
   const { mutate: updateBidStatus } = useUpdateBidStatus();
   
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+  const initialDateRange: DateRange = {
     from: subDays(new Date(), 7),
-    to: addDays(new Date(), 7)
-  });
+    to: addDays(new Date(), 30)
+  };
   
-  const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
-  const [expandedBids, setExpandedBids] = useState<Record<string, boolean>>({});
-  const [selectedBids, setSelectedBids] = useState<string[]>([]);
-  const [offerDialogOpen, setOfferDialogOpen] = useState(false);
   const [bidToOffer, setBidToOffer] = useState<BidWithEmployee | null>(null);
+  const [offerDialogOpen, setOfferDialogOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [sortByScore, setSortByScore] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   
   const bidsWithDetails = processBidsWithDetails(allBids, employees);
   
@@ -68,34 +63,23 @@ const OpenBidsPage: React.FC = () => {
     setSubDepartmentFilter,
     roleFilter,
     setRoleFilter,
-    sortByScore,
-    setSortByScore,
+    sortOption,
+    setSortOption,
+    dateRange,
+    setDateRange,
+    showDrafts,
+    setShowDrafts,
+    showUnassigned,
+    setShowUnassigned,
+    hoursRange,
+    setHoursRange,
+    remunerationLevelFilter,
+    setRemunerationLevelFilter,
     filteredBids,
+    sortedBids,
     groupedBids,
     sortedDates,
-  } = useBidFiltering(bidsWithDetails, dateRange);
-  
-  const toggleExpandDate = (date: string) => {
-    setExpandedDates(prev => ({
-      ...prev,
-      [date]: !prev[date]
-    }));
-  };
-  
-  const toggleExpandBid = (bidId: string) => {
-    setExpandedBids(prev => ({
-      ...prev,
-      [bidId]: !prev[bidId]
-    }));
-  };
-  
-  const toggleSelectBid = (bidId: string) => {
-    setSelectedBids(prev => 
-      prev.includes(bidId) 
-        ? prev.filter(id => id !== bidId)
-        : [...prev, bidId]
-    );
-  };
+  } = useShiftFiltering(bidsWithDetails, initialDateRange);
   
   const handleOfferShift = (bid: BidWithEmployee) => {
     setBidToOffer(bid);
@@ -129,41 +113,6 @@ const OpenBidsPage: React.FC = () => {
     setBidToOffer(null);
   };
   
-  const handleBulkOffer = () => {
-    if (selectedBids.length === 0) {
-      toast({
-        title: "No bids selected",
-        description: "Please select at least one bid to offer.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    let successCount = 0;
-    
-    selectedBids.forEach(bidId => {
-      const bid = filteredBids.find(b => b.id === bidId);
-      if (bid && bid.status === 'Pending') {
-        updateBidStatus(
-          { id: bidId, status: 'Approved' },
-          {
-            onSuccess: () => {
-              successCount++;
-              if (successCount === selectedBids.length) {
-                toast({
-                  title: "Shifts Offered",
-                  description: `${successCount} shifts have been offered successfully.`,
-                });
-                setSelectedBids([]);
-                refetch();
-              }
-            }
-          }
-        );
-      }
-    });
-  };
-  
   const handleExport = () => {
     toast({
       title: "Export Started",
@@ -178,16 +127,6 @@ const OpenBidsPage: React.FC = () => {
     }, 1500);
   };
   
-  useEffect(() => {
-    if (sortedDates.length > 0 && Object.keys(expandedDates).length === 0) {
-      const initialExpandedDates: Record<string, boolean> = {};
-      sortedDates.slice(0, 3).forEach(date => {
-        initialExpandedDates[date] = true;
-      });
-      setExpandedDates(initialExpandedDates);
-    }
-  }, [sortedDates, expandedDates]);
-  
   return (
     <div className="glass-panel p-6" style={{ animation: 'none' }}>
       <div className="mb-6">
@@ -196,15 +135,38 @@ const OpenBidsPage: React.FC = () => {
       </div>
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
-          <DateRangePicker
-            value={dateRange}
-            onChange={setDateRange}
-            className="w-full sm:w-auto"
-          />
+        <div className="flex gap-2">
+          <Button 
+            variant={viewMode === 'list' ? "default" : "outline"} 
+            size="sm" 
+            className={viewMode === 'list' ? "bg-purple-600" : "border-white/10"}
+            onClick={() => setViewMode('list')}
+          >
+            <List className="mr-2 h-4 w-4" />
+            List View
+          </Button>
+          <Button 
+            variant={viewMode === 'calendar' ? "default" : "outline"} 
+            size="sm" 
+            className={viewMode === 'calendar' ? "bg-purple-600" : "border-white/10"}
+            onClick={() => setViewMode('calendar')}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            Calendar View
+          </Button>
         </div>
         
         <div className="flex gap-2 ml-auto">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-white/10"
+            onClick={() => setSortByScore(!sortByScore)}
+          >
+            <CheckCircle className="mr-2 h-4 w-4" />
+            Sort by: {sortByScore ? 'Suitability Score' : 'Timestamp'}
+          </Button>
+          
           <Button 
             variant="outline" 
             size="sm" 
@@ -226,78 +188,37 @@ const OpenBidsPage: React.FC = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/40" />
-          <Input
-            type="text"
-            placeholder="Search bids..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-white/5 border-white/10 pl-9 text-white"
-          />
-        </div>
-        
-        <BidStatusFilter statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
-        
-        <div className="flex flex-wrap gap-2 items-center">
-          <BidFilterPopover 
-            departmentFilter={departmentFilter}
-            setDepartmentFilter={setDepartmentFilter}
-            subDepartmentFilter={subDepartmentFilter}
-            setSubDepartmentFilter={setSubDepartmentFilter}
-            roleFilter={roleFilter}
-            setRoleFilter={setRoleFilter}
-          />
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="border-white/10"
-            onClick={() => setSortByScore(!sortByScore)}
-          >
-            <Award className="mr-2 h-4 w-4" />
-            Sort by: {sortByScore ? 'Suitability Score' : 'Timestamp'}
-          </Button>
-        </div>
-      </div>
-      
-      {selectedBids.length > 0 && (
-        <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-md flex items-center justify-between">
-          <div className="text-sm">
-            <span className="font-medium">{selectedBids.length}</span> bids selected
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-white/10"
-              onClick={() => setSelectedBids([])}
-            >
-              <X className="mr-2 h-4 w-4" />
-              Clear Selection
-            </Button>
-            <Button 
-              size="sm" 
-              className="bg-green-600"
-              onClick={handleBulkOffer}
-            >
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Offer Selected Shifts
-            </Button>
-          </div>
-        </div>
-      )}
+      <BidFilters
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        departmentFilter={departmentFilter}
+        setDepartmentFilter={setDepartmentFilter}
+        subDepartmentFilter={subDepartmentFilter}
+        setSubDepartmentFilter={setSubDepartmentFilter}
+        roleFilter={roleFilter}
+        setRoleFilter={setRoleFilter}
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        showDrafts={showDrafts}
+        setShowDrafts={setShowDrafts}
+        showUnassigned={showUnassigned}
+        setShowUnassigned={setShowUnassigned}
+        hoursRange={hoursRange}
+        setHoursRange={setHoursRange}
+        remunerationLevelFilter={remunerationLevelFilter}
+        setRemunerationLevelFilter={setRemunerationLevelFilter}
+      />
       
       {sortedDates.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium">No bids found</h3>
+          <h3 className="text-lg font-medium">No shifts found</h3>
           <p className="text-white/60 mt-2">
-            {searchQuery || statusFilter !== 'all' || departmentFilter !== 'All Departments' || 
-             subDepartmentFilter !== 'All Sub-departments' || roleFilter !== 'All Roles'
-              ? "No bids match your search criteria. Try adjusting your filters." 
-              : "There are no bids in the system for the selected date range."}
+            No shifts match your search criteria. Try adjusting your filters.
           </p>
         </div>
       )}
@@ -308,24 +229,32 @@ const OpenBidsPage: React.FC = () => {
         </div>
       )}
       
-      <div className="space-y-4">
-        {sortedDates.map(date => (
-          <DateGroup 
-            key={date}
-            date={date}
-            bids={groupedBids[date]}
-            isExpanded={expandedDates[date] || false}
-            toggleExpand={() => toggleExpandDate(date)}
-            expandedBids={expandedBids}
-            toggleExpandBid={toggleExpandBid}
-            selectedBids={selectedBids}
-            toggleSelectBid={toggleSelectBid}
-            getApplicantsForShift={(shiftId) => getApplicantsForShift(filteredBids, shiftId, sortByScore)}
-            handleOfferShift={handleOfferShift}
-            sortByScore={sortByScore}
-          />
-        ))}
-      </div>
+      {viewMode === 'list' && (
+        <div className="space-y-4">
+          {sortedDates.map(date => (
+            <ShiftDateGroup
+              key={date}
+              date={date}
+              bids={groupedBids[date]}
+              allBids={filteredBids}
+              handleOfferShift={handleOfferShift}
+              sortByScore={sortByScore}
+            />
+          ))}
+        </div>
+      )}
+      
+      {viewMode === 'calendar' && (
+        <div className="bg-white/5 border border-white/10 rounded-lg p-4 h-[600px]">
+          <div className="text-center py-12">
+            <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium">Calendar View</h3>
+            <p className="text-white/60 mt-2">
+              Calendar view is coming soon. Please use List view for now.
+            </p>
+          </div>
+        </div>
+      )}
       
       <AlertDialog open={offerDialogOpen} onOpenChange={setOfferDialogOpen}>
         <AlertDialogContent className="bg-slate-900 text-white border-white/10">
@@ -333,7 +262,14 @@ const OpenBidsPage: React.FC = () => {
             <AlertDialogTitle>Confirm Shift Offer</AlertDialogTitle>
             <AlertDialogDescription className="text-white/70">
               Are you sure you want to offer this shift to {bidToOffer?.employee?.name || 'this employee'}?
-              Once offered, the employee will be notified and can accept the shift.
+              {bidToOffer?.shiftDetails && (
+                <div className="mt-4 bg-white/5 p-3 rounded-md">
+                  <p className="mb-1"><strong>{bidToOffer.shiftDetails.role}</strong></p>
+                  <p className="mb-1">{bidToOffer.shiftDetails.department} - {bidToOffer.shiftDetails.subDepartment}</p>
+                  <p className="mb-1">{bidToOffer.shiftDetails.date}</p>
+                  <p>{bidToOffer.shiftDetails.startTime} - {bidToOffer.shiftDetails.endTime}</p>
+                </div>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

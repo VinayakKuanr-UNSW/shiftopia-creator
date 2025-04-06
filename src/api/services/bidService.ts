@@ -46,6 +46,29 @@ export const bidService = {
     };
     
     bids[index] = updatedBid;
+    
+    // If a shift is offered (approved), reject all other bids for this shift
+    if (status === 'Approved') {
+      const shiftId = updatedBid.shiftId;
+      
+      // Find all other pending bids for the same shift
+      const otherBidsForShiftIndexes = bids.reduce((indexes, bid, idx) => {
+        if (bid.shiftId === shiftId && bid.id !== id && bid.status === 'Pending') {
+          indexes.push(idx);
+        }
+        return indexes;
+      }, [] as number[]);
+      
+      // Reject all other pending bids
+      otherBidsForShiftIndexes.forEach(idx => {
+        bids[idx] = {
+          ...bids[idx],
+          status: 'Rejected',
+          notes: 'Shift offered to another employee'
+        };
+      });
+    }
+    
     return Promise.resolve(updatedBid);
   },
   
@@ -80,5 +103,14 @@ export const bidService = {
     
     bids[index] = updatedBid;
     return Promise.resolve(updatedBid);
+  },
+  
+  // New method to withdraw a bid
+  withdrawBid: async (id: string): Promise<boolean> => {
+    const index = bids.findIndex(b => b.id === id);
+    if (index === -1) return Promise.resolve(false);
+    
+    bids.splice(index, 1);
+    return Promise.resolve(true);
   }
 };
