@@ -482,9 +482,11 @@ export const bidService = {
   addNotesToBid: async (id: string, notes: string): Promise<Bid | null> => {
     try {
       // First try to update bid in Supabase
+      const updateData: Record<string, any> = { notes };
+      
       const { data, error } = await supabase
         .from('bids')
-        .update({ notes }) // Add notes directly
+        .update(updateData)
         .eq('id', parseInt(id, 10))
         .select()
         .single();
