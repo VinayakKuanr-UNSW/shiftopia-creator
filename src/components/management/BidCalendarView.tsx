@@ -1,10 +1,11 @@
 
-import React from 'react';
-import { Calendar } from '@/components/ui/calendar';
+import React, { useMemo, useState } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isEqual, isToday, parseISO } from 'date-fns';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { DayPicker } from 'react-day-picker';
 import { BidWithEmployee } from './types/bid-types';
-import { Badge } from '@/components/ui/badge';
-import { getStatusColor } from './utils/bidUtils';
 
 interface BidCalendarViewProps {
   bids: BidWithEmployee[];
@@ -12,133 +13,237 @@ interface BidCalendarViewProps {
   selectedDate: Date | undefined;
 }
 
-const BidCalendarView: React.FC<BidCalendarViewProps> = ({ bids, onDateSelect, selectedDate }) => {
-  // Group bids by date for highlighting in calendar
-  const bidsByDate: Record<string, BidWithEmployee[]> = bids.reduce((acc, bid) => {
-    const dateStr = bid.shiftDetails?.date || '';
-    if (!acc[dateStr]) {
-      acc[dateStr] = [];
-    }
-    acc[dateStr].push(bid);
-    return acc;
-  }, {} as Record<string, BidWithEmployee[]>);
-
-  // For rendering date cell content and highlights
-  const renderDay = (day: Date) => {
-    const dateStr = day.toISOString().split('T')[0];
-    const dayBids = bidsByDate[dateStr] || [];
+const BidCalendarView: React.FC<BidCalendarViewProps> = ({ 
+  bids,
+  onDateSelect,
+  selectedDate
+}) => {
+  // State for current month
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  
+  // Get the current month's range
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  
+  // Count bids for each day
+  const bidsByDate = useMemo(() => {
+    const counts: Record<string, BidWithEmployee[]> = {};
     
-    // Count bids by status
-    const statusCounts: Record<string, number> = {};
-    dayBids.forEach(bid => {
-      const status = bid.shiftDetails?.status || 'Unknown';
-      statusCounts[status] = (statusCounts[status] || 0) + 1;
+    bids.forEach(bid => {
+      if (bid.shiftDetails?.date) {
+        const dateKey = bid.shiftDetails.date;
+        if (!counts[dateKey]) {
+          counts[dateKey] = [];
+        }
+        counts[dateKey].push(bid);
+      }
     });
     
+    return counts;
+  }, [bids]);
+  
+  // Find the date range for all bids
+  const dateRange = useMemo(() => {
+    let minDate: Date | null = null;
+    let maxDate: Date | null = null;
+    
+    bids.forEach(bid => {
+      if (bid.shiftDetails?.date) {
+        const currentDate = parseISO(bid.shiftDetails.date);
+        
+        if (!minDate || currentDate < minDate) {
+          minDate = currentDate;
+        }
+        
+        if (!maxDate || currentDate > maxDate) {
+          maxDate = currentDate;
+        }
+      }
+    });
+    
+    return {
+      fromDate: minDate || new Date(),
+      toDate: maxDate || new Date()
+    };
+  }, [bids]);
+  
+  // Handle next month
+  const handleNextMonth = () => {
+    const nextMonth = new Date(currentMonth);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    setCurrentMonth(nextMonth);
+  };
+  
+  // Handle previous month
+  const handlePrevMonth = () => {
+    const prevMonth = new Date(currentMonth);
+    prevMonth.setMonth(prevMonth.getMonth() - 1);
+    setCurrentMonth(prevMonth);
+  };
+  
+  // Custom day cell renderer
+  const renderDay = (day: Date) => {
+    // Format date to match the API date format
+    const dateKey = format(day, 'yyyy-MM-dd');
+    const dayBids = bidsByDate[dateKey] || [];
+    const bidCount = dayBids.length;
+    
+    // Determine if the day has any filled shifts
+    const hasFilledShifts = dayBids.some(
+      bid => bid.shiftDetails?.status === 'Filled' || 
+             bid.shiftDetails?.status === 'Assigned' ||
+             !!bid.shiftDetails?.assignedEmployee
+    );
+    
+    // Determine if the day has any draft shifts
+    const hasDraftShifts = dayBids.some(
+      bid => bid.shiftDetails?.isDraft === true
+    );
+    
     return (
-      <div className="relative w-full h-full">
-        <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-between">
-          <div className="pt-1 text-center">{day.getDate()}</div>
-          {dayBids.length > 0 && (
-            <div className="pb-1 flex flex-wrap gap-1 justify-center">
-              {Object.entries(statusCounts).map(([status, count]) => (
-                <Badge 
-                  key={status}
-                  variant="secondary"
-                  className={`${getStatusColor(status)} text-[0.6rem] h-3 px-1 flex items-center`}
-                >
-                  {count}
-                </Badge>
-              ))}
-            </div>
-          )}
+      <div className="relative h-full flex flex-col">
+        <div className={`
+          w-8 h-8 mx-auto flex items-center justify-center rounded-full
+          ${isEqual(day, selectedDate || new Date(-1)) ? 'bg-primary text-primary-foreground' : ''}
+          ${isToday(day) ? 'border border-primary' : ''}
+        `}>
+          {format(day, 'd')}
         </div>
+        
+        {bidCount > 0 && (
+          <div className="mt-1 flex justify-center">
+            <div className={`
+              text-xs px-2 py-0.5 rounded-full text-center
+              ${hasFilledShifts ? 'bg-green-700/30 border border-green-600/30' : 'bg-blue-700/30 border border-blue-600/30'}
+              ${hasDraftShifts ? 'italic' : ''}
+            `}>
+              {bidCount}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
-
-  // Find min and max dates across bids to set calendar range
-  let minDate: Date | undefined;
-  let maxDate: Date | undefined;
   
-  bids.forEach(bid => {
-    const dateStr = bid.shiftDetails?.date;
-    if (dateStr) {
-      const date = new Date(dateStr);
-      if (!minDate || date < minDate) minDate = date;
-      if (!maxDate || date > maxDate) maxDate = date;
-    }
-  });
+  // Get bids for selected date
+  const selectedDateBids = useMemo(() => {
+    if (!selectedDate) return [];
+    
+    const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    return bidsByDate[dateKey] || [];
+  }, [selectedDate, bidsByDate]);
   
-  // Set defaults if no dates found
-  if (!minDate) {
-    minDate = new Date();
-    minDate.setMonth(minDate.getMonth() - 1);
-  }
-  
-  if (!maxDate) {
-    maxDate = new Date();
-    maxDate.setMonth(maxDate.getMonth() + 1);
-  }
-  
-  // Bids for selected date
-  const selectedDateStr = selectedDate?.toISOString().split('T')[0];
-  const selectedBids = selectedDateStr ? (bidsByDate[selectedDateStr] || []) : [];
-
   return (
-    <div className="flex flex-col">
-      <div className="p-4 bg-gray-800 rounded-lg mb-4">
-        <Calendar 
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="col-span-1 bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+        <div className="flex justify-between items-center mb-4">
+          <Button variant="outline" size="icon" onClick={handlePrevMonth}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h3 className="text-lg font-medium">
+            {format(currentMonth, 'MMMM yyyy')}
+          </h3>
+          <Button variant="outline" size="icon" onClick={handleNextMonth}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <DayPicker
           mode="single"
           selected={selectedDate}
           onSelect={onDateSelect}
-          className="w-full rounded-md bg-gray-800"
-          day={{render: renderDay}}
-          fromDate={new Date(minDate.setDate(minDate.getDate() - 14))} // 2 weeks before earliest bid
-          toDate={new Date(maxDate.setDate(maxDate.getDate() + 14))}   // 2 weeks after latest bid
+          className="mx-auto"
+          renderDay={renderDay}
+          fromDate={dateRange.fromDate}
+          toDate={dateRange.toDate}
+          modifiersStyles={{
+            selected: {
+              backgroundColor: 'var(--primary)',
+              color: 'white',
+              fontWeight: 'bold'
+            },
+            today: {
+              border: '1px solid var(--primary)'
+            }
+          }}
         />
+        
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center text-xs">
+            <span className="w-3 h-3 rounded-full bg-blue-700/30 border border-blue-600/30 mr-2"></span>
+            <span>Shifts with open bids</span>
+          </div>
+          <div className="flex items-center text-xs">
+            <span className="w-3 h-3 rounded-full bg-green-700/30 border border-green-600/30 mr-2"></span>
+            <span>Shifts with filled/assigned bids</span>
+          </div>
+          <div className="flex items-center text-xs">
+            <span className="italic mr-2">Italic</span>
+            <span>Indicates draft shifts</span>
+          </div>
+        </div>
       </div>
       
-      {selectedDate && (
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2">
-            Shifts for {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
-          </h3>
-          
-          {selectedBids.length === 0 ? (
-            <p className="text-white/70 italic">No shifts on this date.</p>
-          ) : (
-            <div className="space-y-2">
-              {selectedBids.map(bid => (
-                <div key={bid.id} className="p-3 bg-gray-800 rounded-lg">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium">{bid.shiftDetails?.role} - {bid.shiftDetails?.department}</h4>
-                      <div className="text-sm text-white/70">
-                        {bid.shiftDetails?.startTime}-{bid.shiftDetails?.endTime} • {bid.shiftDetails?.netLength}h
+      <div className="col-span-1 md:col-span-2">
+        {selectedDate ? (
+          <>
+            <h3 className="text-lg font-medium mb-4 flex items-center">
+              <CalendarIcon className="mr-2 h-5 w-5 text-blue-500" />
+              {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+              <Badge className="ml-2" variant="outline">
+                {selectedDateBids.length} shifts
+              </Badge>
+            </h3>
+            
+            {selectedDateBids.length === 0 ? (
+              <Card className="bg-gray-800/50 border-gray-700">
+                <CardContent className="p-6 text-center text-gray-400">
+                  <p>No shifts found for this date.</p>
+                  <p className="text-sm mt-1">Select another date or adjust your filters.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {selectedDateBids.map(bid => (
+                  <Card key={bid.id} className="bg-gray-800/50 border-gray-700">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium">{bid.shiftDetails?.department} - {bid.shiftDetails?.role}</h4>
+                          <p className="text-sm text-gray-400">{bid.shiftDetails?.startTime} - {bid.shiftDetails?.endTime}</p>
+                          <p className="text-sm text-gray-400 mt-1">{bid.employee?.name || 'No employee assigned'}</p>
+                        </div>
+                        <Badge 
+                          className={
+                            bid.shiftDetails?.status === 'Filled' || bid.shiftDetails?.status === 'Assigned' ?
+                            "bg-green-700" : "bg-blue-700"
+                          }
+                        >
+                          {bid.shiftDetails?.status}
+                        </Badge>
                       </div>
-                    </div>
-                    <Badge className={getStatusColor(bid.shiftDetails?.status || 'Unknown')}>
-                      {bid.shiftDetails?.status || 'Unknown'}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="mt-3"
-            onClick={() => onDateSelect(undefined)}
-          >
-            Clear Selection
-          </Button>
-        </div>
-      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <Card className="bg-gray-800/50 border-gray-700 h-64 flex items-center justify-center">
+            <CardContent className="text-center text-gray-400">
+              <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-medium mb-2">No date selected</h3>
+              <p>Select a date from the calendar to see shifts.</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
+
+// Missing Badge component
+import { Badge } from "@/components/ui/badge";
 
 export default BidCalendarView;

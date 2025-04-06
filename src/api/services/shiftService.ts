@@ -85,6 +85,61 @@ let shifts: Record<string, ShiftDetails> = {
   }
 };
 
+// Helper function to map database shift to ShiftDetails
+const mapDbShiftToShiftDetails = (dbShift: any): ShiftDetails => {
+  // Get department and subdepartment from department_id if needed
+  // This would normally involve a lookup to a departments table
+  const department = typeof dbShift.department === 'string' ? 
+    dbShift.department : 
+    getDepartmentName(dbShift.department_id);
+  
+  const subDepartment = typeof dbShift.sub_department === 'string' ? 
+    dbShift.sub_department : 
+    getSubDepartmentName(dbShift.sub_departments_id);
+    
+  const role = dbShift.role || 'Staff'; // Default role if not specified
+  
+  return {
+    id: String(dbShift.id),
+    date: dbShift.shift_date,
+    startTime: dbShift.shift_time,
+    endTime: calculateEndTime(dbShift.shift_time, dbShift.net_length || '8'),
+    netLength: String(dbShift.net_length || '0'),
+    paidBreakDuration: dbShift.paid_break_duration || '0m',
+    unpaidBreakDuration: dbShift.unpaid_break_duration || '0m',
+    department: department,
+    subDepartment: subDepartment,
+    role: role,
+    remunerationLevel: dbShift.remuneration_level || 'STANDARD',
+    status: dbShift.status || 'Open',
+    isDraft: Boolean(dbShift.is_draft),
+    assignedEmployee: dbShift.employees?.name || null
+  };
+};
+
+// Placeholder functions to get department and subdepartment names
+function getDepartmentName(departmentId: number): string {
+  const departments: Record<number, string> = {
+    1: 'Convention Centre',
+    2: 'Exhibition Centre',
+    3: 'Theatre',
+    4: 'IT',
+    5: 'Darling Harbor Theatre'
+  };
+  return departments[departmentId] || 'Unknown Department';
+}
+
+function getSubDepartmentName(subDepartmentId: number): string {
+  const subDepartments: Record<number, string> = {
+    1: 'AM Base',
+    2: 'AM Assist',
+    3: 'AM Floaters',
+    4: 'Bump-In',
+    5: 'Tech Support'
+  };
+  return subDepartments[subDepartmentId] || 'Unknown Sub-Department';
+}
+
 export const shiftService = {
   getAllShifts: async (): Promise<ShiftDetails[]> => {
     try {
@@ -101,22 +156,7 @@ export const shiftService = {
       
       // Map Supabase data to our ShiftDetails model
       if (data && data.length > 0) {
-        return data.map(shift => ({
-          id: shift.id,
-          date: shift.shift_date,
-          startTime: shift.shift_time,
-          endTime: calculateEndTime(shift.shift_time, shift.net_length),
-          netLength: shift.net_length || '0',
-          paidBreakDuration: shift.paid_break_duration || '0m',
-          unpaidBreakDuration: shift.unpaid_break_duration || '0m',
-          department: shift.department,
-          subDepartment: shift.sub_department,
-          role: shift.role,
-          remunerationLevel: shift.remuneration_level,
-          status: shift.status,
-          isDraft: shift.is_draft || false,
-          assignedEmployee: shift.employees?.name || null
-        }));
+        return data.map(mapDbShiftToShiftDetails);
       }
       
       // Fall back to mock data
@@ -144,22 +184,7 @@ export const shiftService = {
       
       // Map Supabase data to our ShiftDetails model
       if (data) {
-        return {
-          id: data.id,
-          date: data.shift_date,
-          startTime: data.shift_time,
-          endTime: calculateEndTime(data.shift_time, data.net_length),
-          netLength: data.net_length || '0',
-          paidBreakDuration: data.paid_break_duration || '0m',
-          unpaidBreakDuration: data.unpaid_break_duration || '0m',
-          department: data.department,
-          subDepartment: data.sub_department,
-          role: data.role,
-          remunerationLevel: data.remuneration_level,
-          status: data.status,
-          isDraft: data.is_draft || false,
-          assignedEmployee: data.employees?.name || null
-        };
+        return mapDbShiftToShiftDetails(data);
       }
       
       // Fall back to mock data
@@ -190,22 +215,7 @@ export const shiftService = {
       
       // Map Supabase data to our ShiftDetails model
       if (data && data.length > 0) {
-        return data.map(shift => ({
-          id: shift.id,
-          date: shift.shift_date,
-          startTime: shift.shift_time,
-          endTime: calculateEndTime(shift.shift_time, shift.net_length),
-          netLength: shift.net_length || '0',
-          paidBreakDuration: shift.paid_break_duration || '0m',
-          unpaidBreakDuration: shift.unpaid_break_duration || '0m',
-          department: shift.department,
-          subDepartment: shift.sub_department,
-          role: shift.role,
-          remunerationLevel: shift.remuneration_level,
-          status: shift.status,
-          isDraft: shift.is_draft || false,
-          assignedEmployee: shift.employees?.name || null
-        }));
+        return data.map(mapDbShiftToShiftDetails);
       }
       
       // Fall back to filtering mock data
@@ -242,22 +252,7 @@ export const shiftService = {
       
       // Map Supabase data to our ShiftDetails model
       if (data && data.length > 0) {
-        return data.map(shift => ({
-          id: shift.id,
-          date: shift.shift_date,
-          startTime: shift.shift_time,
-          endTime: calculateEndTime(shift.shift_time, shift.net_length),
-          netLength: shift.net_length || '0',
-          paidBreakDuration: shift.paid_break_duration || '0m',
-          unpaidBreakDuration: shift.unpaid_break_duration || '0m',
-          department: shift.department,
-          subDepartment: shift.sub_department,
-          role: shift.role,
-          remunerationLevel: shift.remuneration_level,
-          status: shift.status,
-          isDraft: shift.is_draft || false,
-          assignedEmployee: shift.employees?.name || null
-        }));
+        return data.map(mapDbShiftToShiftDetails);
       }
       
       // Fall back to filtering mock data
@@ -306,22 +301,7 @@ export const shiftService = {
       
       // Map updated Supabase data to our ShiftDetails model
       if (data) {
-        const updated = {
-          id: data.id,
-          date: data.shift_date,
-          startTime: data.shift_time,
-          endTime: calculateEndTime(data.shift_time, data.net_length),
-          netLength: data.net_length || '0',
-          paidBreakDuration: data.paid_break_duration || '0m',
-          unpaidBreakDuration: data.unpaid_break_duration || '0m',
-          department: data.department,
-          subDepartment: data.sub_department,
-          role: data.role,
-          remunerationLevel: data.remuneration_level,
-          status: data.status,
-          isDraft: data.is_draft || false,
-          assignedEmployee: data.employees?.name || null
-        };
+        const updated = mapDbShiftToShiftDetails(data);
         
         // Update mock data to keep it in sync
         shifts[id] = updated;

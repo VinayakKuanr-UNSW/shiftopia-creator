@@ -60,6 +60,24 @@ export interface Shift {
   actualEndTime?: string;   // Added for timesheets
 }
 
+// Add ShiftDetails interface
+export interface ShiftDetails {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  netLength: string;
+  paidBreakDuration: string;
+  unpaidBreakDuration: string;
+  department: string;
+  subDepartment: string;
+  role: string;
+  remunerationLevel: string | number;
+  status: string;
+  isDraft: boolean;
+  assignedEmployee?: string | null;
+}
+
 export type ShiftStatus = 'scheduled' | 'completed' | 'in-progress' | 'cancelled' | 'no-show' | 'Assigned' | 'Completed' | 'Cancelled' | 'Swapped' | 'No-Show';
 export type Role = 'Manager' | 'Supervisor' | 'Team Leader' | 'Staff' | 'Casual' | 'Contractor' | 'TM2' | 'TM3' | 'Coordinator';
 export type RemunerationLevel = 1 | 2 | 3 | 4 | 5 | string; // Allow string for backward compatibility

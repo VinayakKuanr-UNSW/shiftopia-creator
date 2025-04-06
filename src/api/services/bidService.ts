@@ -5,6 +5,26 @@ import { supabase } from '@/integrations/supabase/client';
 // Local storage for bids - in a real app this would be a database
 let bids = [...currentBids];
 
+// Helper function to ensure status is of the correct type
+const validateBidStatus = (status: string): 'Pending' | 'Approved' | 'Rejected' | 'Confirmed' => {
+  if (status === 'Pending' || status === 'Approved' || status === 'Rejected' || status === 'Confirmed') {
+    return status;
+  }
+  return 'Pending'; // Default to Pending for invalid values
+};
+
+// Helper function to convert database record to Bid type
+const mapDbBidToBid = (dbBid: any): Bid => {
+  return {
+    id: String(dbBid.id),
+    shiftId: String(dbBid.shift_id),
+    employeeId: String(dbBid.employee_id),
+    status: validateBidStatus(dbBid.status),
+    createdAt: dbBid.created_at || dbBid.bid_time || new Date().toISOString(),
+    notes: dbBid.notes || ''
+  };
+};
+
 export const bidService = {
   getAllBids: async (): Promise<Bid[]> => {
     try {
@@ -15,26 +35,19 @@ export const bidService = {
       
       if (error) {
         console.error('Error fetching bids from Supabase:', error);
-        return Promise.resolve([...bids]);
+        return Promise.resolve(bids);
       }
       
       // Map Supabase data to our Bid model
       if (data && data.length > 0) {
-        return data.map(bid => ({
-          id: bid.id.toString(),
-          shiftId: bid.shift_id.toString(),
-          employeeId: bid.employee_id.toString(),
-          status: bid.status,
-          createdAt: bid.created_at,
-          notes: bid.notes
-        }));
+        return data.map(mapDbBidToBid);
       }
       
       // Fall back to mock data
-      return Promise.resolve([...bids]);
+      return Promise.resolve(bids);
     } catch (e) {
       console.error('Error in getAllBids:', e);
-      return Promise.resolve([...bids]);
+      return Promise.resolve(bids);
     }
   },
   
@@ -56,14 +69,7 @@ export const bidService = {
       
       // Map Supabase data to our Bid model
       if (data) {
-        return {
-          id: data.id.toString(),
-          shiftId: data.shift_id.toString(),
-          employeeId: data.employee_id.toString(),
-          status: data.status,
-          createdAt: data.created_at,
-          notes: data.notes
-        };
+        return mapDbBidToBid(data);
       }
       
       // Fall back to mock data
@@ -94,14 +100,7 @@ export const bidService = {
       
       // Map Supabase data to our Bid model
       if (data && data.length > 0) {
-        return data.map(bid => ({
-          id: bid.id.toString(),
-          shiftId: bid.shift_id.toString(),
-          employeeId: bid.employee_id.toString(),
-          status: bid.status,
-          createdAt: bid.created_at,
-          notes: bid.notes
-        }));
+        return data.map(mapDbBidToBid);
       }
       
       // Fall back to filtering mock data
@@ -132,14 +131,7 @@ export const bidService = {
       
       // Map Supabase data to our Bid model
       if (data && data.length > 0) {
-        return data.map(bid => ({
-          id: bid.id.toString(),
-          shiftId: bid.shift_id.toString(),
-          employeeId: bid.employee_id.toString(),
-          status: bid.status,
-          createdAt: bid.created_at,
-          notes: bid.notes
-        }));
+        return data.map(mapDbBidToBid);
       }
       
       // Fall back to filtering mock data
@@ -155,15 +147,17 @@ export const bidService = {
   
   createBid: async (bid: Omit<Bid, 'id' | 'createdAt'>): Promise<Bid> => {
     try {
+      const newBidData = {
+        shift_id: Number(bid.shiftId),
+        employee_id: Number(bid.employeeId),
+        status: bid.status || 'Pending',
+        notes: bid.notes || ''
+      };
+
       // First try to insert bid into Supabase
       const { data, error } = await supabase
         .from('bids')
-        .insert([{
-          shift_id: bid.shiftId,
-          employee_id: bid.employeeId,
-          status: bid.status || 'Pending',
-          notes: bid.notes
-        }])
+        .insert([newBidData])
         .select()
         .single();
       
@@ -182,14 +176,7 @@ export const bidService = {
       
       // Map Supabase data to our Bid model
       if (data) {
-        const newBid: Bid = {
-          id: data.id.toString(),
-          shiftId: data.shift_id.toString(),
-          employeeId: data.employee_id.toString(),
-          status: data.status,
-          createdAt: data.created_at,
-          notes: data.notes
-        };
+        const newBid = mapDbBidToBid(data);
         
         // Update mock data to keep it in sync
         bids.push(newBid);
@@ -248,12 +235,12 @@ export const bidService = {
           const shiftId = updatedBid.shiftId;
           
           // Find all other pending bids for the same shift
-          const otherBidsForShiftIndexes = bids.reduce((indexes, bid, idx) => {
+          const otherBidsForShiftIndexes = bids.reduce((indexes: number[], bid, idx) => {
             if (bid.shiftId === shiftId && bid.id !== id && bid.status === 'Pending') {
               indexes.push(idx);
             }
             return indexes;
-          }, [] as number[]);
+          }, []);
           
           // Reject all other pending bids
           otherBidsForShiftIndexes.forEach(idx => {
@@ -270,14 +257,7 @@ export const bidService = {
       
       // Map Supabase data to our Bid model
       if (data) {
-        const updatedBid: Bid = {
-          id: data.id.toString(),
-          shiftId: data.shift_id.toString(),
-          employeeId: data.employee_id.toString(),
-          status: data.status,
-          createdAt: data.created_at,
-          notes: data.notes
-        };
+        const updatedBid = mapDbBidToBid(data);
         
         // Update mock data to keep it in sync
         const index = bids.findIndex(b => b.id === id);
@@ -304,12 +284,12 @@ export const bidService = {
                 console.error('Error rejecting other bids in Supabase:', error);
                 
                 // Update mock data to keep it in sync
-                const otherBidsForShiftIndexes = bids.reduce((indexes, bid, idx) => {
+                const otherBidsForShiftIndexes = bids.reduce((indexes: number[], bid, idx) => {
                   if (bid.shiftId === shiftId && bid.id !== id && bid.status === 'Pending') {
                     indexes.push(idx);
                   }
                   return indexes;
-                }, [] as number[]);
+                }, []);
                 
                 otherBidsForShiftIndexes.forEach(idx => {
                   bids[idx] = {
@@ -341,12 +321,12 @@ export const bidService = {
         const shiftId = updatedBid.shiftId;
         
         // Find all other pending bids for the same shift
-        const otherBidsForShiftIndexes = bids.reduce((indexes, bid, idx) => {
+        const otherBidsForShiftIndexes = bids.reduce((indexes: number[], bid, idx) => {
           if (bid.shiftId === shiftId && bid.id !== id && bid.status === 'Pending') {
             indexes.push(idx);
           }
           return indexes;
-        }, [] as number[]);
+        }, []);
         
         // Reject all other pending bids
         otherBidsForShiftIndexes.forEach(idx => {
@@ -377,12 +357,12 @@ export const bidService = {
         const shiftId = updatedBid.shiftId;
         
         // Find all other pending bids for the same shift
-        const otherBidsForShiftIndexes = bids.reduce((indexes, bid, idx) => {
+        const otherBidsForShiftIndexes = bids.reduce((indexes: number[], bid, idx) => {
           if (bid.shiftId === shiftId && bid.id !== id && bid.status === 'Pending') {
             indexes.push(idx);
           }
           return indexes;
-        }, [] as number[]);
+        }, []);
         
         // Reject all other pending bids
         otherBidsForShiftIndexes.forEach(idx => {
@@ -439,14 +419,7 @@ export const bidService = {
       results.forEach(result => {
         if (result.data && result.data.length > 0) {
           const data = result.data[0];
-          const updatedBid: Bid = {
-            id: data.id.toString(),
-            shiftId: data.shift_id.toString(),
-            employeeId: data.employee_id.toString(),
-            status: data.status,
-            createdAt: data.created_at,
-            notes: data.notes
-          };
+          const updatedBid = mapDbBidToBid(data);
           
           // Update mock data to keep it in sync
           const index = bids.findIndex(b => b.id === updatedBid.id);
@@ -528,14 +501,7 @@ export const bidService = {
       
       // Map Supabase data to our Bid model
       if (data) {
-        const updatedBid: Bid = {
-          id: data.id.toString(),
-          shiftId: data.shift_id.toString(),
-          employeeId: data.employee_id.toString(),
-          status: data.status,
-          createdAt: data.created_at,
-          notes: data.notes
-        };
+        const updatedBid = mapDbBidToBid(data);
         
         // Update mock data to keep it in sync
         const index = bids.findIndex(b => b.id === id);

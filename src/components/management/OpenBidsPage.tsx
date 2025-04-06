@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useEmployees } from '@/api/hooks/useEmployees';
 import { useBids } from '@/api/hooks/useBids';
@@ -229,7 +230,10 @@ const OpenBidsPage: React.FC = () => {
   const handleOfferShift = async (bid: BidWithEmployee) => {
     try {
       // Update bid status to Approved
-      await updateBidStatus(bid.id, 'Approved');
+      await updateBidStatus({
+        id: bid.id,
+        status: 'Approved'
+      });
       
       // Also update shift status to Offered/Filled and assign employee
       if (bid.shiftDetails) {
