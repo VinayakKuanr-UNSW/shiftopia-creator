@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { 
   startOfMonth, 
@@ -12,8 +13,9 @@ import {
 } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { availabilityService } from '@/api/services/availabilityService';
-import { AvailabilityStatus, TimeSlot } from '@/api/models/types';
+import { AvailabilityStatus, TimeSlot, DayAvailability } from '@/api/models/types';
 
+// Define the local Availability interface to ensure status is always required
 interface Availability {
   date: string;
   status: AvailabilityStatus;
@@ -132,7 +134,15 @@ export function useAvailabilities() {
         
         // Use the availabilityService to get the month's data
         const data = await availabilityService.getMonthlyAvailabilities('current-user', year, month);
-        setMonthlyAvailabilities(data || []);
+        
+        // Convert DayAvailability[] to Availability[] by ensuring 'status' is always set
+        const typeSafeData: Availability[] = data.map(item => ({
+          ...item,
+          // Ensure status is set (use 'Not Specified' as a fallback)
+          status: item.status || 'Not Specified'
+        }));
+        
+        setMonthlyAvailabilities(typeSafeData);
       } catch (error) {
         console.error('Error fetching availabilities:', error);
         toast({
@@ -237,6 +247,12 @@ export function useAvailabilities() {
         data.notes
       );
       
+      // Convert the response to ensure it matches our Availability type
+      const convertedResponse: Availability[] = response.map(item => ({
+        ...item,
+        status: item.status || 'Not Specified'
+      }));
+      
       // Update local state with new availability data
       setMonthlyAvailabilities(prev => {
         // Create a new array without the dates that were just updated
@@ -250,7 +266,7 @@ export function useAvailabilities() {
         });
         
         // Add the newly created/updated availabilities
-        return [...filtered, ...response];
+        return [...filtered, ...convertedResponse];
       });
       
       toast({
@@ -294,7 +310,7 @@ export function useAvailabilities() {
         toast({
           title: "Nothing to Delete",
           description: "No availability found for this date.",
-          variant: "warning"
+          variant: "default" // Changed from "warning" to "default"
         });
         return false;
       }
@@ -367,6 +383,12 @@ export function useAvailabilities() {
         data.endDate
       );
       
+      // Convert the response to ensure it matches our Availability type
+      const convertedResponse: Availability[] = response.map(item => ({
+        ...item,
+        status: item.status || 'Not Specified'
+      }));
+      
       // Update local state with the new availabilities
       setMonthlyAvailabilities(prev => {
         // Remove existing availabilities in the date range
@@ -376,7 +398,7 @@ export function useAvailabilities() {
         });
         
         // Add the new availabilities
-        return [...filtered, ...response];
+        return [...filtered, ...convertedResponse];
       });
       
       toast({
