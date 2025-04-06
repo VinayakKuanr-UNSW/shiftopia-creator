@@ -15,7 +15,6 @@ export type Database = {
           created_at: string | null
           employee_id: number | null
           id: number
-          notes: string | null
           shift_id: number | null
           status: string | null
           updated_at: string | null
@@ -25,7 +24,6 @@ export type Database = {
           created_at?: string | null
           employee_id?: number | null
           id?: number
-          notes?: string | null
           shift_id?: number | null
           status?: string | null
           updated_at?: string | null
@@ -35,7 +33,6 @@ export type Database = {
           created_at?: string | null
           employee_id?: number | null
           id?: number
-          notes?: string | null
           shift_id?: number | null
           status?: string | null
           updated_at?: string | null
