@@ -155,7 +155,6 @@ const BidCalendarView: React.FC<BidCalendarViewProps> = ({
           selected={selectedDate}
           onSelect={onDateSelect}
           className="mx-auto"
-          // Use the components prop to customize day rendering
           components={{
             Day: ({ date, displayMonth }) => {
               if (displayMonth.getMonth() !== date.getMonth()) {

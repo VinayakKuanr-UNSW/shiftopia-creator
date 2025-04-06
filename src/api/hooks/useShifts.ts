@@ -1,7 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { shiftService } from '../services/shiftService';
-import { ShiftDetails } from '../models/types';
+import { shiftService, ShiftDetails } from '../services/shiftService';
 
 export const useShifts = () => {
   const queryClient = useQueryClient();

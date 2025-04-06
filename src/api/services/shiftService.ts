@@ -1,5 +1,23 @@
-import { Shift, ShiftDetails } from '../models/types';
+import { Shift } from '../models/types';
 import { supabase } from '@/integrations/supabase/client';
+
+// Define ShiftDetails interface
+export interface ShiftDetails {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  netLength: string;
+  paidBreakDuration: string;
+  unpaidBreakDuration: string;
+  department: string;
+  subDepartment: string;
+  role: string;
+  remunerationLevel: string | number;
+  status: string;
+  isDraft: boolean;
+  assignedEmployee?: string | null;
+}
 
 // Local storage for shifts - in a real app this would be a database
 let shifts: Record<string, ShiftDetails> = {
@@ -173,7 +191,7 @@ export const shiftService = {
       const { data, error } = await supabase
         .from('shifts')
         .select('*, employees(name)')
-        .eq('id', parseInt(id, 10)) // Convert string to number
+        .eq('id', parseInt(id, 10)) // Convert string to number)
         .single();
         
       if (error) {
@@ -238,8 +256,8 @@ export const shiftService = {
       // First try to get shifts from Supabase
       const { data, error } = await supabase
         .from('shifts')
-        .select('*, employees(name)')
-        .eq('department', department);
+        .select('*, employees:assigned_employee_id(name)')
+        .eq('department_id', getDepartmentIdByName(department));
         
       if (error) {
         console.error(`Error fetching shifts for department ${department} from Supabase:`, error);
@@ -350,4 +368,17 @@ function calculateEndTime(startTime: string, hours: string | number): string {
     console.error('Error calculating end time:', e);
     return '00:00';
   }
+}
+
+// Helper function to get department ID by name (for queries)
+function getDepartmentIdByName(departmentName: string): number {
+  const departmentMap: Record<string, number> = {
+    'Convention Centre': 1,
+    'Exhibition Centre': 2,
+    'Theatre': 3,
+    'IT': 4,
+    'Darling Harbor Theatre': 5
+  };
+  
+  return departmentMap[departmentName] || 0;
 }
