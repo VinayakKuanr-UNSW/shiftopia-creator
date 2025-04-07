@@ -70,42 +70,42 @@ const getStatusColor = (status: AvailabilityStatus): string => {
 // Make sure these presets match what's expected server-side
 const availabilityPresets: AvailabilityPreset[] = [
   {
-    id: 'standard',
+    id: '1',
     name: 'Standard (9-5)',
     timeSlots: [
       { startTime: '09:00', endTime: '17:00' }
     ]
   },
   {
-    id: 'morning',
+    id: '2',
     name: 'Morning Shift',
     timeSlots: [
       { startTime: '07:00', endTime: '15:00' }
     ]
   },
   {
-    id: 'evening',
+    id: '3',
     name: 'Evening Shift',
     timeSlots: [
       { startTime: '15:00', endTime: '23:00' }
     ]
   },
   {
-    id: 'full-day',
+    id: '4',
     name: 'Full Day',
     timeSlots: [
       { startTime: '08:00', endTime: '20:00' }
     ]
   },
   {
-    id: 'weekdays',
+    id: '5',
     name: 'Weekdays Only',
     timeSlots: [
       { startTime: '09:00', endTime: '17:00' }
     ]
   },
   {
-    id: 'weekends',
+    id: '6',
     name: 'Weekends Only',
     timeSlots: [
       { startTime: '10:00', endTime: '18:00' }
@@ -139,7 +139,12 @@ export function useAvailabilities() {
         const typeSafeData: Availability[] = data.map(item => ({
           ...item,
           // Ensure status is set (use 'Not Specified' as a fallback)
-          status: item.status || 'Not Specified'
+          status: item.status || 'Not Specified',
+          // Ensure each time slot has a status
+          timeSlots: item.timeSlots.map(slot => ({
+            ...slot,
+            status: slot.status || item.status || 'Not Specified'
+          }))
         }));
         
         setMonthlyAvailabilities(typeSafeData);
@@ -250,7 +255,11 @@ export function useAvailabilities() {
       // Convert the response to ensure it matches our Availability type
       const convertedResponse: Availability[] = response.map(item => ({
         ...item,
-        status: item.status || 'Not Specified'
+        status: item.status || 'Not Specified',
+        timeSlots: item.timeSlots.map(slot => ({
+          ...slot,
+          status: slot.status || item.status || 'Not Specified'
+        }))
       }));
       
       // Update local state with new availability data
@@ -315,15 +324,20 @@ export function useAvailabilities() {
         return false;
       }
       
-      // Update local state by removing the deleted availability
-      setMonthlyAvailabilities(prev => prev.filter(item => item.date !== dateStr));
-
-      toast({
-        title: "Availability Deleted",
-        description: `Availability for ${format(date, 'MMMM dd, yyyy')} has been removed.`,
-      });
+      // Call the service to delete the availability
+      const success = await availabilityService.deleteAvailability('current-user', date);
       
-      return true;
+      if (success) {
+        // Update local state by removing the deleted availability
+        setMonthlyAvailabilities(prev => prev.filter(item => item.date !== dateStr));
+        
+        toast({
+          title: "Availability Deleted",
+          description: `Availability for ${format(date, 'MMMM dd, yyyy')} has been removed.`,
+        });
+      }
+      
+      return success;
     } catch (error) {
       console.error('Error deleting availability:', error);
       toast({
@@ -343,6 +357,9 @@ export function useAvailabilities() {
         title: "Cutoff Date Set",
         description: `Availabilities before ${format(date, 'MMMM dd, yyyy')} are now locked.`,
       });
+      
+      // In a real app, this would save the cutoff date to the database
+      availabilityService.setCutoffDate(date);
     } else {
       toast({
         title: "Cutoff Date Removed",
@@ -386,7 +403,11 @@ export function useAvailabilities() {
       // Convert the response to ensure it matches our Availability type
       const convertedResponse: Availability[] = response.map(item => ({
         ...item,
-        status: item.status || 'Not Specified'
+        status: item.status || 'Not Specified',
+        timeSlots: item.timeSlots.map(slot => ({
+          ...slot,
+          status: slot.status || item.status || 'Not Specified'
+        }))
       }));
       
       // Update local state with the new availabilities
@@ -422,6 +443,7 @@ export function useAvailabilities() {
 
   return {
     selectedMonth,
+    setSelectedMonth,
     startOfMonth: startOfSelectedMonth,
     endOfMonth: endOfSelectedMonth,
     monthlyAvailabilities,

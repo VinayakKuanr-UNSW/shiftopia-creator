@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format, addMonths, subMonths, addDays } from 'date-fns';
+import { format, addMonths, subMonths, addDays, eachDayOfInterval } from 'date-fns';
 import { useAvailabilities } from '@/hooks/useAvailabilities';
 import { AvailabilityCalendar } from '@/components/availability/AvailabilityCalendar';
 import { AvailabilityForm } from '@/components/availability/AvailabilityForm';
+import { BatchAvailabilityForm } from '@/components/availability/BatchAvailabilityForm';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,6 +24,7 @@ import { Calendar } from "@/components/ui/calendar";
 const AvailabilitiesPage = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isBatchFormOpen, setIsBatchFormOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [isCutoffPickerOpen, setCutoffPickerOpen] = useState(false);
@@ -37,15 +39,22 @@ const AvailabilitiesPage = () => {
     setAvailability,
     applyPreset,
     setCutoff,
-    cutoffDate
+    cutoffDate,
+    goToPreviousMonth,
+    goToNextMonth,
+    setSelectedMonth: updateSelectedMonth
   } = useAvailabilities();
 
   const handleNextMonth = () => {
-    setSelectedMonth(addMonths(selectedMonth, 1));
+    const nextMonth = addMonths(selectedMonth, 1);
+    setSelectedMonth(nextMonth);
+    updateSelectedMonth(nextMonth);
   };
 
   const handlePrevMonth = () => {
-    setSelectedMonth(subMonths(selectedMonth, 1));
+    const prevMonth = subMonths(selectedMonth, 1);
+    setSelectedMonth(prevMonth);
+    updateSelectedMonth(prevMonth);
   };
 
   const handleSaveAvailability = async (data: any) => {
@@ -67,7 +76,79 @@ const AvailabilitiesPage = () => {
     setSelectedDate(null);
   };
 
+  const handleSaveBatchAvailability = async (data: {
+    startDate: Date;
+    endDate: Date;
+    timeSlots: Array<{
+      startTime: string;
+      endTime: string;
+      status?: string;
+    }>;
+    notes?: string;
+  }) => {
+    if (!data.startDate || !data.endDate) {
+      toast({
+        title: "Missing Dates",
+        description: "Please select both start and end dates",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (data.endDate < data.startDate) {
+      toast({
+        title: "Invalid Date Range",
+        description: "End date cannot be before start date",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if any dates in the range already have availability
+    const daysInRange = eachDayOfInterval({ start: data.startDate, end: data.endDate });
+    const existingDays = daysInRange.filter(date => 
+      monthlyAvailabilities.some(a => a.date === format(date, 'yyyy-MM-dd'))
+    );
+    
+    if (existingDays.length > 0) {
+      toast({
+        title: "Existing Availabilities",
+        description: `${existingDays.length} dates in your selection already have availability set. Please edit those individually.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    await setAvailability({
+      startDate: data.startDate,
+      endDate: data.endDate,
+      timeSlots: data.timeSlots,
+      notes: data.notes
+    });
+
+    toast({
+      title: "Batch Availability Saved",
+      description: `Availability set for ${format(data.startDate, 'dd MMM')} to ${format(data.endDate, 'dd MMM yyyy')}`,
+    });
+
+    setIsBatchFormOpen(false);
+  };
+
   const handleApplyPreset = async (presetId: string, startDate: Date, endDate: Date) => {
+    // Check if any dates in the range already have availability
+    const daysInRange = eachDayOfInterval({ start: startDate, end: endDate });
+    const existingDays = daysInRange.filter(date => 
+      monthlyAvailabilities.some(a => a.date === format(date, 'yyyy-MM-dd'))
+    );
+    
+    if (existingDays.length > 0) {
+      toast({
+        title: "Warning",
+        description: `${existingDays.length} dates already have availability set and will be overwritten.`,
+        variant: "warning"
+      });
+    }
+
     await applyPreset({
       presetId,
       startDate,
@@ -76,8 +157,18 @@ const AvailabilitiesPage = () => {
   };
 
   const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
-    setIsFormOpen(true);
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const existing = monthlyAvailabilities.find(a => a.date === dateStr);
+    
+    if (existing) {
+      // If availability exists, open the form for editing
+      setSelectedDate(date);
+      setIsFormOpen(true);
+    } else {
+      // If no availability exists yet, open the form for adding
+      setSelectedDate(date);
+      setIsFormOpen(true);
+    }
   };
   
   const handleSetCutoffDate = (date: Date | undefined) => {
@@ -87,6 +178,10 @@ const AvailabilitiesPage = () => {
   
   const handleRemoveCutoff = () => {
     setCutoff(null);
+  };
+
+  const openBatchForm = () => {
+    setIsBatchFormOpen(true);
   };
 
   return (
@@ -114,14 +209,22 @@ const AvailabilitiesPage = () => {
             </Tabs>
             
             <Button 
-              variant="default" 
+              variant="outline" 
               onClick={() => {
                 setSelectedDate(new Date());
                 setIsFormOpen(true);
               }}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Availability
+              Add Single Day
+            </Button>
+            
+            <Button 
+              variant="default" 
+              onClick={openBatchForm}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Multiple Days
             </Button>
           </div>
         </div>
@@ -186,7 +289,10 @@ const AvailabilitiesPage = () => {
         <div className="flex-grow overflow-auto h-[calc(100vh-180px)]">
           {viewMode === 'calendar' ? (
             <div className="h-full overflow-hidden">
-              <AvailabilityCalendar onSelectDate={handleDateClick} />
+              <AvailabilityCalendar 
+                onSelectDate={handleDateClick}
+                selectedMonth={selectedMonth} 
+              />
             </div>
           ) : (
             <div className="p-4 md:p-6">
@@ -203,6 +309,15 @@ const AvailabilitiesPage = () => {
           onCancel={() => {
             setIsFormOpen(false);
             setSelectedDate(null);
+          }}
+        />
+      )}
+
+      {isBatchFormOpen && (
+        <BatchAvailabilityForm
+          onSubmit={handleSaveBatchAvailability}
+          onCancel={() => {
+            setIsBatchFormOpen(false);
           }}
         />
       )}

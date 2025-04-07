@@ -5,6 +5,9 @@ import { format, addDays, eachDayOfInterval, isWeekend, getDay } from 'date-fns'
 // Mock data for availabilities
 const MOCK_AVAILABILITIES: Record<string, DayAvailability[]> = {};
 
+// Store a cutoff date
+let MOCK_CUTOFF_DATE: Date | null = null;
+
 // Mock data for presets
 const PRESETS: AvailabilityPreset[] = [
   {
@@ -136,6 +139,11 @@ export const availabilityService = {
     const createdAvailabilities: DayAvailability[] = [];
     
     for (const day of days) {
+      // Check if past cutoff date
+      if (MOCK_CUTOFF_DATE && day < MOCK_CUTOFF_DATE) {
+        continue; // Skip this date if it's past the cutoff
+      }
+      
       const dateKey = format(day, 'yyyy-MM-dd');
       const monthKey = `${employeeId}-${day.getFullYear()}-${day.getMonth() + 1}`;
       
@@ -180,6 +188,11 @@ export const availabilityService = {
     employeeId: string,
     date: Date
   ): Promise<boolean> => {
+    // Check if past cutoff date
+    if (MOCK_CUTOFF_DATE && date < MOCK_CUTOFF_DATE) {
+      return Promise.resolve(false); // Cannot delete if past cutoff
+    }
+    
     const dateKey = format(date, 'yyyy-MM-dd');
     const monthKey = `${employeeId}-${date.getFullYear()}-${date.getMonth() + 1}`;
     
@@ -212,6 +225,11 @@ export const availabilityService = {
     const createdAvailabilities: DayAvailability[] = [];
     
     for (const day of days) {
+      // Check if past cutoff date
+      if (MOCK_CUTOFF_DATE && day < MOCK_CUTOFF_DATE) {
+        continue; // Skip this date if it's past the cutoff
+      }
+      
       const dayOfWeek = getDay(day);
       
       // Only apply to specific days if the preset specifies days of week
@@ -252,9 +270,14 @@ export const availabilityService = {
   },
   
   // Set cutoff date (for manager use)
-  setCutoffDate: async (date: Date): Promise<boolean> => {
-    // In a real implementation, this would save to a database
-    // For the mock version, we just return success
+  setCutoffDate: async (date: Date | null): Promise<boolean> => {
+    // Store the cutoff date in the mock database
+    MOCK_CUTOFF_DATE = date;
     return Promise.resolve(true);
+  },
+  
+  // Get current cutoff date (for UI display)
+  getCutoffDate: async (): Promise<Date | null> => {
+    return Promise.resolve(MOCK_CUTOFF_DATE);
   }
 };

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { CalendarIcon, ChevronDown } from 'lucide-react';
-import { format, addDays } from 'date-fns';
+import { format, addDays, isBefore } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/command';
 import { useAvailabilities } from '@/hooks/useAvailabilities';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface PresetSelectorProps {
   onApplyPreset: (presetId: string, startDate: Date, endDate: Date) => Promise<void>;
@@ -36,13 +37,48 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
     from: new Date(),
     to: addDays(new Date(), 1),
   });
+  const { toast } = useToast();
 
-  const { availabilityPresets } = useAvailabilities();
+  const { availabilityPresets, cutoffDate } = useAvailabilities();
   
   const handleApply = async () => {
     if (selectedPreset && dateRange.from && dateRange.to) {
+      // Check if any dates in the range are past the cutoff
+      if (cutoffDate && isBefore(dateRange.from, cutoffDate)) {
+        toast({
+          title: "Cannot Apply Preset",
+          description: "Some dates in your range are past the cutoff date and cannot be modified.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Check if end date is before start date
+      if (dateRange.to < dateRange.from) {
+        toast({
+          title: "Invalid Date Range",
+          description: "End date cannot be before start date.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       await onApplyPreset(selectedPreset, dateRange.from, dateRange.to);
       setOpen(false);
+    } else {
+      if (!selectedPreset) {
+        toast({
+          title: "No Preset Selected",
+          description: "Please select an availability preset.",
+          variant: "destructive"
+        });
+      } else if (!dateRange.from || !dateRange.to) {
+        toast({
+          title: "Date Range Required",
+          description: "Please select both start and end dates.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -80,7 +116,8 @@ export function PresetSelector({ onApplyPreset }: PresetSelectorProps) {
                   }
                 }}
                 numberOfMonths={1}
-                className="pointer-events-auto"
+                className={cn("p-3 pointer-events-auto")}
+                disabled={(date) => cutoffDate ? isBefore(date, cutoffDate) : false}
               />
             </div>
           </div>

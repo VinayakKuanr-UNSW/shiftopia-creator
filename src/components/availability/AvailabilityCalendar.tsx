@@ -1,7 +1,7 @@
 
-import React from 'react';
-import { format, isSameMonth, isToday, startOfWeek, endOfWeek, addDays, eachDayOfInterval, getDay, isSameDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Trash2, Check, X, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { format, isSameMonth, isToday, startOfWeek, endOfWeek, addDays, eachDayOfInterval, getDay, isSameDay, parseISO } from 'date-fns';
+import { ChevronLeft, ChevronRight, Trash2, Check, X, AlertTriangle, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAvailabilities } from '@/hooks/useAvailabilities';
@@ -12,17 +12,23 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from "@/components/ui/badge";
 
 interface AvailabilityCalendarProps {
   onSelectDate: (date: Date) => void;
+  selectedMonth: Date;
 }
 
-export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps) {
+export function AvailabilityCalendar({ onSelectDate, selectedMonth }: AvailabilityCalendarProps) {
   const {
-    selectedMonth,
-    goToPreviousMonth,
-    goToNextMonth,
     startOfMonth,
     endOfMonth,
     getDayStatusColor,
@@ -31,6 +37,9 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
     isDateLocked,
     monthlyAvailabilities
   } = useAvailabilities();
+  
+  const [showTimeSlotsDialog, setShowTimeSlotsDialog] = useState(false);
+  const [selectedTimeSlotsDate, setSelectedTimeSlotsDate] = useState<Date | null>(null);
   
   const { toast } = useToast();
 
@@ -84,6 +93,25 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
         title: "Availability Deleted",
         description: `Availability for ${format(date, 'MMMM dd, yyyy')} has been removed.`,
       });
+    }
+  };
+
+  const showAllTimeSlots = (date: Date, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setSelectedTimeSlotsDate(date);
+    setShowTimeSlotsDialog(true);
+  };
+
+  const getStatusIndicator = (status: AvailabilityStatus) => {
+    switch (status) {
+      case 'Available':
+        return <div className="h-3 w-3 rounded-full bg-green-500"></div>;
+      case 'Unavailable':
+        return <div className="h-3 w-3 rounded-full bg-red-500"></div>;
+      case 'Partial':
+        return <div className="h-3 w-3 rounded-full bg-yellow-500"></div>;
+      default:
+        return <div className="h-3 w-3 rounded-full bg-gray-300"></div>;
     }
   };
 
@@ -173,17 +201,23 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
                             )}
                           </div>
                           
-                          {availability.timeSlots && availability.timeSlots.length > 0 && (
-                            <div className="overflow-hidden text-xs">
+                          {availability.timeSlots && (
+                            <div className="flex flex-wrap gap-1">
                               {availability.timeSlots.slice(0, 2).map((slot, i) => (
-                                <div key={i} className="truncate text-muted-foreground p-1 rounded bg-muted/30">
-                                  {slot.startTime} - {slot.endTime}
-                                </div>
+                                <Badge key={i} variant="outline" className="text-[0.65rem] py-0 h-4 flex items-center gap-1">
+                                  {getStatusIndicator(slot.status as AvailabilityStatus)} 
+                                  {slot.startTime.substring(0,5)}-{slot.endTime.substring(0,5)}
+                                </Badge>
                               ))}
                               {availability.timeSlots.length > 2 && (
-                                <div className="text-muted-foreground text-center">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-4 px-1 text-[0.65rem] text-muted-foreground"
+                                  onClick={(e) => showAllTimeSlots(day, e)}
+                                >
                                   +{availability.timeSlots.length - 2} more
-                                </div>
+                                </Button>
                               )}
                             </div>
                           )}
@@ -197,6 +231,42 @@ export function AvailabilityCalendar({ onSelectDate }: AvailabilityCalendarProps
           ))}
         </div>
       </div>
+      
+      {/* Time slots dialog */}
+      {showTimeSlotsDialog && selectedTimeSlotsDate && (
+        <Dialog open={showTimeSlotsDialog} onOpenChange={setShowTimeSlotsDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                Availability for {format(selectedTimeSlotsDate, 'MMMM d, yyyy')}
+              </DialogTitle>
+              <DialogDescription>
+                All time slots for this date
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-3 py-4">
+              {getDayAvailability(selectedTimeSlotsDate)?.timeSlots.map((slot, index) => (
+                <div 
+                  key={index} 
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-md",
+                    slot.status === 'Available' ? "bg-green-500/20 border border-green-500/30" :
+                    slot.status === 'Unavailable' ? "bg-red-500/20 border border-red-500/30" :
+                    "bg-yellow-500/20 border border-yellow-500/30"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    {getStatusIndicator(slot.status as AvailabilityStatus)}
+                    <span className="font-medium">{slot.startTime} - {slot.endTime}</span>
+                  </div>
+                  <Badge>{slot.status}</Badge>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
